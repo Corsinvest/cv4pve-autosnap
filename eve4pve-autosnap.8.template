@@ -1,0 +1,35 @@
+.TH @@PACKAGE@@ "8" "@@DATE@@" "@@PACKAGE@@" "EnterpriseVE Documentation"
+.SH NAME
+@@PACKAGE@@ \- EnterpriseVE automatic snapshot for Proxmox
+.SH SYNOPSIS
+@@SYNOPSIS@@
+
+.SH DESCRIPTION
+This tool create automaic snapshot using Proxmox command.
+This tool also has the capability to add jobs to cron so the execute will be automatically done.
+The default execution interval is set dayly, if you want to change this value you can do this in /etc/cron.d/@@PACKAGE@@.
+To config cron see man crontab.
+
+.SH HOOK SCRIPTS
+You can specify a hook script with option --script.
+This script is called at various phases of the autosnap process, with parameters accordingly set. You can find an example in the documentation directory /usr/share/doc/@@PACKAGE@@/examples/script-hook.sh
+
+Environment variables:
+
+EVE4PVE_AUTOSNAP_PHASE
+
+EVE4PVE_AUTOSNAP_VMID
+
+EVE4PVE_AUTOSNAP_LABEL
+
+EVE4PVE_AUTOSNAP_KEEP
+
+EVE4PVE_AUTOSNAP_VMSTATE
+
+EVE4PVE_AUTOSNAP_SNAP_NAME
+
+.SH IMPORTANT FILES
+Cron jobs and config are stored at /etc/cron.d/@@PACKAGE@@
+
+.SH COPYRIGHT AND DISCLAIMER
+@@COPYRIGHT@@

@@ -1,0 +1,380 @@
+#!/bin/bash
+#
+# Automatically create, rotate, and destroy periodic Proxmox snapshots.
+# Copyright 2016 EnterpriseVE
+# Author: Daniele Corsini <daniele.corsini@enterpriseve.com>
+
+declare -r VERSION=0.1.0
+declare -r NAME=$(basename "$0")
+declare -r PROGNAME=${NAME%.*}
+
+declare -i opt_vmid=0
+declare -i opt_vmstate=0
+declare -i opt_keep=1
+declare -i opt_syslog=0
+declare -i opt_debug=0
+declare -i opt_dry_run=0
+opt_label=''
+opt_script=''
+
+snap_name_prefix=''
+
+#export for script hook
+export EVE4PVE_AUTOSNAP_PHASE=
+export EVE4PVE_AUTOSNAP_VMID=
+export EVE4PVE_AUTOSNAP_LABEL=
+export EVE4PVE_AUTOSNAP_KEEP=
+export EVE4PVE_AUTOSNAP_VMSTATE=
+export EVE4PVE_AUTOSNAP_SNAP_NAME=
+
+function usage(){
+    shift
+
+    if [ "$1" != "--no-logo" ]; then
+        cat << EOF
+    ______      __                       _              _    ________
+   / ____/___  / /____  _________  _____(_)_______     | |  / / ____/
+  / __/ / __ \/ __/ _ \/ ___/ __ \/ ___/ / ___/ _ \    | | / / __/
+ / /___/ / / / /_/  __/ /  / /_/ / /  / (__  )  __/    | |/ / /___
+/_____/_/ /_/\__/\___/_/  / .___/_/  /_/____/\___/     |___/_____/
+                         /_/
+                         
+EOF
+    fi
+
+    cat << EOF
+EnterpriseVE automatic snapshot for Proxmox         (Made in Italy)
+
+Usage:
+    $PROGNAME <COMMAND> [ARGS] [OPTIONS]
+    $PROGNAME help
+    $PROGNAME version
+
+    $PROGNAME create  --vmid=<integer> --label=<string> --keep=<integer>
+                             --vmstate --script=<string> --syslog 
+    $PROGNAME destroy --vmid=<integer> --label=<string>
+    $PROGNAME enable  --vmid=<integer> --label=<string>
+    $PROGNAME disable --vmid=<integer> --label=<string>
+
+    $PROGNAME status
+    $PROGNAME clean   --vmid=<integer> --label=<string> --keep=<integer>
+
+    $PROGNAME snap    --vmid=<integer> --label=<string> --keep=<integer>
+                             --vmstate --script=<string> --syslog 
+
+Commands:
+    version                  Show version program.
+    help                     Show help program.
+    create                   Create snap job from scheduler.
+    destroy                  Remove snap job from scheduler.
+    enable                   Enable snap job from scheduler.
+    disable                  Disable snap job from scheduler.
+    status                   Get list of all auto snapshots.
+    clean                    Remove all auto snapshots.
+    snap                     Will snap one time.
+
+Options:
+    --vmid=integer           The ID of the VM.
+    --vmstate                Save the vmstate only qemu.
+    --label=string           Is usually 'hourly', 'daily', 'weekly', or 'monthly'.
+    --keep=integer           Specify the number of snapshots which should will keep, 
+                             anything longer will be removed. Default 1.
+                             (-1 will disable removing snapshots)
+    --script=string          Use specified hook script.
+                             Es. /usr/share/doc/$PROGNAME/examples/script-hook.sh
+    --syslog                 Write messages into the system log.
+
+Report bugs to <support@enterpriseve.com>.
+EOF
+
+    exit 1
+}
+
+function log(){
+    local level=$1
+    shift 1
+    local message=$*
+
+    case $level in
+        debug) [ $opt_debug -eq 1 ] && echo -e "Debug: $message";;
+        
+        info) 
+            echo -e "$message"; 
+            [ $opt_syslog -eq 1 ] && logger -t "$PROGNAME" "$message"
+            ;;
+        
+        error) echo "Error: $message" 1>&2;;
+        *)  echo "$message" 1>&2;;
+    esac
+}
+
+function parse_opts(){
+    shift
+
+    local args=$(getopt \
+                --options "" \
+                --longoptions=vmstate:,vmid:,label:,keep: \
+                --longoptions=script:,syslog,debug,dry-run \
+                --name "$PROGNAME" \
+                -- "$@") \
+                || exit 128
+
+    eval set -- "$args"
+
+    while true; do    
+      case "$1" in
+        --vmid) opt_vmid=$2; shift 2;;
+        --vmstate) opt_vmstate=1; shift;;
+        --label) opt_label="$2"; shift 2;;
+        --keep) opt_keep="$2"; shift 2;;
+        --script) opt_script="$2"; shift 2;;
+        --syslog) opt_syslog=1; shift;;
+        --debug) opt_debug=1; shift;;
+        --dry-run) opt_dry_run=1; shift;;
+        --) shift; break;;
+        *) break;;
+      esac
+    done
+
+    [ $opt_vmid -le 0 ] && { log info "VM id is not set."; exit 1; }
+    [ -z "$opt_label" ] && { log info "Label is not set correctly."; exit 1; }
+
+    snap_name_prefix="auto$opt_label"
+}
+
+function get_tecnology(){
+    if [ ! -z $(qm list | awk '{print$1}' | grep $opt_vmid) ]; then 
+        #qemu
+        echo 'qm'
+    elif [ ! -z $(pct list | awk '{print$1}' | grep $opt_vmid) ]; then
+        #lxc
+        echo 'pct'
+    else
+        #unknow
+        log info "Unknow teclonlogy for VM $opt_vmid"
+        exit 2;
+    fi
+}
+
+function cron_action_job(){
+    local -r cron_file="/etc/cron.d/$PROGNAME"    
+    local -r job_key_cron="snap --vmid=$opt_vmid --label='$opt_label'"
+    local action=$1
+    shift
+    parse_opts "$@"
+    
+    #create cron file if not exist
+    if [ ! -e "$cron_file" ]; then
+        cat > "$cron_file" << EOL
+#Cron file for $PROGNAME automatically generated
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+EOL
+    fi    
+
+    #check
+    local check=0; [ "$action" = "add" ] && check=1 
+    local line=$(grep -h "$job_key_cron" "$cron_file")  
+    if [ -z "$line" ]; then
+        [ $check -eq 0 ] && { log info "Job not exists in cron file '$cron_file'"; exit 1; }
+    else
+        [ $check -eq 1 ] && { log info "Job already exists in cron file '$cron_file'"; exit 1; }
+    fi
+
+    #action
+    case $action in
+        add)
+            local cron_scheduling="0 0 * * *"           #Default run once a day at midnight
+
+            case "$opt_label" in
+                hourly*) cron_scheduling="0 * * * *";;  #Run once an hour at the beginning of the hour	
+                daily*) cron_scheduling="0 0 * * *";;   #Run once a day at midnight             
+                weekly*) cron_scheduling="0 0 * * 0";;  #Run once a week at midnight on Sunday morning	
+                monthly*) cron_scheduling="0 0 1 * *";; #Run once a month at midnight of the first day of the month
+            esac
+
+            local job="$cron_scheduling root $PROGNAME $job_key_cron --keep=$opt_keep"
+
+            [ $opt_vmstate -eq 1 ] && job="$job --vmstate"                  #state memory    
+            [ -e "$opt_script" ] && job="$job --script='$opt_script'"       #script hook
+            [ $opt_syslog -eq 1 ] && job="$job --syslog"                    #syslog
+        
+            echo -e "$job" >> "$cron_file"
+            ;;
+
+        remove) sed -i "\?$job_key_cron?d" "$cron_file";;
+        enable) sed -i "\?$job_key_cron?s?^#??g" "$cron_file";;
+        disable) sed -i "\?$job_key_cron?s?^?#?g" "$cron_file";;
+    esac
+
+    echo -e "Job $action in cron file '$cron_file'";
+}
+
+function clean(){
+    parse_opts "$@"
+
+    local begin=$(date +%s)
+    log debug "$PROGNAME $VERSION"
+    log debug "Command line: $@"
+
+    call_hook_script "clean-job-start" "-"
+    remove_old_snapshots
+    call_hook_script "clean-job-end" "-"
+
+    log debug "Execution: $(($(date +%s)-begin)) sec."
+}
+
+function remove_old_snapshots(){
+    [ $opt_keep -eq -1 ] && return; #disable remove
+
+    local cmd=$(get_tecnology)
+    local snapshots=$($cmd listsnapshot $opt_vmid | awk '{print$1}' | grep "$snap_name_prefix" | sort -r)
+
+    local -i index=0
+    for snap_name in $snapshots; do
+        if [ $index -ge $opt_keep ]; then            
+            log info "Removing snapshot $snap_name"
+
+            call_hook_script "snap-remove-pre" "$snap_name"
+
+            do_run "$cmd delsnapshot $opt_vmid $snap_name"
+            if [ "$?" != 0 ]; then
+                call_hook_script "snap-remove-abort" "$snap_name"
+
+                log error " Abort remove snapshot $snap_name"
+                #exit 4;
+            fi
+
+            call_hook_script "snap-remove-post" "$snap_name"
+        fi
+        
+        let index++
+    done
+}
+
+function status(){
+    local print_header=1
+
+    for cmd in 'qm' 'pct'; do
+        local vms=($($cmd list | awk '{print$1}' | sed 1d))
+        for vm in "${vms[@]}"; do
+            local result=$($cmd listsnapshot $vm | \
+                           grep "$PROGNAME" | \
+                           sort -r | \
+                           awk -v vm="$vm" '{print vm,substr($1, 1+length($1)-12),substr($1,5,1+length($1)-12-5)}' | \
+                           awk 'BEGIN {FIELDWIDTHS="4 2 2 2 2 2 2 10"} {printf "%s %s-%s-%s %s:%s:%s %s\n",$1,$2,$3,$4,$5,$6,$7,$8}')
+
+            if [ ! -z "$result" ]; then
+                if [ $print_header -eq 1 ]; then
+                    print_header=0
+                    echo "VM   SNAPSHOTS          LABEL"
+                fi
+
+                echo "${result}"
+            fi
+        done
+    done
+}
+
+function call_hook_script(){
+    EVE4PVE_AUTOSNAP_PHASE="$1"
+    EVE4PVE_AUTOSNAP_VMID=$opt_vmid
+    EVE4PVE_AUTOSNAP_LABEL="$opt_label"
+    EVE4PVE_AUTOSNAP_KEEP=$opt_keep
+    EVE4PVE_AUTOSNAP_VMSTATE=$opt_vmstate
+    EVE4PVE_AUTOSNAP_SNAP_NAME="$2"
+
+    log debug "---------------------------------------------------" 
+    log debug "EVE4PVE_AUTOSNAP_PHASE:     $EVE4PVE_AUTOSNAP_PHASE" 
+    log debug "EVE4PVE_AUTOSNAP_VMID:      $EVE4PVE_AUTOSNAP_VMID" 
+    log debug "EVE4PVE_AUTOSNAP_LABEL:     $EVE4PVE_AUTOSNAP_LABEL" 
+    log debug "EVE4PVE_AUTOSNAP_KEEP:      $EVE4PVE_AUTOSNAP_KEEP" 
+    log debug "EVE4PVE_AUTOSNAP_VMSTATE:   $EVE4PVE_AUTOSNAP_VMSTATE" 
+    log debug "EVE4PVE_AUTOSNAP_SNAP_NAME: $EVE4PVE_AUTOSNAP_SNAP_NAME" 
+    log debug "---------------------------------------------------" 
+
+    if [ -e "$opt_script" ]; then
+        log debug "Script hook: $opt_script" 
+        do_run "$opt_script"
+    fi
+}
+
+function snap(){
+    parse_opts "$@"
+
+    log debug "$PROGNAME $VERSION"
+    log debug "Command line: $@"
+
+    local begin=$(date +%s)
+    local cmd=$(get_tecnology)
+    local vm_state=''; [ $cmd = 'qm' -a $opt_vmstate -eq 1 ] && vm_state="--vmstate"
+    local snap_name="$snap_name_prefix$(date +%y%m%d%H%M%S)"
+
+    call_hook_script "snap-job-start" "$snap_name"
+
+    ########################################
+    # Create snapshot
+    ########################################
+    call_hook_script "snap-create-pre" "$snap_name"
+
+    log info "Creating snapshot $snap_name"
+    do_run "$cmd snapshot $opt_vmid $snap_name -description '$PROGNAME' $vm_state"
+    if [ "$?" != 0 ]; then
+        call_hook_script "snap-create-abort" "$snap_name"
+        call_hook_script "snap-job-abord" "$snap_name"
+
+        log error "Create snapshot $snap_name"
+        exit 3;
+    fi
+
+    call_hook_script "snap-create-post" "$snap_name"
+
+    #######################################
+    # Remove old snapshot
+    #######################################
+    remove_old_snapshots
+
+    call_hook_script "snap-job-end" "$snap_name"
+
+    log debug "Execution: $(($(date +%s)-begin)) sec."
+}
+
+function do_run(){
+    local cmd=$*;
+
+    if [ $opt_dry_run -eq 1 ]; then
+		echo "$cmd"
+		rc="$?"
+	else
+		eval "$cmd"
+		rc="$?"
+        [ $rc != 0 ] && log error "$cmd"
+        log debug "$cmd"
+        log debug "exit $rc"
+	fi
+
+	return "$rc"
+}
+
+function main(){    
+    [ $# = 0 -o $? != 0 ] && usage;
+
+    #commandparse command
+    case "$1" in
+        version) echo "$VERSION";;
+        help) usage "$@";;
+        create) cron_action_job add "$@";;
+        destroy) cron_action_job remove "$@";;
+        enable) cron_action_job enable "$@";;
+        disable) cron_action_job disable "$@";;
+        clean) clean "$@";;
+        status) status;; 
+        snap) snap "$@";;
+        *) usage;;
+    esac
+
+    exit 0;
+}
+
+main "$@"
