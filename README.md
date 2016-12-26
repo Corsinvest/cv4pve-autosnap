@@ -56,6 +56,7 @@ Report bugs to <support@enterpriseve.com>.
 Automatic snapshot for Proxmox with retention.
 
 # Main features
+* For KVM and LXC
 * Can keep multiple snapshots
 * Syslog integration
 * Clean all snapshots
@@ -65,7 +66,7 @@ Automatic snapshot for Proxmox with retention.
 # Configuration and use
 Download package eve4pve-autosnap_?.?.?-?_all.deb, on your Proxmox VE host and install:
 ```
-wget https://github.com/EnterpriseVE/pve-autosnap/?????
+wget https://github.com/EnterpriseVE/eve4pve-autosnap/releases/latest
 dpkg -i eve4pve-autosnap_?.?.?-?_all.deb
 ```
 This tool need basically no configuration.
@@ -73,7 +74,7 @@ This tool need basically no configuration.
 ## Snap a VM one time
 
 ```
-root@pve1:~# eve4pve-autosnap snap --vmid=111 --label='daily' --keep=5
+root@pve1:~# eve4pve-autosnap snap --vmid=111 --label='daily' --keep=2
 ```
 This command snap VM 111. The --keep tells that it should be kept 2 snapshots, if there are more than 2 snapshots, the 3 one will be erased (sorted by creation time).
 ## Create a recurring snap job
