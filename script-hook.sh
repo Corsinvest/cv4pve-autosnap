@@ -13,7 +13,7 @@ hook() {
     echo "EVE4PVE_AUTOSNAP_SNAP_NAME: $EVE4PVE_AUTOSNAP_SNAP_NAME" 
 
     case "$EVE4PVE_AUTOSNAP_PHASE" in
-        #snap job status
+        #clean job status
         clean-job-start);;
         clean-job-end);;
 
