@@ -4,7 +4,7 @@
 # Copyright 2016 EnterpriseVE
 # Author: Daniele Corsini <daniele.corsini@enterpriseve.com>
 
-declare -r VERSION=0.1.0
+declare -r VERSION=0.1.1
 declare -r NAME=$(basename "$0")
 declare -r PROGNAME=${NAME%.*}
 
@@ -358,8 +358,8 @@ function do_run(){
 		rc="$?"
 	else
         log debug "$cmd"
-		eval "$cmd"
-		rc="$?"
+        eval "$cmd"
+        rc="$?"
         [ $rc != 0 ] && log error "$cmd"
         log debug "exit $rc"
 	fi
