@@ -8,6 +8,8 @@ declare -r VERSION=0.1.0
 declare -r NAME=$(basename "$0")
 declare -r PROGNAME=${NAME%.*}
 
+declare -r QEMU_CMD='qm'
+
 declare -i opt_vmid=0
 declare -i opt_vmstate=0
 declare -i opt_keep=1
@@ -143,9 +145,9 @@ function parse_opts(){
 }
 
 function get_tecnology(){
-    if [ ! -z $(qm list | awk '{print$1}' | grep $opt_vmid) ]; then 
+    if [ ! -z $($QEMU_CMD list | awk '{print$1}' | grep $opt_vmid) ]; then 
         #qemu
-        echo 'qm'
+        echo $QEMU_CMD
     elif [ ! -z $(pct list | awk '{print$1}' | grep $opt_vmid) ]; then
         #lxc
         echo 'pct'
@@ -256,7 +258,7 @@ function remove_old_snapshots(){
 function status(){
     local print_header=1
 
-    for cmd in 'qm' 'pct'; do
+    for cmd in $QEMU_CMD 'pct'; do
         local vms=($($cmd list | awk '{print$1}' | sed 1d))
         for vm in "${vms[@]}"; do
             local result=$($cmd listsnapshot $vm | \
@@ -308,8 +310,16 @@ function snap(){
 
     local begin=$(date +%s)
     local cmd=$(get_tecnology)
-    local vm_state=''; [ $cmd = 'qm' -a $opt_vmstate -eq 1 ] && vm_state="--vmstate"
+    local vm_state='';
     local snap_name="$snap_name_prefix$(date +%y%m%d%H%M%S)"
+
+    if [ $cmd -eq $QEMU_CMD]; then
+        #memory status
+        [ $opt_vmstate -eq 1 ] && vm_state="--vmstate"
+
+        #angen enabled optmize freeze the guest file system
+        [ -z $($QEMU_CMD config $opt_vmid | grep 'agent: 1')] && log info "VM $opt_vmid consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent"        
+    fi
 
     call_hook_script "snap-job-start" "$snap_name"
 
@@ -347,10 +357,10 @@ function do_run(){
 		echo "$cmd"
 		rc="$?"
 	else
+        log debug "$cmd"
 		eval "$cmd"
 		rc="$?"
         [ $rc != 0 ] && log error "$cmd"
-        log debug "$cmd"
         log debug "exit $rc"
 	fi
 
