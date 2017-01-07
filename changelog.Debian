@@ -1,4 +1,12 @@
-eve4pve-autosnap (0.1.0-1)
+eve4pve-autosnap (0.1.1-1)
+
+  * Info enabling QEMU agent
+  * Improve Hook
+  * Improve Readme
+  
+ -- EnterpriseVE Support Team <support@enterpriseve.com>  7 Jan 2017
+ 
+ eve4pve-autosnap (0.1.0-1)
 
   * Initial implementation fanstatic code
   
