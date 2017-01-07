@@ -313,12 +313,12 @@ function snap(){
     local vm_state='';
     local snap_name="$snap_name_prefix$(date +%y%m%d%H%M%S)"
 
-    if [ $cmd -eq $QEMU_CMD]; then
+    if [ $cmd = $QEMU_CMD ]; then
         #memory status
         [ $opt_vmstate -eq 1 ] && vm_state="--vmstate"
 
-        #angen enabled optmize freeze the guest file system
-        [ -z $($QEMU_CMD config $opt_vmid | grep 'agent: 1')] && log info "VM $opt_vmid consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent"        
+        #agent enabled optimize freeze the guest file system
+        [ -z "$($QEMU_CMD config $opt_vmid --current | grep 'agent: 1')" ] && log info "VM $opt_vmid consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent"        
     fi
 
     call_hook_script "snap-job-start" "$snap_name"
