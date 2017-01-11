@@ -1,13 +1,13 @@
 .TH @@PACKAGE@@ "8" "@@DATE@@" "@@PACKAGE@@" "EnterpriseVE Documentation"
 .SH NAME
-@@PACKAGE@@ \- EnterpriseVE automatic snapshot for Proxmox
+@@PACKAGE@@ \- EnterpriseVE automatic snapshot for Proxmox VE
 .SH SYNOPSIS
 @@SYNOPSIS@@
 
 .SH DESCRIPTION
-This tool create automaic snapshot using Proxmox command.
+This tool create automaic snapshot using Proxmox VE command.
 This tool also has the capability to add jobs to cron so the execute will be automatically done.
-The default execution interval is set dayly, if you want to change this value you can do this in /etc/cron.d/@@PACKAGE@@.
+The default execution interval is set daily, if you want to change this value you can do this in /etc/cron.d/@@PACKAGE@@.
 To config cron see man crontab.
 
 .SH HOOK SCRIPTS

@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# Automatically create, rotate, and destroy periodic Proxmox snapshots.
-# Copyright 2016 EnterpriseVE
+# Automatically create, rotate, and destroy periodic Proxmox VE snapshots.
 # Author: Daniele Corsini <daniele.corsini@enterpriseve.com>
 
 declare -r VERSION=0.1.1
@@ -45,7 +44,7 @@ EOF
     fi
 
     cat << EOF
-EnterpriseVE automatic snapshot for Proxmox         (Made in Italy)
+EnterpriseVE automatic snapshot for Proxmox VE      (Made in Italy)
 
 Usage:
     $PROGNAME <COMMAND> [ARGS] [OPTIONS]

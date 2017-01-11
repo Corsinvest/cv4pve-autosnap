@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# EnterpriseVE automatic snapshot for Proxmox eve4pve-autosnap hook script.
+# EnterpriseVE automatic snapshot for Proxmox VE eve4pve-autosnap hook script.
 
 # Process environment variables as received from and set by eve4pve-autosnap.
 

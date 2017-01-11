@@ -1,5 +1,5 @@
 # eve4pve-autosnap
-Proxmox automatic snapshot tool
+Proxmox VE automatic snapshot tool
 ```
     ______      __                       _              _    ________
    / ____/___  / /____  _________  _____(_)_______     | |  / / ____/
@@ -8,7 +8,7 @@ Proxmox automatic snapshot tool
 /_____/_/ /_/\__/\___/_/  / .___/_/  /_/____/\___/     |___/_____/
                          /_/
                          
-EnterpriseVE automatic snapshot for Proxmox         (Made in Italy)
+EnterpriseVE automatic snapshot for  VE      (Made in Italy)
 
 Usage:
     eve4pve-autosnap <COMMAND> [ARGS] [OPTIONS]
@@ -53,7 +53,7 @@ Report bugs to <support@enterpriseve.com>.
 ```
 
 # Introduction
-Automatic snapshot for Proxmox with retention.
+Automatic snapshot for Proxmox VE with retention.
 
 # Main features
 * For KVM and LXC
