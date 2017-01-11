@@ -159,11 +159,12 @@ function get_tecnology(){
 }
 
 function cron_action_job(){
-    local -r cron_file="/etc/cron.d/$PROGNAME"    
-    local -r job_key_cron="snap --vmid=$opt_vmid --label='$opt_label'"
     local action=$1
     shift
     parse_opts "$@"
+
+    local -r cron_file="/etc/cron.d/$PROGNAME"    
+    local -r job_key_cron="snap --vmid=$opt_vmid --label='$opt_label'"
     
     #create cron file if not exist
     if [ ! -e "$cron_file" ]; then
