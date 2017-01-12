@@ -1,5 +1,7 @@
 # eve4pve-autosnap
 Proxmox VE automatic snapshot tool
+
+[More information about eve4pve-autosnap](http://www.enterpriseve.com/protezione-continua-dei-dati-proxmox-ve/)
 ```
     ______      __                       _              _    ________
    / ____/___  / /____  _________  _____(_)_______     | |  / / ____/
@@ -8,7 +10,7 @@ Proxmox VE automatic snapshot tool
 /_____/_/ /_/\__/\___/_/  / .___/_/  /_/____/\___/     |___/_____/
                          /_/
                          
-EnterpriseVE automatic snapshot for  VE      (Made in Italy)
+EnterpriseVE automatic snapshot for Proxmox VE      (Made in Italy)
 
 Usage:
     eve4pve-autosnap <COMMAND> [ARGS] [OPTIONS]
