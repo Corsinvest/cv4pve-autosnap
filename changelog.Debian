@@ -1,4 +1,10 @@
-eve4pve-autosnap (0.1.1-1)
+ eve4pve-autosnap (0.1.2-1)
+
+  * Multiple VM single execution
+  
+ -- EnterpriseVE Support Team <support@enterpriseve.com>  14 Jan 2017
+ 
+ eve4pve-autosnap (0.1.1-1)
 
   * Info enabling QEMU agent
   * Improve Hook

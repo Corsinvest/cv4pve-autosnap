@@ -17,16 +17,16 @@ Usage:
     eve4pve-autosnap help
     eve4pve-autosnap version
 
-    eve4pve-autosnap create  --vmid=<integer> --label=<string> --keep=<integer>
+    eve4pve-autosnap create  --vmid=<string> --label=<string> --keep=<integer>
                              --vmstate --script=<string> --syslog 
-    eve4pve-autosnap destroy --vmid=<integer> --label=<string>
-    eve4pve-autosnap enable  --vmid=<integer> --label=<string>
-    eve4pve-autosnap disable --vmid=<integer> --label=<string>
+    eve4pve-autosnap destroy --vmid=<string> --label=<string>
+    eve4pve-autosnap enable  --vmid=<string> --label=<string>
+    eve4pve-autosnap disable --vmid=<string> --label=<string>
 
     eve4pve-autosnap status
-    eve4pve-autosnap clean   --vmid=<integer> --label=<string> --keep=<integer>
+    eve4pve-autosnap clean   --vmid=<string> --label=<string> --keep=<integer>
 
-    eve4pve-autosnap snap    --vmid=<integer> --label=<string> --keep=<integer>
+    eve4pve-autosnap snap    --vmid=<string> --label=<string> --keep=<integer>
                              --vmstate --script=<string> --syslog 
 
 Commands:
@@ -41,7 +41,7 @@ Commands:
     snap                     Will snap one time.
 
 Options:
-    --vmid=integer           The ID of the VM.
+    --vmid=string            The ID of the VM, comma separated (es. 100,101,102)
     --vmstate                Save the vmstate only qemu.
     --label=string           Is usually 'hourly', 'daily', 'weekly', or 'monthly'.
     --keep=integer           Specify the number of snapshots which should will keep, 
@@ -64,6 +64,7 @@ Automatic snapshot for Proxmox VE with retention.
 * Clean all snapshots
 * Multiple schedule VM using --label (es. daily,monthly)
 * Hook script
+* Multiple VM single execution
 
 # Configuration and use
 Download package eve4pve-autosnap_?.?.?-?_all.deb, on your Proxmox VE host and install:
@@ -99,6 +100,16 @@ root@pve1:~# eve4pve-autosnap disable --vmid=111 --label='daily' --keep=5
 root@pve1:~# eve4pve-autosnap enable --vmid=111 --label='daily' --keep=5
 ```
 
+## Reactivate status snap
+```
+root@pve1:~# eve4pve-autosnap status
+
+VM   SNAPSHOTS          LABEL
+101  17-01-14 17:30:56  hourly
+102  17-01-14 17:30:56  hourly
+105  17-01-14 17:30:56  hourly
+111  17-01-14 17:30:56  hourly
+```
+
 ## Changing parameters
 You can edit the configuration in /etc/cron.d/eve4pve-autosnap or destroy the job and create it new.
-
