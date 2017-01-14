@@ -3,7 +3,7 @@
 # Automatically create, rotate, and destroy periodic Proxmox VE snapshots.
 # Author: Daniele Corsini <daniele.corsini@enterpriseve.com>
 
-declare -r VERSION=0.1.3
+declare -r VERSION=0.1.4
 declare -r NAME=$(basename "$0")
 declare -r PROGNAME=${NAME%.*}
 
@@ -20,6 +20,7 @@ opt_label=''
 opt_script=''
 
 snap_name_prefix=''
+declare -i vmid=0
 
 #export for script hook
 export EVE4PVE_AUTOSNAP_PHASE=
@@ -145,8 +146,6 @@ function parse_opts(){
 }
 
 function get_tecnology(){
-    local -i vmid=$1
-
     if [ ! -z $($QEMU_CMD list | awk '{print$1}' | grep $vmid) ]; then 
         #qemu
         echo $QEMU_CMD
@@ -226,7 +225,7 @@ function clean(){
     call_hook_script "clean-job-start" "-" "-"
     
     for vmid in $(echo "$opt_vmids" | tr ',' '\n'); do 
-        remove_old_snapshots $vmid
+        remove_old_snapshots
     done
    
     call_hook_script "clean-job-end" "-" "-"
@@ -237,26 +236,26 @@ function clean(){
 function remove_old_snapshots(){
     [ $opt_keep -eq -1 ] && return; #disable remove
 
-    local -i vmid=$1
-    local cmd=$(get_tecnology $vmid)
+    local cmd=$(get_tecnology)
     local snapshots=$($cmd listsnapshot $vmid | awk '{print$1}' | grep "$snap_name_prefix" | sort -r)
 
     local -i index=0
+    local snap_name=''
     for snap_name in $snapshots; do
         if [ $index -ge $opt_keep ]; then            
             log info "VM $vmid - Removing snapshot $snap_name"
 
-            call_hook_script "snap-remove-pre" $vmid "$snap_name"
+            call_hook_script "snap-remove-pre" "$snap_name"
 
             do_run "$cmd delsnapshot $vmid $snap_name"
             if [ "$?" != 0 ]; then
-                call_hook_script "snap-remove-abort" $vmid "$snap_name"
+                call_hook_script "snap-remove-abort" "$snap_name"
 
                 log error "VM $vmid - Abort remove snapshot $snap_name"
                 #exit 4;
             fi
 
-            call_hook_script "snap-remove-post" $vmid "$snap_name"
+            call_hook_script "snap-remove-post" "$snap_name"
         fi
         
         let index++
@@ -266,9 +265,10 @@ function remove_old_snapshots(){
 function status(){
     local print_header=1
 
+    local cmd=''
     for cmd in $QEMU_CMD $QEMU_LXC; do
-        local vms=($($cmd list | awk '{print$1}' | sed 1d))
-        for vm in "${vms[@]}"; do
+        local vm=''
+        for vm in $($cmd list | awk '{print$1}' | sed 1d); do
             local result=$($cmd listsnapshot $vm | \
                            grep "$PROGNAME" | \
                            sort -r | \
@@ -289,8 +289,8 @@ function status(){
 
 function call_hook_script(){
     EVE4PVE_AUTOSNAP_PHASE="$1"
-    EVE4PVE_AUTOSNAP_VMID=$2
-    EVE4PVE_AUTOSNAP_SNAP_NAME="$3"
+    EVE4PVE_AUTOSNAP_SNAP_NAME="$2"
+    EVE4PVE_AUTOSNAP_VMID=$vmid
     EVE4PVE_AUTOSNAP_LABEL="$opt_label"
     EVE4PVE_AUTOSNAP_KEEP=$opt_keep
     EVE4PVE_AUTOSNAP_VMSTATE=$opt_vmstate
@@ -319,8 +319,8 @@ function snap(){
     local begin=$(date +%s)
     local snap_name="$snap_name_prefix$(date +%y%m%d%H%M%S)"
 
-    for vmid in $(echo "$opt_vmids" | tr ',' '\n'); do 
-        local cmd=$(get_tecnology $vmid)
+    for vmid in $(echo "$opt_vmids" | tr ',' '\n'); do
+        local cmd=$(get_tecnology)
         local vm_state='';
 
         if [ $cmd = $QEMU_CMD ]; then
@@ -332,31 +332,31 @@ function snap(){
                 && log info "VM $vmid consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent"        
         fi
 
-        call_hook_script "snap-job-start" $vmid "$snap_name"
+        call_hook_script "snap-job-start" "$snap_name"
 
         ########################################
         # Create snapshot
         ########################################
-        call_hook_script "snap-create-pre" $vmid "$snap_name"
+        call_hook_script "snap-create-pre" "$snap_name"
 
         log info "VM $vmid - Creating snapshot $snap_name"
         do_run "$cmd snapshot $vmid $snap_name -description '$PROGNAME' $vm_state"
         if [ "$?" != 0 ]; then
-            call_hook_script "snap-create-abort" $vmid "$snap_name"
-            call_hook_script "snap-job-abord" $vmid "$snap_name"
+            call_hook_script "snap-create-abort" "$snap_name"
+            call_hook_script "snap-job-abord" "$snap_name"
 
             log error "VM $vmid - Create snapshot $snap_name"
             exit 3;
         fi
 
-        call_hook_script "snap-create-post" $vmid "$snap_name"
+        call_hook_script "snap-create-post" "$snap_name"
 
         #######################################
         # Remove old snapshot
         #######################################
-        remove_old_snapshots $vmid
+        remove_old_snapshots
 
-        call_hook_script "snap-job-end" $vmid "$snap_name"
+        call_hook_script "snap-job-end" "$snap_name"
     done
 
     log debug "Execution: $(($(date +%s)-begin)) sec."
