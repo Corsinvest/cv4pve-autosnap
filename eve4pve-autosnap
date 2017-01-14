@@ -3,7 +3,7 @@
 # Automatically create, rotate, and destroy periodic Proxmox VE snapshots.
 # Author: Daniele Corsini <daniele.corsini@enterpriseve.com>
 
-declare -r VERSION=0.1.2
+declare -r VERSION=0.1.3
 declare -r NAME=$(basename "$0")
 declare -r PROGNAME=${NAME%.*}
 
