@@ -155,7 +155,7 @@ function get_tecnology(){
     else
         #unknow
         log info "Unknow teclonlogy for VM $vmid"
-        exit 2;
+        echo "";
     fi
 }
 
@@ -237,6 +237,7 @@ function remove_old_snapshots(){
     [ $opt_keep -eq -1 ] && return; #disable remove
 
     local cmd=$(get_tecnology)
+    [ -z "$cmd" ] && return;
     local snapshots=$($cmd listsnapshot $vmid | awk '{print$1}' | grep "$snap_name_prefix" | sort -r)
 
     local -i index=0
@@ -252,7 +253,6 @@ function remove_old_snapshots(){
                 call_hook_script "snap-remove-abort" "$snap_name"
 
                 log error "VM $vmid - Abort remove snapshot $snap_name"
-                #exit 4;
             fi
 
             call_hook_script "snap-remove-post" "$snap_name"
@@ -320,7 +320,8 @@ function snap(){
     local snap_name="$snap_name_prefix$(date +%y%m%d%H%M%S)"
 
     for vmid in $(echo "$opt_vmids" | tr ',' '\n'); do
-        local cmd=$(get_tecnology)
+        local cmd=$(get_tecnology)        
+        [ -z "$cmd" ] && continue;
         local vm_state='';
 
         if [ $cmd = $QEMU_CMD ]; then
@@ -346,7 +347,7 @@ function snap(){
             call_hook_script "snap-job-abord" "$snap_name"
 
             log error "VM $vmid - Create snapshot $snap_name"
-            exit 3;
+            continue;
         fi
 
         call_hook_script "snap-create-post" "$snap_name"
@@ -373,7 +374,7 @@ function do_run(){
         eval "$cmd"
         rc="$?"
         [ $rc != 0 ] && log error "$cmd"
-        log debug "exit $rc"
+        log debug "return $rc"
     fi
 
     return "$rc"
