@@ -80,9 +80,7 @@ Options:
     --vmid=string            The ID of the VM, comma separated (es. 100,101,102)
     --vmstate                Save the vmstate only qemu.
     --label=string           Is usually 'hourly', 'daily', 'weekly', or 'monthly'.
-    --keep=integer           Specify the number of snapshots which should will keep, 
-                             anything longer will be removed. Default 1.
-                             (-1 will disable removing snapshots)
+    --keep=integer           Specify the number of snapshots which should will keep. Default 1.
     --script=string          Use specified hook script.
                              Es. /usr/share/doc/$PROGNAME/examples/script-hook.sh
     --syslog                 Write messages into the system log.
@@ -129,7 +127,7 @@ function parse_opts(){
         --vmid) opt_vmids=$2; shift 2;;
         --vmstate) opt_vmstate=1; shift;;
         --label) opt_label="$2"; shift 2;;
-        --keep) opt_keep="$2"; shift 2;;
+        --keep) opt_keep=$2; shift 2;;
         --script) opt_script="$2"; shift 2;;
         --syslog) opt_syslog=1; shift;;
         --debug) opt_debug=1; shift;;
@@ -141,6 +139,7 @@ function parse_opts(){
 
     [ -z "$opt_vmids" ] && { log info "VM id is not set."; exit 1; }
     [ -z "$opt_label" ] && { log info "Label is not set correctly."; exit 1; }
+    [ $opt_keep -le 0 ] && { log info "Keep is not set correctly. Value > 0."; exit 1; }
 
     snap_name_prefix="auto$opt_label"
 }
@@ -234,8 +233,6 @@ function clean(){
 }
 
 function remove_old_snapshots(){
-    [ $opt_keep -eq -1 ] && return; #disable remove
-
     local cmd=$(get_tecnology)
     [ -z "$cmd" ] && return;
     local snapshots=$($cmd listsnapshot $vmid | awk '{print$1}' | grep "$snap_name_prefix" | sort -r)

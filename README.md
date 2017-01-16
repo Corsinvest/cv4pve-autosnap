@@ -44,9 +44,7 @@ Options:
     --vmid=string            The ID of the VM, comma separated (es. 100,101,102)
     --vmstate                Save the vmstate only qemu.
     --label=string           Is usually 'hourly', 'daily', 'weekly', or 'monthly'.
-    --keep=integer           Specify the number of snapshots which should will keep, 
-                             anything longer will be removed. Default 1.
-                             (-1 will disable removing snapshots)
+    --keep=integer           Specify the number of snapshots which should will keep. Default 1.
     --script=string          Use specified hook script.
                              Es. /usr/share/doc/eve4pve-autosnap/examples/script-hook.sh
     --syslog                 Write messages into the system log.
