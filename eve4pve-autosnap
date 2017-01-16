@@ -222,13 +222,13 @@ function clean(){
     log debug "$PROGNAME $VERSION"
     log debug "Command line: $@"
 
-    call_hook_script "clean-job-start" "-" "-"
+    call_hook_script "clean-job-start" "-"
     
     for vmid in $(echo "$opt_vmids" | tr ',' '\n'); do 
         remove_old_snapshots
     done
    
-    call_hook_script "clean-job-end" "-" "-"
+    call_hook_script "clean-job-end" "-"
 
     log debug "Execution: $(($(date +%s)-begin)) sec."
 }
@@ -251,8 +251,8 @@ function remove_old_snapshots(){
             do_run "$cmd delsnapshot $vmid $snap_name"
             if [ "$?" != 0 ]; then
                 call_hook_script "snap-remove-abort" "$snap_name"
-
                 log error "VM $vmid - Abort remove snapshot $snap_name"
+                break;
             fi
 
             call_hook_script "snap-remove-post" "$snap_name"
@@ -319,6 +319,8 @@ function snap(){
     local begin=$(date +%s)
     local snap_name="$snap_name_prefix$(date +%y%m%d%H%M%S)"
 
+    call_hook_script "snap-job-start" "-"
+
     for vmid in $(echo "$opt_vmids" | tr ',' '\n'); do
         local cmd=$(get_tecnology)        
         [ -z "$cmd" ] && continue;
@@ -333,8 +335,6 @@ function snap(){
                 && log info "VM $vmid consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent"        
         fi
 
-        call_hook_script "snap-job-start" "$snap_name"
-
         ########################################
         # Create snapshot
         ########################################
@@ -344,8 +344,6 @@ function snap(){
         do_run "$cmd snapshot $vmid $snap_name -description '$PROGNAME' $vm_state"
         if [ "$?" != 0 ]; then
             call_hook_script "snap-create-abort" "$snap_name"
-            call_hook_script "snap-job-abord" "$snap_name"
-
             log error "VM $vmid - Create snapshot $snap_name"
             continue;
         fi
@@ -356,9 +354,9 @@ function snap(){
         # Remove old snapshot
         #######################################
         remove_old_snapshots
-
-        call_hook_script "snap-job-end" "$snap_name"
     done
+
+    call_hook_script "snap-job-end" "-"
 
     log debug "Execution: $(($(date +%s)-begin)) sec."
 }

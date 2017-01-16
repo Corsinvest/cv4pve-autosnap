@@ -20,7 +20,6 @@ hook() {
         #snap job status
         snap-job-start);;
         snap-job-end);;
-        snap-job-abort);;
 
         #create snapshot
         snap-create-pre);;
@@ -30,7 +29,7 @@ hook() {
         #remove snapshot
         snap-remove-pre);;
         snap-remove-post);;
-        snap-remove-aboort);;
+        snap-remove-abort);;
 
         *) echo "unknown phase '$phase'"; return 1;;
     esac
