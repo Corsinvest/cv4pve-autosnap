@@ -160,7 +160,6 @@ function get_tecnology(){
 
 function cron_action_job(){
     local action=$1
-    shift
     parse_opts "$@"
 
     local -r cron_file="/etc/cron.d/$PROGNAME"    
@@ -177,7 +176,7 @@ EOL
     fi    
 
     #check
-    local check=0; [ "$action" = "add" ] && check=1 
+    local check=0; [ "$action" = "create" ] && check=1 
     local line=$(grep -h "$job_key_cron" "$cron_file")  
     if [ -z "$line" ]; then
         [ $check -eq 0 ] && { log info "Job not exists in cron file '$cron_file'"; exit 1; }
@@ -187,14 +186,14 @@ EOL
 
     #action
     case $action in
-        add)
-            local cron_scheduling="0 0 * * *"           #Default run once a day at midnight
+        create)
+            local cron_scheduling="0 0 * * *"             #Default run once a day at midnight
 
             case "$opt_label" in
-                hourly*) cron_scheduling="0 * * * *";;  #Run once an hour at the beginning of the hour	
-                daily*) cron_scheduling="0 0 * * *";;   #Run once a day at midnight             
-                weekly*) cron_scheduling="0 0 * * 0";;  #Run once a week at midnight on Sunday morning	
-                monthly*) cron_scheduling="0 0 1 * *";; #Run once a month at midnight of the first day of the month
+                (*hourly*) cron_scheduling="0 * * * *";;  #Run once an hour at the beginning of the hour	
+                (*daily*) cron_scheduling="0 0 * * *";;   #Run once a day at midnight             
+                (*weekly*) cron_scheduling="0 0 * * 0";;  #Run once a week at midnight on Sunday morning	
+                (*monthly*) cron_scheduling="0 0 1 * *";; #Run once a month at midnight of the first day of the month
             esac
 
             local job="$cron_scheduling root $PROGNAME $job_key_cron --keep=$opt_keep"
@@ -206,7 +205,7 @@ EOL
             echo -e "$job" >> "$cron_file"
             ;;
 
-        remove) sed -i "\?$job_key_cron?d" "$cron_file";;
+        destroy) sed -i "\?$job_key_cron?d" "$cron_file";;
         enable) sed -i "\?$job_key_cron?s?^#??g" "$cron_file";;
         disable) sed -i "\?$job_key_cron?s?^?#?g" "$cron_file";;
     esac
@@ -382,10 +381,7 @@ function main(){
     case "$1" in
         version) echo "$VERSION";;
         help) usage "$@";;
-        create) cron_action_job add "$@";;
-        destroy) cron_action_job remove "$@";;
-        enable) cron_action_job enable "$@";;
-        disable) cron_action_job disable "$@";;
+        create|destroy|enable|disable) cron_action_job "$@";;
         clean) clean "$@";;
         status) status;; 
         snap) snap "$@";;
