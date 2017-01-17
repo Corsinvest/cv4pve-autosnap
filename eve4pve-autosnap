@@ -8,27 +8,20 @@ declare -r NAME=$(basename "$0")
 declare -r PROGNAME=${NAME%.*}
 
 declare -r QEMU_CMD='qm'
-declare -r QEMU_LXC='pct'
+declare -r LXC_CMD='pct'
 
-opt_vmids=''
-declare -i opt_vmstate=0
+declare opt_vm_ids=''
+declare -i opt_vm_state=0
 declare -i opt_keep=1
 declare -i opt_syslog=0
 declare -i opt_debug=0
 declare -i opt_dry_run=0
-opt_label=''
-opt_script=''
+declare opt_label=''
+declare opt_script=''
 
-snap_name_prefix=''
-declare -i vmid=0
-
-#export for script hook
-export EVE4PVE_AUTOSNAP_PHASE=
-export EVE4PVE_AUTOSNAP_VMID=
-export EVE4PVE_AUTOSNAP_LABEL=
-export EVE4PVE_AUTOSNAP_KEEP=
-export EVE4PVE_AUTOSNAP_VMSTATE=
-export EVE4PVE_AUTOSNAP_SNAP_NAME=
+declare snap_name_prefix=''
+declare -i vm_id=0
+declare vm_tecnology=''
 
 function usage(){
     shift
@@ -124,8 +117,8 @@ function parse_opts(){
 
     while true; do    
       case "$1" in
-        --vmid) opt_vmids=$2; shift 2;;
-        --vmstate) opt_vmstate=1; shift;;
+        --vmid) opt_vm_ids=$2; shift 2;;
+        --vmstate) opt_vm_state=1; shift;;
         --label) opt_label="$2"; shift 2;;
         --keep) opt_keep=$2; shift 2;;
         --script) opt_script="$2"; shift 2;;
@@ -137,7 +130,7 @@ function parse_opts(){
       esac
     done
 
-    [ -z "$opt_vmids" ] && { log info "VM id is not set."; exit 1; }
+    [ -z "$opt_vm_ids" ] && { log info "VM id is not set."; exit 1; }
     [ -z "$opt_label" ] && { log info "Label is not set correctly."; exit 1; }
     [ $opt_keep -le 0 ] && { log info "Keep is not set correctly. Value > 0."; exit 1; }
 
@@ -145,16 +138,16 @@ function parse_opts(){
 }
 
 function get_tecnology(){
-    if [ ! -z $($QEMU_CMD list | awk '{print$1}' | grep $vmid) ]; then 
+    if [ ! -z $($QEMU_CMD list | awk '{print$1}' | grep $vm_id) ]; then 
         #qemu
-        echo $QEMU_CMD
-    elif [ ! -z $($QEMU_LXC list | awk '{print$1}' | grep $vmid) ]; then
+        vm_tecnology=$QEMU_CMD
+    elif [ ! -z $($LXC_CMD list | awk '{print$1}' | grep $vm_id) ]; then
         #lxc
-        echo $QEMU_LXC
+        vm_tecnology=$LXC_CMD
     else
-        #unknow
-        log info "Unknow teclonlogy for VM $vmid"
-        echo "";
+        #unknown
+        log error "Unknown tecnology for VM $vm_id"
+        vm_tecnology=''
     fi
 }
 
@@ -163,7 +156,7 @@ function cron_action_job(){
     parse_opts "$@"
 
     local -r cron_file="/etc/cron.d/$PROGNAME"    
-    local -r job_key_cron="snap --vmid=$opt_vmids --label='$opt_label'"
+    local -r job_key_cron="snap --vmid=$opt_vm_ids --label='$opt_label'"
     
     #create cron file if not exist
     if [ ! -e "$cron_file" ]; then
@@ -198,7 +191,7 @@ EOL
 
             local job="$cron_scheduling root $PROGNAME $job_key_cron --keep=$opt_keep"
 
-            [ $opt_vmstate -eq 1 ] && job="$job --vmstate"                  #state memory    
+            [ $opt_vm_state -eq 1 ] && job="$job --vmstate"                  #state memory    
             [ -e "$opt_script" ] && job="$job --script='$opt_script'"       #script hook
             [ $opt_syslog -eq 1 ] && job="$job --syslog"                    #syslog
         
@@ -222,33 +215,40 @@ function clean(){
 
     call_hook_script "clean-job-start" "-"
     
-    for vmid in $(echo "$opt_vmids" | tr ',' '\n'); do 
+    for vm_id in $(echo "$opt_vm_ids" | tr ',' '\n'); do 
+        get_tecnology
+        [ -z "$vm_tecnology" ] && continue;
+
         remove_old_snapshots
     done
-   
+    vm_tecnology=''
+    vm_id=0
+
     call_hook_script "clean-job-end" "-"
 
     log debug "Execution: $(($(date +%s)-begin)) sec."
 }
 
 function remove_old_snapshots(){
-    local cmd=$(get_tecnology)
-    [ -z "$cmd" ] && return;
-    local snapshots=$($cmd listsnapshot $vmid | awk '{print$1}' | grep "$snap_name_prefix" | sort -r)
+    [ -z "$vm_tecnology" ] && return;
+
+    local snapshots=$($vm_tecnology listsnapshot $vm_id | \
+                      awk '{print$1}' | \
+                      grep "$snap_name_prefix" | sort -r)
 
     local -i index=0
     local snap_name=''
     for snap_name in $snapshots; do
         if [ $index -ge $opt_keep ]; then            
-            log info "VM $vmid - Removing snapshot $snap_name"
+            log info "VM $vm_id - Removing snapshot $snap_name"
 
             call_hook_script "snap-remove-pre" "$snap_name"
 
-            do_run "$cmd delsnapshot $vmid $snap_name"
+            do_run "$vm_tecnology delsnapshot $vm_id $snap_name"
             if [ "$?" != 0 ]; then
                 call_hook_script "snap-remove-abort" "$snap_name"
-                log error "VM $vmid - Abort remove snapshot $snap_name"
-                break;
+                log error "VM $vm_id - Abort remove snapshot $snap_name"
+                continue;
             fi
 
             call_hook_script "snap-remove-post" "$snap_name"
@@ -261,11 +261,11 @@ function remove_old_snapshots(){
 function status(){
     local print_header=1
 
-    local cmd=''
-    for cmd in $QEMU_CMD $QEMU_LXC; do
+    local tecnology=''
+    for tecnology in $QEMU_CMD $LXC_CMD; do
         local vm=''
-        for vm in $($cmd list | awk '{print$1}' | sed 1d); do
-            local result=$($cmd listsnapshot $vm | \
+        for vm in $($tecnology list | awk '{print$1}' | sed 1d); do
+            local result=$($tecnology listsnapshot $vm | \
                            grep "$PROGNAME" | \
                            sort -r | \
                            awk -v vm="$vm" '{print vm,substr($1, 1+length($1)-12),substr($1,5,1+length($1)-12-5)}' | \
@@ -284,24 +284,27 @@ function status(){
 }
 
 function call_hook_script(){
-    EVE4PVE_AUTOSNAP_PHASE="$1"
-    EVE4PVE_AUTOSNAP_SNAP_NAME="$2"
-    EVE4PVE_AUTOSNAP_VMID=$vmid
-    EVE4PVE_AUTOSNAP_LABEL="$opt_label"
-    EVE4PVE_AUTOSNAP_KEEP=$opt_keep
-    EVE4PVE_AUTOSNAP_VMSTATE=$opt_vmstate
+    #export for script hook
+    export EVE4PVE_AUTOSNAP_PHASE="$1"
+    export EVE4PVE_AUTOSNAP_SNAP_NAME="$2"
+    export EVE4PVE_AUTOSNAP_VMID=$vm_id
+    export EVE4PVE_AUTOSNAP_VMTECNOLOGY=$vm_tecnology
+    export EVE4PVE_AUTOSNAP_LABEL="$opt_label"
+    export EVE4PVE_AUTOSNAP_KEEP=$opt_keep
+    export EVE4PVE_AUTOSNAP_VMSTATE=$opt_vm_state
 
-    log debug "---------------------------------------------------" 
-    log debug "EVE4PVE_AUTOSNAP_PHASE:     $EVE4PVE_AUTOSNAP_PHASE" 
-    log debug "EVE4PVE_AUTOSNAP_VMID:      $EVE4PVE_AUTOSNAP_VMID" 
-    log debug "EVE4PVE_AUTOSNAP_LABEL:     $EVE4PVE_AUTOSNAP_LABEL" 
-    log debug "EVE4PVE_AUTOSNAP_KEEP:      $EVE4PVE_AUTOSNAP_KEEP" 
-    log debug "EVE4PVE_AUTOSNAP_VMSTATE:   $EVE4PVE_AUTOSNAP_VMSTATE" 
-    log debug "EVE4PVE_AUTOSNAP_SNAP_NAME: $EVE4PVE_AUTOSNAP_SNAP_NAME" 
-    log debug "---------------------------------------------------" 
+    log debug "------------------------------------------------------------" 
+    log debug "EVE4PVE_AUTOSNAP_PHASE:        $EVE4PVE_AUTOSNAP_PHASE" 
+    log debug "EVE4PVE_AUTOSNAP_VMID:         $EVE4PVE_AUTOSNAP_VMID" 
+    log debug "EVE4PVE_AUTOSNAP_VMTECNOLOGY:  $EVE4PVE_AUTOSNAP_VMTECNOLOGY" 
+    log debug "EVE4PVE_AUTOSNAP_LABEL:        $EVE4PVE_AUTOSNAP_LABEL" 
+    log debug "EVE4PVE_AUTOSNAP_KEEP:         $EVE4PVE_AUTOSNAP_KEEP" 
+    log debug "EVE4PVE_AUTOSNAP_VMSTATE:      $EVE4PVE_AUTOSNAP_VMSTATE" 
+    log debug "EVE4PVE_AUTOSNAP_SNAP_NAME:    $EVE4PVE_AUTOSNAP_SNAP_NAME" 
+    log debug "------------------------------------------------------------" 
 
     if [ -e "$opt_script" ]; then
-        log debug "VM $vmid - Script hook: $opt_script" 
+        log debug "VM $vm_id - Script hook: $opt_script" 
         do_run "$opt_script"
     fi
 }
@@ -317,18 +320,18 @@ function snap(){
 
     call_hook_script "snap-job-start" "-"
 
-    for vmid in $(echo "$opt_vmids" | tr ',' '\n'); do
-        local cmd=$(get_tecnology)        
-        [ -z "$cmd" ] && continue;
+    for vm_id in $(echo "$opt_vm_ids" | tr ',' '\n'); do
+        get_tecnology        
+        [ -z "$vm_tecnology" ] && continue;
         local vm_state='';
 
-        if [ $cmd = $QEMU_CMD ]; then
+        if [ $vm_tecnology = $QEMU_CMD ]; then
             #memory status
-            [ $opt_vmstate -eq 1 ] && vm_state="--vmstate"
+            [ $opt_vm_state -eq 1 ] && vm_state="--vmstate"
 
             #agent enabled optimize freeze the guest file system
-            [ -z "$($QEMU_CMD config $vmid --current | grep 'agent: 1')" ] \
-                && log info "VM $vmid consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent"        
+            [ -z "$($vm_tecnology config $vm_id --current | grep 'agent: 1')" ] \
+                && log info "VM $vm_id consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent"        
         fi
 
         ########################################
@@ -336,11 +339,11 @@ function snap(){
         ########################################
         call_hook_script "snap-create-pre" "$snap_name"
 
-        log info "VM $vmid - Creating snapshot $snap_name"
-        do_run "$cmd snapshot $vmid $snap_name -description '$PROGNAME' $vm_state"
+        log info "VM $vm_id - Creating snapshot $snap_name"
+        do_run "$vm_tecnology snapshot $vm_id $snap_name -description '$PROGNAME' $vm_state"
         if [ "$?" != 0 ]; then
             call_hook_script "snap-create-abort" "$snap_name"
-            log error "VM $vmid - Create snapshot $snap_name"
+            log error "VM $vm_id - Create snapshot $snap_name"
             continue;
         fi
 
@@ -351,6 +354,8 @@ function snap(){
         #######################################
         remove_old_snapshots
     done
+    vm_tecnology=''
+    vm_id=0
 
     call_hook_script "snap-job-end" "-"
 
