@@ -1,3 +1,12 @@
+ eve4pve-autosnap (0.1.5-1)
+
+  * Improve hook
+  * Improve cron
+  * Keep min 1
+  * Fix hook. exit
+  
+ -- EnterpriseVE Support Team <support@enterpriseve.com>  17 Jan 2017
+
  eve4pve-autosnap (0.1.4-1)
 
   * Improve code
