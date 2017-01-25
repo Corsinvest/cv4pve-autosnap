@@ -1,7 +1,6 @@
 #!/bin/bash
-#
-# EnterpriseVE automatic snapshot for Proxmox VE eve4pve-autosnap hook script.
 
+# EnterpriseVE automatic snapshot for Proxmox VE eve4pve-autosnap hook script.
 # Process environment variables as received from and set by eve4pve-autosnap.
 
 hook() {
@@ -33,7 +32,7 @@ hook() {
         snap-remove-post);;
         snap-remove-abort);;
 
-        *) echo "unknown phase '$phase'"; return 1;;
+        *) echo "unknown phase '$EVE4PVE_BARC_PHASE'"; return 1;;
     esac
 }
 

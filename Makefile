@@ -2,7 +2,6 @@ VERSION=$(shell ./eve4pve-autosnap version)
 DATE=$(shell LANG=en_us_8859_1; date '+%b %d, %Y')
 
 PACKAGE=eve4pve-autosnap
-PKGREL=1
 
 DESTDIR=
 PREFIX=/usr
@@ -13,9 +12,7 @@ DOCDIR=${PREFIX}/share/doc/${PACKAGE}
 MAN8DIR=${MANDIR}/man8
 EXAMPLE=${DOCDIR}/examples
 
-ARCH=all
-
-DEB=${PACKAGE}_${VERSION}-${PKGREL}_${ARCH}.deb
+DEB=${PACKAGE}_${VERSION}_all.deb
 
 all: ${DEB}
 
@@ -56,7 +53,7 @@ deb ${DEB}:
 
 	make DESTDIR=${CURDIR}/debian install
 	install -d -m 0755 debian/DEBIAN
-	sed -e s/@@VERSION@@/${VERSION}/ -e s/@@PKGRELEASE@@/${PKGREL}/ -e s/@@ARCH@@/${ARCH}/ -e s/@@PACKAGE@@/${PACKAGE}/  <control.in >debian/DEBIAN/control
+	sed -e s/@@VERSION@@/${VERSION}/ -e s/@@PACKAGE@@/${PACKAGE}/  <control.in >debian/DEBIAN/control
 	install -D -m 0644 copyright debian/${DOCDIR}/copyright
 	install -m 0644 changelog.Debian debian/${DOCDIR}/
 	gzip -9 debian/${DOCDIR}/changelog.Debian

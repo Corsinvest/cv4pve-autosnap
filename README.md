@@ -41,7 +41,8 @@ Commands:
     snap                     Will snap one time.
 
 Options:
-    --vmid=string            The ID of the VM, comma separated (es. 100,101,102)
+    --vmid=string            The ID of the VM, comma separated (es. 100,101,102), 
+                             'all' for all known guest systems.
     --vmstate                Save the vmstate only qemu.
     --label=string           Is usually 'hourly', 'daily', 'weekly', or 'monthly'.
     --keep=integer           Specify the number of snapshots which should will keep. Default 1.
@@ -62,7 +63,7 @@ Automatic snapshot for Proxmox VE with retention.
 * Clean all snapshots
 * Multiple schedule VM using --label (es. daily,monthly)
 * Hook script
-* Multiple VM single execution
+* Multiple VM (100,102 or all) single execution
 
 # Configuration and use
 Download package eve4pve-autosnap_?.?.?-?_all.deb, on your Proxmox VE host and install:
