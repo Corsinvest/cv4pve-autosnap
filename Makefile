@@ -1,8 +1,6 @@
-VERSION=$(shell ./eve4pve-autosnap version)
-DATE=$(shell LANG=en_us_8859_1; date '+%b %d, %Y')
-
 PACKAGE=eve4pve-autosnap
-
+VERSION=$(shell ./${PACKAGE} version)
+DATE=$(shell LANG=en_us_8859_1; date '+%b %d, %Y')
 DESTDIR=
 PREFIX=/usr
 SBINDIR=${PREFIX}/sbin
@@ -41,7 +39,7 @@ deb ${DEB}:
 	rm -rf debian
 	mkdir debian
 
-	$(shell ./eve4pve-autosnap help --no-logo > help.tmp)
+	$(shell ./${PACKAGE} help --no-logo > help.tmp)
 	sed '/@@COPYRIGHT@@/r copyright' ${PACKAGE}.8.template | \
 	sed "/@@COPYRIGHT@@/d" | \
 	sed '/@@SYNOPSIS@@/r help.tmp' | \
