@@ -1,4 +1,6 @@
 # eve4pve-autosnap
+
+[![Join the chat at https://gitter.im/EnterpriseVE/eve4pve-autosnap](https://badges.gitter.im/EnterpriseVE/eve4pve-autosnap.svg)](https://gitter.im/EnterpriseVE/eve4pve-autosnap?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Proxmox VE automatic snapshot tool
 
 [More information about eve4pve-autosnap](http://www.enterpriseve.com/protezione-continua-dei-dati-proxmox-ve/)
