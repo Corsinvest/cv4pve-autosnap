@@ -4,7 +4,6 @@ DATE=$(shell LANG=en_us_8859_1; date '+%b %d, %Y')
 DESTDIR=
 PREFIX=/usr
 SBINDIR=${PREFIX}/sbin
-CRONDIR=/etc/cron.d
 MANDIR=${PREFIX}/share/man
 DOCDIR=${PREFIX}/share/doc/${PACKAGE}
 MAN8DIR=${MANDIR}/man8
@@ -23,12 +22,9 @@ install:
 	install -d ${DESTDIR}${SBINDIR}
 	install -m 0755 ${PACKAGE} ${DESTDIR}${SBINDIR}
 
-	install -d ${DESTDIR}${CRONDIR}
-	install -m 0644 ${PACKAGE}.cron ${DESTDIR}${CRONDIR}/${PACKAGE}
-
 	install -d ${DESTDIR}${MAN8DIR}
 	install -m 0644 ${PACKAGE}.8 ${DESTDIR}${MAN8DIR}
-	gzip ${DESTDIR}${MAN8DIR}/${PACKAGE}.8
+	gzip -n -9 ${DESTDIR}${MAN8DIR}/${PACKAGE}.8
 
 	install -d ${DESTDIR}${EXAMPLE}
 	install -m 0755 script-hook.sh ${DESTDIR}${EXAMPLE}
@@ -53,10 +49,11 @@ deb ${DEB}:
 	install -d -m 0755 debian/DEBIAN
 	sed -e s/@@VERSION@@/${VERSION}/ -e s/@@PACKAGE@@/${PACKAGE}/  <control.in >debian/DEBIAN/control
 	install -D -m 0644 copyright debian/${DOCDIR}/copyright
-	install -m 0644 changelog.Debian debian/${DOCDIR}/
-	gzip -9 debian/${DOCDIR}/changelog.Debian
+	install -m 0644 changelog debian/${DOCDIR}/
+	gzip -n -9 debian/${DOCDIR}/changelog
 	dpkg-deb --build debian
 	mv debian.deb ${DEB}
+	#lintian ${DEB}
 	rm -rf debian
 	rm ${PACKAGE}.8
 	rm help.tmp

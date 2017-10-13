@@ -3,7 +3,7 @@
 # Automatically create, rotate, and destroy periodic Proxmox VE snapshots.
 # Author: Daniele Corsini <daniele.corsini@enterpriseve.com>
 
-declare -r VERSION=0.1.6
+declare -r VERSION=0.1.7
 declare -r NAME=$(basename "$0")
 declare -r PROGNAME=${NAME%.*}
 
@@ -23,6 +23,7 @@ declare snap_name_prefix=''
 declare -i vm_id=0
 declare vm_tecnology=''
 declare vm_ids
+declare -r cron_file="/etc/pve/eve/autosnap/$PROGNAME.cron"  
 
 function usage(){
     shift
@@ -71,8 +72,8 @@ Commands:
     snap                     Will snap one time.
 
 Options:
-    --vmid=string            The ID of the VM, comma separated (es. 100,101,102), 
-                             'all' for all known guest systems.
+    --vmid=string            The ID of the VM/CT, comma separated (es. 100,101,102), 
+                             'all' for all VM/CT in node.
     --vmstate                Save the vmstate only qemu.
     --label=string           Is usually 'hourly', 'daily', 'weekly', or 'monthly'.
     --keep=integer           Specify the number of snapshots which should will keep. Default 1.
@@ -140,6 +141,9 @@ function parse_opts(){
       esac
     done
 
+    local all_vms
+    all_vms=$(echo "$(qm list | awk '{print $1}' | sed 1d) $(pct list | awk '{print $1}' | sed 1d)" | tr ' ' '\n')
+
     [ -z "$opt_vm_ids" ] && { log info "VM id is not set."; exit 1; }
     if [ "$opt_vm_ids" = "all" ]; then
         #all VM/CT
@@ -149,6 +153,20 @@ function parse_opts(){
         vm_ids=$(echo "$opt_vm_ids" | tr ',' '\n')
     fi
 
+    #VM/CT local host
+    local vm_ids_tmp=""
+    for vm_id in $vm_ids; do
+        local vm_id_tmp;
+        for vm_id_tmp in $all_vms; do
+            if [ "$vm_id_tmp" == "$vm_id" ]; then
+                [ ! -z "$vm_ids_tmp" ] && vm_ids_tmp="$vm_ids_tmp,"
+                vm_ids_tmp="$vm_ids_tmp$vm_id"
+                break
+            fi
+        done
+    done
+    vm_ids=$(echo "$vm_ids_tmp" | tr ',' '\n')
+
     [ -z "$opt_label" ] && { log info "Label is not set correctly."; exit 1; }
     [ "$opt_keep" -le 0 ] && { log info "Keep is not set correctly. Value > 0."; exit 1; }
 
@@ -156,9 +174,9 @@ function parse_opts(){
 }
 
 function get_tecnology(){
-    if [ "$($QEMU_CMD list | awk '{print $1}' | grep $vm_id)" ]; then 
+    if $QEMU_CMD list | awk '{print $1}' | grep -q $vm_id; then 
         vm_tecnology=$QEMU_CMD
-    elif [ "$($LXC_CMD list | awk '{print $1}' | grep $vm_id)" ]; then
+    elif $LXC_CMD list | awk '{print $1}' | grep -q $vm_id; then
         vm_tecnology=$LXC_CMD
     else
         log error "VM $vm_id - Unknown tecnology"
@@ -166,23 +184,41 @@ function get_tecnology(){
     fi
 }
 
-function cron_action_job(){
-    local action=$1
-    parse_opts "$@"
+function fixCron(){
+     #create directory
+    mkdir -p /etc/pve/eve/autosnap
 
-    local -r cron_file="/etc/cron.d/$PROGNAME"    
-    local -r job_key_cron="snap --vmid=$opt_vm_ids --label='$opt_label'"
-    
-    #create cron file if not exist
-    if [ ! -e "$cron_file" ]; then
+    local -r cron_d="/etc/cron.d/$PROGNAME"
+  
+    if [[ ! -h "$cron_d" && ! -e "$cron_file" ]]; then
+        #create cron file if not exist
         cat > "$cron_file" << EOL
 #Cron file for $PROGNAME automatically generated
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 EOL
-    fi    
+    
+    elif [[ ! -h "$cron_d" ]]; then
+        #not a symbolic link
+        if [[ -e "$cron_file" ]]; then
+            #exist configuration
+            #archive old configuration
+            mv "$cron_d" "$cron_file.old.$(hostname)"
+        else
+            mv "$cron_d" "$cron_file"
+        fi        
+    fi
 
+    #symplic link
+    ln -s "$cron_file" "$cron_d" 2>/dev/null
+}
+
+function cron_action_job(){
+    local action=$1
+    parse_opts "$@"
+
+    local -r job_key_cron="snap --vmid=$opt_vm_ids --label='$opt_label'"
     local -i check=0; [ "$action" = "create" ] && check=1 
     if grep -h "$job_key_cron" "$cron_file"; then
         [ $check -eq 1 ] && { log info "Job already exists in cron file '$cron_file'"; exit 1; }
@@ -393,6 +429,8 @@ function do_run(){
 
 function main(){    
     [ $# = 0 ] && usage;
+
+    fixCron
 
     case "$1" in
         version) echo "$VERSION";;

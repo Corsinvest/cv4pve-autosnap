@@ -1,4 +1,0 @@
-#Cron file for eve4pve-autosnap automatically generated
-SHELL=/bin/sh
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-

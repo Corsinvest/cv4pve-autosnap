@@ -1,3 +1,9 @@
+ eve4pve-autosnap (0.1.7)
+
+  * Cluster configuration /etc/pve/eve/autosnap/eve4pve-autosnap.cron unique for all.
+  
+ -- EnterpriseVE Support Team <support@enterpriseve.com>  13 Oct 2017 11:50:01 +0100
+
  eve4pve-autosnap (0.1.6)
 
   * All VM single execution
