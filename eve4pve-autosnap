@@ -3,7 +3,7 @@
 # Automatically create, rotate, and destroy periodic Proxmox VE snapshots.
 # Author: Daniele Corsini <daniele.corsini@enterpriseve.com>
 
-declare -r VERSION=0.1.7
+declare -r VERSION=0.1.8
 declare -r NAME=$(basename "$0")
 declare -r PROGNAME=${NAME%.*}
 
@@ -11,6 +11,7 @@ declare -r QEMU_CMD='qm'
 declare -r LXC_CMD='pct'
 
 declare opt_vm_ids=''
+declare opt_exclude_vm_ids=''
 declare -i opt_vm_state=0
 declare -i opt_keep=1
 declare -i opt_syslog=0
@@ -49,7 +50,8 @@ Usage:
     $PROGNAME version
 
     $PROGNAME create  --vmid=<string> --label=<string> --keep=<integer>
-                             --vmstate --script=<string> --syslog 
+                             --vmstate --script=<string> --syslog
+                             --exclude-vmid=<string>
     $PROGNAME destroy --vmid=<string> --label=<string>
     $PROGNAME enable  --vmid=<string> --label=<string>
     $PROGNAME disable --vmid=<string> --label=<string>
@@ -58,7 +60,8 @@ Usage:
     $PROGNAME clean   --vmid=<string> --label=<string> --keep=<integer>
 
     $PROGNAME snap    --vmid=<string> --label=<string> --keep=<integer>
-                             --vmstate --script=<string> --syslog 
+                             --vmstate --script=<string> --syslog
+                             --exclude-vmid=<string>
 
 Commands:
     version                  Show version program.
@@ -74,6 +77,7 @@ Commands:
 Options:
     --vmid=string            The ID of the VM/CT, comma separated (es. 100,101,102), 
                              'all' for all VM/CT in node.
+    --exclude-vmid           Exclude ID of the VM/CT, comma separated (es. 100,101,102).
     --vmstate                Save the vmstate only qemu.
     --label=string           Is usually 'hourly', 'daily', 'weekly', or 'monthly'.
     --keep=integer           Specify the number of snapshots which should will keep. Default 1.
@@ -118,7 +122,7 @@ function parse_opts(){
     local args
     args=$(getopt \
            --options '' \
-           --longoptions=vmstate,all,vmid:,label:,keep: \
+           --longoptions=vmstate,all,vmid:,label:,keep:,exclude-vmid: \
            --longoptions=script:,syslog,debug,dry-run \
            --name "$PROGNAME" \
            -- "$@") \
@@ -129,6 +133,7 @@ function parse_opts(){
     while true; do    
       case "$1" in
         --vmid) opt_vm_ids=$2; shift 2;;
+        --exclude-vmid) opt_exclude_vm_ids=$2; shift 2;;        
         --vmstate) opt_vm_state=1; shift;;
         --label) opt_label="$2"; shift 2;;
         --keep) opt_keep=$2; shift 2;;
@@ -141,9 +146,6 @@ function parse_opts(){
       esac
     done
 
-    local all_vms
-    all_vms=$(echo "$(qm list | awk '{print $1}' | sed 1d) $(pct list | awk '{print $1}' | sed 1d)" | tr ' ' '\n')
-
     [ -z "$opt_vm_ids" ] && { log info "VM id is not set."; exit 1; }
     if [ "$opt_vm_ids" = "all" ]; then
         #all VM/CT
@@ -152,11 +154,30 @@ function parse_opts(){
         #comma separated
         vm_ids=$(echo "$opt_vm_ids" | tr ',' '\n')
     fi
+    
+    #exclude id comma separated
+    local exclude_vm_ids; exclude_vm_ids=$(echo "$opt_exclude_vm_ids" | tr ',' '\n')
 
     #VM/CT local host
+    local all_vms
+    all_vms=$(echo "$(qm list | awk '{print $1}' | sed 1d) $(pct list | awk '{print $1}' | sed 1d)" | tr ' ' '\n')
+
     local vm_ids_tmp=""
     for vm_id in $vm_ids; do
-        local vm_id_tmp;
+        local vm_id_tmp
+        local skip_id=0
+
+        #exclude id if exists in array
+        for vm_id_tmp in $exclude_vm_ids; do
+            if [ "$vm_id_tmp" == "$vm_id" ]; then
+                skip_id=1
+                break
+            fi
+        done
+
+        [ $skip_id -eq 1 ] && continue;
+
+        #check valid id
         for vm_id_tmp in $all_vms; do
             if [ "$vm_id_tmp" == "$vm_id" ]; then
                 [ ! -z "$vm_ids_tmp" ] && vm_ids_tmp="$vm_ids_tmp,"
@@ -184,7 +205,7 @@ function get_tecnology(){
     fi
 }
 
-function fixCron(){
+function fix_cron(){
      #create directory
     mkdir -p /etc/pve/eve/autosnap
 
@@ -430,7 +451,7 @@ function do_run(){
 function main(){    
     [ $# = 0 ] && usage;
 
-    fixCron
+    fix_cron
 
     case "$1" in
         version) echo "$VERSION";;

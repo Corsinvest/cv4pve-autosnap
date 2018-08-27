@@ -1,4 +1,11 @@
- eve4pve-autosnap (0.1.7)
+ eve4pve-autosnap (0.1.8)
+
+  * Improve code
+  * Add new parameter --exclude-vmid
+  
+ -- EnterpriseVE Support Team <support@enterpriseve.com>  19 Jan 2018 11:50:01 +0100
+ 
+  eve4pve-autosnap (0.1.7)
 
   * Cluster configuration /etc/pve/eve/autosnap/eve4pve-autosnap.cron unique for all.
   

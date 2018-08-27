@@ -28,6 +28,7 @@ Usage:
 
     eve4pve-autosnap create  --vmid=<string> --label=<string> --keep=<integer>
                              --vmstate --script=<string> --syslog
+                             --exclude-vmid=<string>
     eve4pve-autosnap destroy --vmid=<string> --label=<string>
     eve4pve-autosnap enable  --vmid=<string> --label=<string>
     eve4pve-autosnap disable --vmid=<string> --label=<string>
@@ -37,6 +38,7 @@ Usage:
 
     eve4pve-autosnap snap    --vmid=<string> --label=<string> --keep=<integer>
                              --vmstate --script=<string> --syslog
+                             --exclude-vmid=<string>
 
 Commands:
     version                  Show version program.
@@ -52,6 +54,7 @@ Commands:
 Options:
     --vmid=string            The ID of the VM/CT, comma separated (es. 100,101,102),
                              'all' for all VM/CT in node.
+    --exclude-vmid           Exclude ID of the VM/CT, comma separated (es. 100,101,102).
     --vmstate                Save the vmstate only qemu.
     --label=string           Is usually 'hourly', 'daily', 'weekly', or 'monthly'.
     --keep=integer           Specify the number of snapshots which should will keep. Default 1.
@@ -77,6 +80,7 @@ Automatic snapshot for Proxmox VE with retention.
 * Multiple schedule VM using --label (es. daily,monthly)
 * Hook script
 * Multiple VM (100,102 or all) single execution
+* Exclude VM parameter
 
 ## Limit
 
