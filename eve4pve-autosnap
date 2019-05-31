@@ -307,14 +307,14 @@ function remove_old_snapshots(){
     local snapshots;
 
     #check output
-    if [ $($vm_tecnology listsnapshot $vm_id |  awk '{print $1}' | grep '\->' | wc -l) -gt 0 ]; then
+    if [ $($vm_tecnology listsnapshot $vm_id | awk '{print $1}' | grep '\->' | wc -l) -gt 0 ]; then
         snapshots=$($vm_tecnology listsnapshot $vm_id | \
                     awk '{print $2}' | \
-                    grep "$snap_name_prefix" | sort -r)    
-    elif
+                    grep "$snap_name_prefix" | sort -r);   
+    else
         snapshots=$($vm_tecnology listsnapshot $vm_id | \
                     awk '{print $1}' | \
-                    grep "$snap_name_prefix" | sort -r)    
+                    grep "$snap_name_prefix" | sort -r);
     fi
 
     local -i index=0
