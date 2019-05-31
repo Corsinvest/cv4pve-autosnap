@@ -194,7 +194,7 @@ function parse_opts(){
     snap_name_prefix="auto$opt_label"
 }
 
-function get_tecnology(){
+function get_technology(){
     if $QEMU_CMD list | awk '{print $1}' | grep -q $vm_id; then 
         vm_tecnology=$QEMU_CMD
     elif $LXC_CMD list | awk '{print $1}' | grep -q $vm_id; then
@@ -261,10 +261,11 @@ function cron_action_job(){
 
             local job="$cron_scheduling root $PROGNAME $job_key_cron --keep=$opt_keep"
 
-            [ $opt_vm_state -eq 1 ] && job="$job --vmstate"                 #state memory    
-            [ -e "$opt_script" ] && job="$job --script='$opt_script'"       #script hook
-            [ $opt_syslog -eq 1 ] && job="$job --syslog"                    #syslog
-        
+            [ $opt_vm_state -eq 1 ] && job="$job --vmstate"
+            [ -e "$opt_script" ] && job="$job --script='$opt_script'"
+            [ $opt_syslog -eq 1 ] && job="$job --syslog"
+            [ ! -z "$opt_exclude_vm_ids" ] && job="$job --exclude-vmid=$opt_exclude_vm_ids"
+
             echo -e "$job" >> "$cron_file"
             ;;
 
@@ -286,7 +287,7 @@ function clean(){
     call_hook_script "clean-job-start" "-"
     
     for vm_id in $vm_ids; do 
-        get_tecnology
+        get_technology
         [ -z "$vm_tecnology" ] && continue;
 
         remove_old_snapshots
@@ -304,9 +305,17 @@ function remove_old_snapshots(){
     [ -z "$vm_tecnology" ] && return;
 
     local snapshots;
-    snapshots=$($vm_tecnology listsnapshot $vm_id | \
-                awk '{print $1}' | \
-                grep "$snap_name_prefix" | sort -r)
+
+    #check output
+    if [ $($vm_tecnology listsnapshot $vm_id |  awk '{print $1}' | grep '\->' | wc -l) -gt 0 ]; then
+        snapshots=$($vm_tecnology listsnapshot $vm_id | \
+                    awk '{print $2}' | \
+                    grep "$snap_name_prefix" | sort -r)    
+    elif
+        snapshots=$($vm_tecnology listsnapshot $vm_id | \
+                    awk '{print $1}' | \
+                    grep "$snap_name_prefix" | sort -r)    
+    fi
 
     local -i index=0
     local snap_name=''
@@ -392,7 +401,7 @@ function snap(){
     call_hook_script "snap-job-start" "-"
 
     for vm_id in $vm_ids; do
-        get_tecnology        
+        get_technology        
         [ -z "$vm_tecnology" ] && continue;
 
         local vm_state='';

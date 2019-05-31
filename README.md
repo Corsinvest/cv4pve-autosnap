@@ -72,7 +72,7 @@ Automatic snapshot for Proxmox VE with retention.
 ## Main features
 
 * For KVM and LXC
-* Work forn single node or cluster
+* Work for single node or cluster
 * Cluster cron in /etc/pve/eve/autosnap/autosnap.cron unique for all
 * Can keep multiple snapshots
 * Syslog integration
@@ -91,7 +91,8 @@ The vm run in same machine on Proxmox VE.
 Download package eve4pve-autosnap_?.?.?-?_all.deb, on your Proxmox VE host and install:
 
 ```sh
-wget https://github.com/EnterpriseVE/eve4pve-autosnap/releases/latest
+wget https://github.com/$(wget -qO- https://github.com/EnterpriseVE/eve4pve-autosnap/releases/latest | grep -Po '(?<="/).*\.deb(?=")')
+
 dpkg -i eve4pve-autosnap_?.?.?-?_all.deb
 ```
 
@@ -129,7 +130,7 @@ root@pve1:~# eve4pve-autosnap disable --vmid=111 --label='daily' --keep=5
 root@pve1:~# eve4pve-autosnap enable --vmid=111 --label='daily' --keep=5
 ```
 
-## Reactivate status snap
+## Status snap
 
 ```sh
 root@pve1:~# eve4pve-autosnap status

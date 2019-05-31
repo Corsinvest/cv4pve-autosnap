@@ -2,6 +2,7 @@
 
   * Improve code
   * Add new parameter --exclude-vmid
+  * Fix change output qm command
   
  -- EnterpriseVE Support Team <support@enterpriseve.com>  19 Jan 2018 11:50:01 +0100
  
