@@ -28,7 +28,7 @@ Usage:
 
     eve4pve-autosnap create  --vmid=<string> --label=<string> --keep=<integer>
                              --vmstate --script=<string> --syslog
-                             --exclude-vmid=<string>
+                             --exclude-vmid=<string> --quiet
     eve4pve-autosnap destroy --vmid=<string> --label=<string>
     eve4pve-autosnap enable  --vmid=<string> --label=<string>
     eve4pve-autosnap disable --vmid=<string> --label=<string>
@@ -38,7 +38,7 @@ Usage:
 
     eve4pve-autosnap snap    --vmid=<string> --label=<string> --keep=<integer>
                              --vmstate --script=<string> --syslog
-                             --exclude-vmid=<string>
+                             --exclude-vmid=<string> --quiet
 
 Commands:
     version                  Show version program.
@@ -61,6 +61,7 @@ Options:
     --script=string          Use specified hook script.
                              Es. /usr/share/doc/eve4pve-autosnap/examples/script-hook.sh
     --syslog                 Write messages into the system log.
+    --quiet                  Only output errors.
 
 Report bugs to <support@enterpriseve.com>.
 ```

@@ -1,3 +1,9 @@
+ eve4pve-autosnap (0.1.11)
+
+  * Add quiet option #13
+
+ -- EnterpriseVE Support Team <support@enterpriseve.com>  01 Jul 2019 11:50:01 +0100
+
  eve4pve-autosnap (0.1.10)
 
   * Snapshot name fix
