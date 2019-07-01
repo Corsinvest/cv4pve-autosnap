@@ -17,6 +17,7 @@ declare -i opt_keep=1
 declare -i opt_syslog=0
 declare -i opt_debug=0
 declare -i opt_dry_run=0
+declare -i opt_quiet=0
 declare opt_label=''
 declare opt_script=''
 
@@ -51,7 +52,7 @@ Usage:
 
     $PROGNAME create  --vmid=<string> --label=<string> --keep=<integer>
                              --vmstate --script=<string> --syslog
-                             --exclude-vmid=<string>
+                             --exclude-vmid=<string> --quiet
     $PROGNAME destroy --vmid=<string> --label=<string>
     $PROGNAME enable  --vmid=<string> --label=<string>
     $PROGNAME disable --vmid=<string> --label=<string>
@@ -61,7 +62,7 @@ Usage:
 
     $PROGNAME snap    --vmid=<string> --label=<string> --keep=<integer>
                              --vmstate --script=<string> --syslog
-                             --exclude-vmid=<string>
+                             --exclude-vmid=<string> --quiet
 
 Commands:
     version                  Show version program.
@@ -84,6 +85,7 @@ Options:
     --script=string          Use specified hook script.
                              Es. /usr/share/doc/$PROGNAME/examples/script-hook.sh
     --syslog                 Write messages into the system log.
+    --quiet                  Only output errors.
 
 Report bugs to <support@enterpriseve.com>.
 EOF
@@ -100,8 +102,8 @@ function log(){
         debug) [ $opt_debug -eq 1 ] && echo -e "$(date "+%F %T") DEBUG: $message";;
         
         info) 
-            echo -e "$message"; 
-            [ $opt_syslog -eq 1 ] && logger -t "$PROGNAME" "$message"
+            [ $opt_quiet -eq 0 ] && echo -e "$message";
+            [ $opt_quiet -eq 0 ] && [ $opt_syslog -eq 1 ] && logger -t "$PROGNAME" "$message"
             ;;
         
         error)
@@ -123,7 +125,7 @@ function parse_opts(){
     args=$(getopt \
            --options '' \
            --longoptions=vmstate,all,vmid:,label:,keep:,exclude-vmid: \
-           --longoptions=script:,syslog,debug,dry-run \
+           --longoptions=script:,syslog,debug,dry-run,quiet \
            --name "$PROGNAME" \
            -- "$@") \
            || exit 128
@@ -141,12 +143,13 @@ function parse_opts(){
         --syslog) opt_syslog=1; shift;;
         --debug) opt_debug=1; shift;;
         --dry-run) opt_dry_run=1; shift;;
+        --quiet) opt_quiet=1; shift;;
         --) shift; break;;
         *) break;;
       esac
     done
 
-    [ -z "$opt_vm_ids" ] && { log info "VM id is not set."; exit 1; }
+    [ -z "$opt_vm_ids" ] && { log error "VM id is not set."; exit 1; }
     if [ "$opt_vm_ids" = "all" ]; then
         #all VM/CT
         vm_ids=$(echo "$(qm list | awk '{print $1}' | sed 1d) $(pct list | awk '{print $1}' | sed 1d)" | tr ' ' '\n')
@@ -188,8 +191,8 @@ function parse_opts(){
     done
     vm_ids=$(echo "$vm_ids_tmp" | tr ',' '\n')
 
-    [ -z "$opt_label" ] && { log info "Label is not set correctly."; exit 1; }
-    [ "$opt_keep" -le 0 ] && { log info "Keep is not set correctly. Value > 0."; exit 1; }
+    [ -z "$opt_label" ] && { log error "Label is not set correctly."; exit 1; }
+    [ "$opt_keep" -le 0 ] && { log error "Keep is not set correctly. Value > 0."; exit 1; }
 
     snap_name_prefix="auto$opt_label"
 }
@@ -242,9 +245,9 @@ function cron_action_job(){
     local -r job_key_cron="snap --vmid=$opt_vm_ids --label='$opt_label'"
     local -i check=0; [ "$action" = "create" ] && check=1 
     if grep -h "$job_key_cron" "$cron_file"; then
-        [ $check -eq 1 ] && { log info "Job already exists in cron file '$cron_file'"; exit 1; }
+        [ $check -eq 1 ] && { log error "Job already exists in cron file '$cron_file'"; exit 1; }
     else
-        [ $check -eq 0 ] && { log info "Job not exists in cron file '$cron_file'"; exit 1; }
+        [ $check -eq 0 ] && { log error "Job not exists in cron file '$cron_file'"; exit 1; }
     fi
 
     #action
@@ -264,6 +267,7 @@ function cron_action_job(){
             [ $opt_vm_state -eq 1 ] && job="$job --vmstate"
             [ -e "$opt_script" ] && job="$job --script='$opt_script'"
             [ $opt_syslog -eq 1 ] && job="$job --syslog"
+            [ $opt_quiet -eq 1 ] && job="$job --quiet"
             [ ! -z "$opt_exclude_vm_ids" ] && job="$job --exclude-vmid=$opt_exclude_vm_ids"
 
             echo -e "$job" >> "$cron_file"
