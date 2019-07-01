@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/github/license/EnterpriseVE/eve4pve-autosnap.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 [![Gitter](https://badges.gitter.im/EnterpriseVE/eve4pve-autosnap.svg)](https://gitter.im/EnterpriseVE/eve4pve-autosnap)
 [![Release](https://img.shields.io/github/release/EnterpriseVE/eve4pve-autosnap.svg)](https://github.com/EnterpriseVE/eve4pve-autosnap/releases/latest)
-
+![GitHub All Releases](https://img.shields.io/github/downloads/EnterpriseVE/eve4pve-autosnap/total.svg)
 
 Proxmox VE automatic snapshot tool
 
