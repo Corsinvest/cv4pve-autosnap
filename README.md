@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 [![Gitter](https://badges.gitter.im/Corsinvest/cv4pve-autosnap.svg)](https://gitter.im/Corsinvest/cv4pve-autosnap)
 [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![Nuget](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg?label=Nuget%20%20AutoSnap%20%20Api)
-![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg)
+![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg) [![Donate to this project using Paypal](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PPM9JHLQLRV2S&item_name=Open+Source+Project&currency_code=EUR&source=url)
 
 Proxmox VE automatic snapshot tool
 
@@ -176,3 +176,5 @@ CV4PVE_AUTOSNAP_VMSTATE
 ## Package API
 
 Contain all funtionality for autosnap, basic commands and shell execution. See source.
+
+[![paypal](https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PPM9JHLQLRV2S&item_name=Open+Source+Project&currency_code=EUR&source=url)
