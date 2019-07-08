@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 [![Gitter](https://badges.gitter.im/Corsinvest/cv4pve-autosnap.svg)](https://gitter.im/Corsinvest/cv4pve-autosnap)
-[![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest)
+[![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![Nuget](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg?label=Nuget%20%20AutoSnap%20%20Api)
 ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg)
 
 Proxmox VE automatic snapshot tool
@@ -10,6 +10,8 @@ Proxmox VE automatic snapshot tool
 [More information about cv4pve-autosnap](http://www.corsinvest.it/continuous-protection-data-proxmox-ve/)
 
 [More information about Qemu guest agent](https://pve.proxmox.com/wiki/Qemu-guest-agent)
+
+[Nuget Api](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api)
 
 ```text
     ______                _                      __
