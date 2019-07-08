@@ -1,9 +1,0 @@
-Package: @@PACKAGE@@
-Section: utils
-Version: @@VERSION@@
-Priority: optional
-Architecture: all
-Homepage: http://www.enterpriseve.com/
-Maintainer: EnterpriseVE Support Team <support@enterpriseve.com>
-Description: EnterpriseVE autosnap management library 
- This package contains the EnterpriseVE autosnap Tool for Proxmox VE.

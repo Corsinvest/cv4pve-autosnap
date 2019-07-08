@@ -1,6 +1,6 @@
-.TH @@PACKAGE@@ "8" "@@DATE@@" "@@PACKAGE@@" "EnterpriseVE Documentation"
+.TH @@PACKAGE@@ "8" "@@DATE@@" "@@PACKAGE@@" "Corsinvest Documentation"
 .SH NAME
-@@PACKAGE@@ \- EnterpriseVE automatic snapshot for Proxmox VE
+@@PACKAGE@@ \- Corsinvest automatic snapshot for Proxmox VE
 .SH SYNOPSIS
 @@SYNOPSIS@@
 
@@ -16,10 +16,10 @@ This script is called at various phases of the autosnap process, with parameters
 
 Environment variables:
 
-EVE4PVE_AUTOSNAP_PHASE, EVE4PVE_AUTOSNAP_VMID, EVE4PVE_AUTOSNAP_VMTECNOLOGY, EVE4PVE_AUTOSNAP_LABEL, EVE4PVE_AUTOSNAP_KEEP, EVE4PVE_AUTOSNAP_VMSTATE, EVE4PVE_AUTOSNAP_SNAP_NAME
+CV4PVE_AUTOSNAP_PHASE, CV4PVE_AUTOSNAP_VMID, CV4PVE_AUTOSNAP_VMTECNOLOGY, CV4PVE_AUTOSNAP_LABEL, CV4PVE_AUTOSNAP_KEEP, CV4PVE_AUTOSNAP_VMSTATE, CV4PVE_AUTOSNAP_SNAP_NAME
 
 .SH IMPORTANT FILES
-Cron jobs and config are stored at /etc/pve/eve/autosnap/@@PACKAGE@@.cron
+Cron jobs and config are stored at /etc/pve/cv/autosnap/@@PACKAGE@@.cron
 
 .SH COPYRIGHT AND DISCLAIMER
 @@COPYRIGHT@@

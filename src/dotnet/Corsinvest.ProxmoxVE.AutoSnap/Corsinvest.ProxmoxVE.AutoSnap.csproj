@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Version>1.1.1</Version>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AssemblyName>cv4pve-autosnap</AssemblyName>
+    <Company>Corsinvest Srl</Company>
+    <Authors>Daniele Corsini</Authors>
+    <Copyright>Corsinvest Srl</Copyright>
+    <Product>Corsinvest for Proxmox VE Auto Snapshot</Product>
+    <AssemblyTitle>Corsinvest for Proxmox VE Auto Snapshot</AssemblyTitle>
+    <Description>Corsinvest for Proxmox VE Auto Snapshot</Description>
+    <ApplicationIcon />
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Include="cv4pve-autosnap.sh" CopyToPublishDirectory="PreserveNewest">
+      <LinuxPath>/usr/sbin/cv4pve-autosnap</LinuxPath>
+      <LinuxFileMode>775</LinuxFileMode>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Corsinvest.ProxmoxVE.AutoSnap.Api" Version="1.1.2" />
+    <PackageReference Include="Packaging.Targets" Version="0.1.80" />
+  </ItemGroup>  
+</Project>

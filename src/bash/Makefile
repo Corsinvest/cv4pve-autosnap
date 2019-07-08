@@ -1,4 +1,4 @@
-PACKAGE=eve4pve-autosnap
+PACKAGE=cv4pve-autosnap
 VERSION=$(shell ./${PACKAGE} version)
 DATE=$(shell LANG=en_us_8859_1; date '+%b %d, %Y')
 DESTDIR=
@@ -9,7 +9,7 @@ DOCDIR=${PREFIX}/share/doc/${PACKAGE}
 MAN8DIR=${MANDIR}/man8
 EXAMPLE=${DOCDIR}/examples
 
-DEB=${PACKAGE}_${VERSION}_all.deb
+DEB=${PACKAGE}_${VERSION}_inside_pve.deb
 
 all: ${DEB}
 

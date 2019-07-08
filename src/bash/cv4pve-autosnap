@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Automatically create, rotate, and destroy periodic Proxmox VE snapshots.
-# Author: Daniele Corsini <daniele.corsini@enterpriseve.com>
+# Author: Daniele Corsini <daniele.corsini@corsinvest.it>
 
 declare -r VERSION=0.1.11
 declare -r NAME=$(basename "$0")
@@ -25,7 +25,7 @@ declare snap_name_prefix=''
 declare -i vm_id=0
 declare vm_tecnology=''
 declare vm_ids
-declare -r cron_file="/etc/pve/eve/autosnap/$PROGNAME.cron"  
+declare -r cron_file="/etc/pve/cv/autosnap/$PROGNAME.cron"  
 
 function usage(){
     shift
@@ -43,7 +43,7 @@ EOF
     fi
 
     cat << EOF
-EnterpriseVE automatic snapshot for Proxmox VE      (Made in Italy)
+Corsinvest automatic snapshot for Proxmox VE      (Made in Italy)
 
 Usage:
     $PROGNAME <COMMAND> [ARGS] [OPTIONS]
@@ -87,7 +87,7 @@ Options:
     --syslog                 Write messages into the system log.
     --quiet                  Only output errors.
 
-Report bugs to <support@enterpriseve.com>.
+Report bugs to <support@corsinvest.it>.
 EOF
 
     exit 1
@@ -210,7 +210,7 @@ function get_technology(){
 
 function fix_cron(){
      #create directory
-    mkdir -p /etc/pve/eve/autosnap
+    mkdir -p /etc/pve/cv/autosnap
 
     local -r cron_d="/etc/cron.d/$PROGNAME"
   
@@ -366,22 +366,22 @@ function status(){
 }
 
 function call_hook_script(){
-    export EVE4PVE_AUTOSNAP_PHASE="$1"
-    export EVE4PVE_AUTOSNAP_SNAP_NAME="$2"
-    export EVE4PVE_AUTOSNAP_VMID=$vm_id
-    export EVE4PVE_AUTOSNAP_VMTECNOLOGY=$vm_tecnology
-    export EVE4PVE_AUTOSNAP_LABEL="$opt_label"
-    export EVE4PVE_AUTOSNAP_KEEP=$opt_keep
-    export EVE4PVE_AUTOSNAP_VMSTATE=$opt_vm_state
+    export CV4PVE_AUTOSNAP_PHASE="$1"
+    export CV4PVE_AUTOSNAP_SNAP_NAME="$2"
+    export CV4PVE_AUTOSNAP_VMID=$vm_id
+    export CV4PVE_AUTOSNAP_VMTECNOLOGY=$vm_tecnology
+    export CV4PVE_AUTOSNAP_LABEL="$opt_label"
+    export CV4PVE_AUTOSNAP_KEEP=$opt_keep
+    export CV4PVE_AUTOSNAP_VMSTATE=$opt_vm_state
 
     log debug "------------------------------------------------------------" 
-    log debug "EVE4PVE_AUTOSNAP_PHASE:        $EVE4PVE_AUTOSNAP_PHASE" 
-    log debug "EVE4PVE_AUTOSNAP_VMID:         $EVE4PVE_AUTOSNAP_VMID" 
-    log debug "EVE4PVE_AUTOSNAP_VMTECNOLOGY:  $EVE4PVE_AUTOSNAP_VMTECNOLOGY" 
-    log debug "EVE4PVE_AUTOSNAP_LABEL:        $EVE4PVE_AUTOSNAP_LABEL" 
-    log debug "EVE4PVE_AUTOSNAP_KEEP:         $EVE4PVE_AUTOSNAP_KEEP" 
-    log debug "EVE4PVE_AUTOSNAP_VMSTATE:      $EVE4PVE_AUTOSNAP_VMSTATE" 
-    log debug "EVE4PVE_AUTOSNAP_SNAP_NAME:    $EVE4PVE_AUTOSNAP_SNAP_NAME" 
+    log debug "CV4PVE_AUTOSNAP_PHASE:        $CV4PVE_AUTOSNAP_PHASE" 
+    log debug "CV4PVE_AUTOSNAP_VMID:         $CV4PVE_AUTOSNAP_VMID" 
+    log debug "CV4PVE_AUTOSNAP_VMTECNOLOGY:  $CV4PVE_AUTOSNAP_VMTECNOLOGY" 
+    log debug "CV4PVE_AUTOSNAP_LABEL:        $CV4PVE_AUTOSNAP_LABEL" 
+    log debug "CV4PVE_AUTOSNAP_KEEP:         $CV4PVE_AUTOSNAP_KEEP" 
+    log debug "CV4PVE_AUTOSNAP_VMSTATE:      $CV4PVE_AUTOSNAP_VMSTATE" 
+    log debug "CV4PVE_AUTOSNAP_SNAP_NAME:    $CV4PVE_AUTOSNAP_SNAP_NAME" 
     log debug "------------------------------------------------------------" 
 
     if [ -e "$opt_script" ]; then

@@ -1,0 +1,9 @@
+Package: @@PACKAGE@@
+Section: utils
+Version: @@VERSION@@
+Priority: optional
+Architecture: all
+Homepage: http://www.corsinvest.it/
+Maintainer: Corsinvest Support Team <support@corsinvest.it>
+Description: Corsinvest autosnap management library 
+ This package contains the Corsinvest autosnap Tool for Proxmox VE.
