@@ -13,6 +13,12 @@ Proxmox VE automatic snapshot tool
 
 [Nuget Api](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api)
 
+# **Donations**
+
+If you like my work and want to support it, then please consider to deposit a donation through **Paypal** by clicking on the next button:
+
+[![paypal](https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PPM9JHLQLRV2S&item_name=Open+Source+Project&currency_code=EUR&source=url)
+
 ```text
     ______                _                      __
    / ____/___  __________(_)___ _   _____  _____/ /_
@@ -176,5 +182,3 @@ CV4PVE_AUTOSNAP_VMSTATE
 ## Package API
 
 Contain all funtionality for autosnap, basic commands and shell execution. See source.
-
-[![paypal](https://www.paypalobjects.com/en_US/IT/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PPM9JHLQLRV2S&item_name=Open+Source+Project&currency_code=EUR&source=url)
