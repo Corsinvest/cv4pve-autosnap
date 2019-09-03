@@ -5,7 +5,7 @@
 @@SYNOPSIS@@
 
 .SH DESCRIPTION
-This tool create automaic snapshot using Proxmox VE command.
+This tool create automatic snapshot using Proxmox VE command.
 This tool also has the capability to add jobs to cron so the execute will be automatically done.
 The default execution interval is set daily, if you want to change this value you can do this in /etc/cron.d/@@PACKAGE@@.
 To config cron see man crontab.
@@ -16,7 +16,7 @@ This script is called at various phases of the autosnap process, with parameters
 
 Environment variables:
 
-CV4PVE_AUTOSNAP_PHASE, CV4PVE_AUTOSNAP_VMID, CV4PVE_AUTOSNAP_VMTECNOLOGY, CV4PVE_AUTOSNAP_LABEL, CV4PVE_AUTOSNAP_KEEP, CV4PVE_AUTOSNAP_VMSTATE, CV4PVE_AUTOSNAP_SNAP_NAME
+CV4PVE_AUTOSNAP_PHASE, CV4PVE_AUTOSNAP_VMID, CV4PVE_AUTOSNAP_VMTECHNOLOGY, CV4PVE_AUTOSNAP_LABEL, CV4PVE_AUTOSNAP_KEEP, CV4PVE_AUTOSNAP_VMSTATE, CV4PVE_AUTOSNAP_SNAP_NAME
 
 .SH IMPORTANT FILES
 Cron jobs and config are stored at /etc/pve/cv/autosnap/@@PACKAGE@@.cron

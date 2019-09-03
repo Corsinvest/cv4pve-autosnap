@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 [![Gitter](https://badges.gitter.im/Corsinvest/cv4pve-autosnap.svg)](https://gitter.im/Corsinvest/cv4pve-autosnap)
-[![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![Nuget](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg?label=Nuget%20%20AutoSnap%20%20Api)
+[![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest)
 ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg) [![Donate to this project using Paypal](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=PPM9JHLQLRV2S&item_name=Open+Source+Project&currency_code=EUR&source=url)
 
 Proxmox VE automatic snapshot tool
@@ -12,6 +12,8 @@ Proxmox VE automatic snapshot tool
 [More information about Qemu guest agent](https://pve.proxmox.com/wiki/Qemu-guest-agent)
 
 [Nuget Api](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api)
+
+## The old bash version inside Proxmox VE is no longer supported because the Proxmox VE developers continue to change output. The risk of incompatibility is high. With the new version that uses native APIs, the problem no longer exists
 
 # **Donations**
 
@@ -35,7 +37,7 @@ Usage: cv4pve-autosnap [options] [command]
 Options:
   -?|-h|--help  Show help information
   --host        The host name host[:port]
-  --username    User name <username>@<relam>
+  --username    User name <username>@<realm>
   --password    The password
   --vmid        The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
                 -vmid or -name exclude (e.g. -200, -TestUbuntu),
@@ -69,14 +71,12 @@ For the planning process using an external machine:
 
 [Docker crontab with ui](https://hub.docker.com/r/alseambusher/crontab-ui)
 
-For old version bash inside in Proxmox VE found in src/bash
-
 ## Main features
 
 * Completely rewritten in C#
 * Use native api REST Proxmox VE (library C#)
-* Independent os (Windows, Linux, Macos)
-* Instalation
+* Independent os (Windows, Linux, Macosx)
+* Installation
   * Portable all files request are included
   * Native installation (deb, rpm, zip)
 * Not require installation in Proxmox VE
@@ -88,7 +88,7 @@ For old version bash inside in Proxmox VE found in src/bash
 * Clean all snapshots
 * Multiple schedule VM/CT using --label (es. daily,monthly)
 * Hook script
-* Multiple VM/CT (100,102,ubuvm,debvm,pipperovm or all) in a single execution
+* Multiple VM/CT (100,102,ubuvm,debvm,pipperovm,fagianovm or all) in a single execution
 * Exclusion specific VM/CT using minus e.g --vmid=all,-100
 * Exclusion template from snapshot
 * Waiting for the snapshot process to finish
@@ -101,7 +101,7 @@ E.g. install on debian package
 Download last package e.g. Debian cv4pve-autosnap_?.?.?-?_all.deb, on your os and install:
 
 ```sh
-dpkg -i cv4pve-autosnap_?.?.?-?_all.deb
+root@debian:~# dpkg -i cv4pve-autosnap_?.?.?-?_all.deb
 ```
 
 This tool need basically no configuration.
@@ -109,13 +109,13 @@ This tool need basically no configuration.
 ## Snapshot a VM/CT one time
 
 ```sh
-root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano snap --vmid=111 --label='daily' --keep=2
+root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid=111 snap --label='daily' --keep=2
 ```
 
 This command snap VM 111.
 
 ```sh
-root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano snap --vmid="all,-111" --label='daily' --keep=2
+root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid="all,-111" snap --label='daily' --keep=2
 ```
 
 This command snap all VMs except 111.
@@ -125,7 +125,7 @@ The --keep tells that it should be kept 2 snapshots, if there are more than 2 sn
 ## Clean a VM/CT one time
 
 ```sh
-root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano clean --vmid=111 --label='daily' --keep=2
+root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid=111 clean --label='4hours' --keep=2
 ----- VM 100 -----
 Remove snapshot: auto4hours190617080002
 Remove snapshot: auto4hours190617120002
@@ -136,38 +136,21 @@ Remove snapshot: auto4hours190617200002
 ## Status snapshots
 
 ```sh
-root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano status --vmid=100
+root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid=100 status
 
-NODE          VM TIME              PARENT                    NAME                      DESCRIPTION               RAM
-pve1         100 19/06/17 06:00:04 no-parent                 auto4hours190617080002    cv4pve-autosnap
-pve1         100 19/06/17 10:00:04 auto4hours190617080002    auto4hours190617120002    cv4pve-autosnap
-pve1         100 19/06/17 14:00:04 auto4hours190617120002    auto4hours190617160002    cv4pve-autosnap
-pve1         100 19/06/17 18:00:04 auto4hours190617160002    auto4hours190617200002    cv4pve-autosnap
-pve1         100 19/06/17 22:00:04 auto4hours190617200002    auto4hours190618000002    cv4pve-autosnap
-pve1         100 19/06/18 02:00:04 auto4hours190618000002    auto4hours190618040002    cv4pve-autosnap
-pve1         100 19/06/18 06:00:04 auto4hours190618040002    auto4hours190618080002    cv4pve-autosnap
-pve1         100 19/06/18 10:00:04 auto4hours190618080002    auto4hours190618120002    cv4pve-autosnap
-pve1         100 19/06/18 14:00:04 auto4hours190618120002    auto4hours190618160002    cv4pve-autosnap
-pve1         100 19/06/18 18:00:04 auto4hours190618160002    auto4hours190618200002    cv4pve-autosnap
-pve1         100 19/06/18 22:00:04 auto4hours190618200002    auto4hours190619000002    cv4pve-autosnap
-pve1         100 19/06/19 02:00:03 auto4hours190619000002    auto4hours190619040002    cv4pve-autosnap
-pve1         100 19/06/19 06:00:04 auto4hours190619040002    auto4hours190619080002    cv4pve-autosnap
-pve1         100 19/06/19 10:00:03 auto4hours190619080002    auto4hours190619120002    cv4pve-autosnap
-pve1         100 19/06/19 14:00:04 auto4hours190619120002    auto4hours190619160002    cv4pve-autosnap
-pve1         100 19/06/19 18:00:04 auto4hours190619160002    auto4hours190619200002    cv4pve-autosnap
-pve1         100 19/06/20 02:00:04 auto4hours190619200002    auto4hours190620040002    cv4pve-autosnap
-pve1         100 19/06/20 06:00:04 auto4hours190620040002    auto4hours190620080003    cv4pve-autosnap
-pve1         100 19/06/20 10:00:04 auto4hours190620080003    auto4hours190620120002    cv4pve-autosnap
-pve1         100 19/06/20 14:00:04 auto4hours190620120002    auto4hours190620160002    cv4pve-autosnap
-pve1         100 19/06/20 18:00:04 auto4hours190620160002    auto4hours190620200002    cv4pve-autosnap
-pve1         100 19/06/20 22:00:04 auto4hours190620200002    auto4hours190621000002    cv4pve-autosnap
-pve1         100 19/06/21 02:00:04 auto4hours190621000002    auto4hours190621040002    cv4pve-autosnap
-pve1         100 19/06/21 06:00:04 auto4hours190621040002    auto4hours190621080002    cv4pve-autosnap
+┌──────┬─────┬───────────────────┬──────────────────────────────┬──────────────────────────────┬─────────────────┬─────┐
+│ NODE │ VM  │ TIME              │ PARENT                       │ NAME                         │ DESCRIPTION     │ RAM │
+├──────┼─────┼───────────────────┼──────────────────────────────┼──────────────────────────────┼─────────────────┼─────┤
+│ pve1 │ 100 │ 19/08/28 09:21:35 │ no-parent                    │ auto4hours190828112133       │ cv4pve-autosnap │     │
+│ pve1 │ 100 │ 19/08/28 12:23:09 │ auto4hours190828112133       │ auto4hours190828142307       │ cv4pve-autosnap │     │
+│ pve1 │ 100 │ 19/08/29 06:50:23 │ auto4hours190828142307       │ auto4hours190829085021       │ cv4pve-autosnap │     │
+│ pve1 │ 100 │ 19/08/29 07:32:15 │ auto4hours190829085021       │ auto4hours190829093214       │ cv4pve-autosnap │     │
+└──────┴─────┴───────────────────┴──────────────────────────────┴──────────────────────────────┴─────────────────┴─────┘
 ```
 
 ## Hook script
 
-Before run hook script, programa create enviroment variable:
+Before run hook script, program create environment variable:
 
 ```sh
 CV4PVE_AUTOSNAP_PHASE
@@ -178,7 +161,3 @@ CV4PVE_AUTOSNAP_KEEP
 CV4PVE_AUTOSNAP_SNAP_NAME
 CV4PVE_AUTOSNAP_VMSTATE
 ```
-
-## Package API
-
-Contain all funtionality for autosnap, basic commands and shell execution. See source.

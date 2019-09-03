@@ -369,20 +369,20 @@ function call_hook_script(){
     export CV4PVE_AUTOSNAP_PHASE="$1"
     export CV4PVE_AUTOSNAP_SNAP_NAME="$2"
     export CV4PVE_AUTOSNAP_VMID=$vm_id
-    export CV4PVE_AUTOSNAP_VMTECNOLOGY=$vm_tecnology
+    export CV4PVE_AUTOSNAP_VMTECHNOLOGY=$vm_tecnology
     export CV4PVE_AUTOSNAP_LABEL="$opt_label"
     export CV4PVE_AUTOSNAP_KEEP=$opt_keep
     export CV4PVE_AUTOSNAP_VMSTATE=$opt_vm_state
 
     log debug "------------------------------------------------------------" 
-    log debug "CV4PVE_AUTOSNAP_PHASE:        $CV4PVE_AUTOSNAP_PHASE" 
-    log debug "CV4PVE_AUTOSNAP_VMID:         $CV4PVE_AUTOSNAP_VMID" 
-    log debug "CV4PVE_AUTOSNAP_VMTECNOLOGY:  $CV4PVE_AUTOSNAP_VMTECNOLOGY" 
-    log debug "CV4PVE_AUTOSNAP_LABEL:        $CV4PVE_AUTOSNAP_LABEL" 
-    log debug "CV4PVE_AUTOSNAP_KEEP:         $CV4PVE_AUTOSNAP_KEEP" 
-    log debug "CV4PVE_AUTOSNAP_VMSTATE:      $CV4PVE_AUTOSNAP_VMSTATE" 
-    log debug "CV4PVE_AUTOSNAP_SNAP_NAME:    $CV4PVE_AUTOSNAP_SNAP_NAME" 
-    log debug "------------------------------------------------------------" 
+    log debug "CV4PVE_AUTOSNAP_PHASE:         $CV4PVE_AUTOSNAP_PHASE"
+    log debug "CV4PVE_AUTOSNAP_VMID:          $CV4PVE_AUTOSNAP_VMID"
+    log debug "CV4PVE_AUTOSNAP_VMTECHNOLOGY:  $CV4PVE_AUTOSNAP_VMTECHNOLOGY"
+    log debug "CV4PVE_AUTOSNAP_LABEL:         $CV4PVE_AUTOSNAP_LABEL"
+    log debug "CV4PVE_AUTOSNAP_KEEP:          $CV4PVE_AUTOSNAP_KEEP"
+    log debug "CV4PVE_AUTOSNAP_VMSTATE:       $CV4PVE_AUTOSNAP_VMSTATE"
+    log debug "CV4PVE_AUTOSNAP_SNAP_NAME:     $CV4PVE_AUTOSNAP_SNAP_NAME"
+    log debug "------------------------------------------------------------"
 
     if [ -e "$opt_script" ]; then
         log debug "VM $vm_id - Script hook: $opt_script" 

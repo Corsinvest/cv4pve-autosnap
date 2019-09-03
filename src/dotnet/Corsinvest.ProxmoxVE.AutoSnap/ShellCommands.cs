@@ -1,60 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Corsinvest.ProxmoxVE.Api.Extension.Shell.Utils;
+using Corsinvest.ProxmoxVE.Api.Extension.Utils.Shell;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
-using Corsinvest.ProxmoxVE.AutoSnap.Api;
 using McMaster.Extensions.CommandLineUtils;
 
-namespace Corsinvest.ProxmoxVE.Api.Extension.App.AutoSnap
+namespace Corsinvest.ProxmoxVE.AutoSnap
 {
     /// <summary>
     /// Shell command.
     /// </summary>
-    public class ShellCommand
+    public class ShellCommands
     {
         private string _scriptHook;
-        private readonly bool _dryRun;
-        private readonly bool _debug;
 
         /// <summary>
         /// Shell command for cli.
         /// </summary>
-        /// <param name="app"></param>
-        public ShellCommand(CommandLineApplication app)
+        /// <param name="parent"></param>
+        public ShellCommands(CommandLineApplication parent)
         {
-            _dryRun = app.DryRunIsActive();
-            _debug = app.DebugIsActive();
+            var optVmIds = parent.VmIdsOrNamesOption();
 
-            app.AddLoginOptions();
-            var optVmIds = app.VmIdsOrNamesOption();
-
-            CmdSnap(app, optVmIds);
-            CmdClean(app, optVmIds);
-            CmdStatus(app, optVmIds);
-
-            app.OnExecute(() =>
-            {
-                app.ShowHint();
-                return 1;
-            });
+            Snap(parent, optVmIds);
+            Clean(parent, optVmIds);
+            Status(parent, optVmIds);
         }
 
-        /// <summary>
-        /// Main for cli.
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static int MainForCli(string[] args)
+        private Commands CreateApp(CommandLineApplication parent)
         {
-            var app = ShellHelper.CreateConsoleApp(Command.APPLICATION_NAME, "Automatic snapshot with retention");
-            new ShellCommand(app);
-            return app.ExecuteConsoleApp(Console.Out, args);
-        }
-
-        private Command CreateApp(CommandLineApplication autosnapCmd)
-        {
-            var app = new Command(autosnapCmd.ClientTryLogin(), Console.Out, _dryRun, _debug);
+            var app = new Commands(parent.ClientTryLogin(), Console.Out, parent.DryRunIsActive(), parent.DebugIsActive());
             app.PhaseEvent += App_PhaseEvent;
             return app;
         }
@@ -81,22 +56,22 @@ namespace Corsinvest.ProxmoxVE.Api.Extension.App.AutoSnap
                                 e.debug);
         }
 
-        private void CmdStatus(CommandLineApplication autosnapCmd, CommandOption optVmIds)
+        private void Status(CommandLineApplication parent, CommandOption optVmIds)
         {
-            autosnapCmd.Command("status", cmd =>
+            parent.Command("status", cmd =>
             {
                 cmd.Description = "Get list of all auto snapshots";
                 cmd.AddFullNameLogo();
 
                 var optLabel = cmd.LabelOption(false);
 
-                cmd.OnExecute(() => CreateApp(autosnapCmd).Status(optVmIds.Value(), optLabel.Value()));
+                cmd.OnExecute(() => CreateApp(parent).Status(optVmIds.Value(), optLabel.Value()));
             });
         }
 
-        private void CmdClean(CommandLineApplication autosnapCmd, CommandOption optVmIds)
+        private void Clean(CommandLineApplication parent, CommandOption optVmIds)
         {
-            autosnapCmd.Command("clean", cmd =>
+            parent.Command("clean", cmd =>
             {
                 cmd.Description = "Remove auto snapshots";
                 cmd.AddFullNameLogo();
@@ -104,23 +79,23 @@ namespace Corsinvest.ProxmoxVE.Api.Extension.App.AutoSnap
                 var optLabel = cmd.LabelOption(true);
 
                 var optKeep = cmd.KeepOption();
-                optKeep .Accepts().Range(0, 999, "--keep Rang not valid!");
+                optKeep.Accepts().Range(0, 999, "--keep Rang not valid!");
 
                 var optScriptHook = cmd.ScriptHookOption();
 
                 cmd.OnExecute(() =>
                 {
                     _scriptHook = optScriptHook.Value();
-                    return CreateApp(autosnapCmd).Clean(optVmIds.Value(),
-                                                        optLabel.Value(),
-                                                        optKeep.ParsedValue) ? 0 : 1;
+                    return CreateApp(parent).Clean(optVmIds.Value(),
+                                                   optLabel.Value(),
+                                                   optKeep.ParsedValue) ? 0 : 1;
                 });
             });
         }
 
-        private void CmdSnap(CommandLineApplication autosnapCmd, CommandOption optVmIds)
+        private void Snap(CommandLineApplication parent, CommandOption optVmIds)
         {
-            autosnapCmd.Command("snap", cmd =>
+            parent.Command("snap", cmd =>
             {
                 cmd.Description = "Will snap one time";
                 cmd.AddFullNameLogo();
@@ -133,10 +108,10 @@ namespace Corsinvest.ProxmoxVE.Api.Extension.App.AutoSnap
                 cmd.OnExecute(() =>
                 {
                     _scriptHook = optScriptHook.Value();
-                    return CreateApp(autosnapCmd).Snap(optVmIds.Value(),
-                                                       optLabel.Value(),
-                                                       optKeep.ParsedValue,
-                                                       optState.HasValue()) ? 0 : 1;
+                    return CreateApp(parent).Snap(optVmIds.Value(),
+                                                  optLabel.Value(),
+                                                  optKeep.ParsedValue,
+                                                  optState.HasValue()) ? 0 : 1;
                 });
             });
         }

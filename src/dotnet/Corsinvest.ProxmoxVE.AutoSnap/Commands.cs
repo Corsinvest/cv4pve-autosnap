@@ -6,12 +6,12 @@ using Corsinvest.ProxmoxVE.Api;
 using Corsinvest.ProxmoxVE.Api.Extension;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
 
-namespace Corsinvest.ProxmoxVE.AutoSnap.Api
+namespace Corsinvest.ProxmoxVE.AutoSnap
 {
     /// <summary>
     /// Command autosnap.
     /// </summary>
-    public class Command
+    public class Commands
     {
         private const string PREFIX = "auto";
 
@@ -22,20 +22,24 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         public const string APPLICATION_NAME = "cv4pve-autosnap";
 
+        /// <summary>
+        /// Old application name
+        /// </summary>
         private const string OLD_APPLICATION_NAME = "eve4pve-autosnap";
+
         private readonly Client _client;
         private readonly TextWriter _stdOut;
         private readonly bool _dryRun;
         private readonly bool _debug;
 
         /// <summary>
-        /// Costructor command
+        /// Constructor command
         /// </summary>
         /// <param name="client"></param>
         /// <param name="stdOut"></param>
         /// <param name="dryRun"></param>
         /// <param name="debug"></param>
-        public Command(Client client, TextWriter stdOut, bool dryRun, bool debug)
+        public Commands(Client client, TextWriter stdOut, bool dryRun, bool debug)
             => (_client, _stdOut, _dryRun, _debug) = (client, stdOut, dryRun, debug);
 
         /// <summary>
@@ -61,17 +65,17 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
 
             if (!string.IsNullOrWhiteSpace(label)) { snapshots = FilterLabel(snapshots, label); }
 
-            _stdOut.WriteLine(string.Join(Environment.NewLine, snapshots.Info(true)));
+            _stdOut.Write(snapshots.Info(true));
         }
 
         private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots)
             => snapshots.Where(a => (a.Description == APPLICATION_NAME || a.Description == OLD_APPLICATION_NAME));
 
-        private static string GetPrefx(string label) => PREFIX + label;
+        private static string GetPrefix(string label) => PREFIX + label;
 
         private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots, string label)
             => FilterApp(snapshots.Where(a => (a.Name.Length - TIMESTAMP_FORMAT.Length) > 0 &&
-                                              a.Name.Substring(0, a.Name.Length - TIMESTAMP_FORMAT.Length) == GetPrefx(label)));
+                                              a.Name.Substring(0, a.Name.Length - TIMESTAMP_FORMAT.Length) == GetPrefix(label)));
 
 
         /// <summary>
@@ -88,7 +92,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
 VMs:   {vmIdsOrNames}  
 Label: {label} 
 Keep:  {keep} 
-State  {state}");
+State: {state}");
 
             CallPhaseEvent("snap-job-start", null, label, keep, null, state);
 
@@ -98,7 +102,7 @@ State  {state}");
             {
                 _stdOut.WriteLine($"----- VM {vm.Id} -----");
 
-                //exclude templete
+                //exclude template
                 if (vm.IsTemplate)
                 {
                     _stdOut.WriteLine("Skip VM is template");
@@ -108,18 +112,27 @@ State  {state}");
                 //check agent enabled
                 if (vm.Type == VMTypeEnum.Qemu && !((ConfigQemu)vm.Config).AgentEnabled)
                 {
-                    _stdOut.WriteLine(((ConfigQemu)vm.Config).GetMessageElablingAgent());
+                    _stdOut.WriteLine(((ConfigQemu)vm.Config).GetMessageEnablingAgent());
                 }
 
                 //create snapshot
-                var snapName = GetPrefx(label) + DateTime.Now.ToString(TIMESTAMP_FORMAT);
+                var snapName = GetPrefix(label) + DateTime.Now.ToString(TIMESTAMP_FORMAT);
 
                 CallPhaseEvent("snap-create-pre", vm, label, keep, snapName, state);
 
                 _stdOut.WriteLine($"Create snapshot: {snapName}");
 
                 var inError = true;
-                if (!_dryRun) { inError = vm.Snapshots.Create(snapName, APPLICATION_NAME, state, true).LogInError(_stdOut); }
+                if (!_dryRun)
+                {
+                    var oldWaitTimeout = ResultExtension.WaitTimeout;
+                    ResultExtension.WaitTimeout = 30000;
+
+                    inError = vm.Snapshots.Create(snapName, APPLICATION_NAME, state, true).LogInError(_stdOut);
+
+                    ResultExtension.WaitTimeout = oldWaitTimeout;
+                }
+
                 if (inError)
                 {
                     CallPhaseEvent("snap-create-abort", vm, label, keep, snapName, state);
@@ -180,7 +193,16 @@ Keep:  {keep}");
                 _stdOut.WriteLine($"Remove snapshot: {snapshot.Name}");
 
                 var inError = false;
-                if (!_dryRun) { inError = vm.Snapshots.Remove(snapshot, true).LogInError(_stdOut); }
+                if (!_dryRun)
+                {
+                    var oldWaitTimeout = ResultExtension.WaitTimeout;
+                    ResultExtension.WaitTimeout = 30000;
+
+                    inError = vm.Snapshots.Remove(snapshot, true).LogInError(_stdOut);
+
+                    ResultExtension.WaitTimeout = oldWaitTimeout;
+                }
+
                 if (inError)
                 {
                     CallPhaseEvent("snap-remove-abort", vm, label, keep, snapshot.Name, false);
