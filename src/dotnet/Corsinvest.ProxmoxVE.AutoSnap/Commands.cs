@@ -5,6 +5,7 @@ using System.Linq;
 using Corsinvest.ProxmoxVE.Api;
 using Corsinvest.ProxmoxVE.Api.Extension;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
+using Newtonsoft.Json;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap
 {
@@ -58,14 +59,20 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// </summary>
         /// <param name="vmIdsOrNames"></param>
         /// <param name="label"></param>
-        public void Status(string vmIdsOrNames, string label = null)
+        public void Status(string vmIdsOrNames, string label = null, OutputType outputType = OutputType.Text)
         {
             //select snapshot and filter
             var snapshots = FilterApp(_client.GetVMs(vmIdsOrNames).SelectMany(a => a.Snapshots));
 
             if (!string.IsNullOrWhiteSpace(label)) { snapshots = FilterLabel(snapshots, label); }
 
-            _stdOut.Write(snapshots.Info(true));
+            switch (outputType)
+            {
+                case OutputType.Text: _stdOut.Write(snapshots.Info(true)); break;
+                case OutputType.Json: _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))))); break;
+                case OutputType.JsonPretty: _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))), Formatting.Indented)); break;
+                default: _stdOut.Write(snapshots.Info(true)); break;
+            }
         }
 
         private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots)
@@ -75,8 +82,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
 
         private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots, string label)
             => FilterApp(snapshots.Where(a => (a.Name.Length - TIMESTAMP_FORMAT.Length) > 0 &&
-                                              a.Name.Substring(0, a.Name.Length - TIMESTAMP_FORMAT.Length) == GetPrefix(label)));
-
+                                               a.Name.Substring(0, a.Name.Length - TIMESTAMP_FORMAT.Length) == GetPrefix(label)));
 
         /// <summary>
         /// Execute a autosnap.

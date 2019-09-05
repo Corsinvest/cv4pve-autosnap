@@ -11,8 +11,6 @@ Proxmox VE automatic snapshot tool
 
 [More information about Qemu guest agent](https://pve.proxmox.com/wiki/Qemu-guest-agent)
 
-[Nuget Api](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api)
-
 ## The old bash version inside Proxmox VE is no longer supported because the Proxmox VE developers continue to change output. The risk of incompatibility is high. With the new version that uses native APIs, the problem no longer exists
 
 # **Donations**
@@ -38,7 +36,7 @@ Options:
   -?|-h|--help  Show help information
   --host        The host name host[:port]
   --username    User name <username>@<realm>
-  --password    The password
+  --password    The password. Specify 'file:path_file' to store password in file.
   --vmid        The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
                 -vmid or -name exclude (e.g. -200, -TestUbuntu),
                 'all-???' for all VM/CT in specific host (e.g. all-pve1, all-\$(hostname)),
@@ -146,6 +144,13 @@ root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --passwo
 │ pve1 │ 100 │ 19/08/29 06:50:23 │ auto4hours190828142307       │ auto4hours190829085021       │ cv4pve-autosnap │     │
 │ pve1 │ 100 │ 19/08/29 07:32:15 │ auto4hours190829085021       │ auto4hours190829093214       │ cv4pve-autosnap │     │
 └──────┴─────┴───────────────────┴──────────────────────────────┴──────────────────────────────┴─────────────────┴─────┘
+```
+
+Output type:
+
+```Text
+-o|--output   Type output (default: text) Text,Json,JsonPretty
+
 ```
 
 ## Hook script

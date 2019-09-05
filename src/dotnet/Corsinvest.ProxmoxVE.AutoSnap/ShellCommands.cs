@@ -64,8 +64,11 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                 cmd.AddFullNameLogo();
 
                 var optLabel = cmd.LabelOption(false);
+                var optOutput = cmd.OptionEnum<OutputType>("--output|-o", "Type output (default: text)");
 
-                cmd.OnExecute(() => CreateApp(parent).Status(optVmIds.Value(), optLabel.Value()));
+                cmd.OnExecute(() => CreateApp(parent).Status(optVmIds.Value(),
+                                                             optLabel.Value(),
+                                                             optOutput.GetEnumValue<OutputType>()));
             });
         }
 
