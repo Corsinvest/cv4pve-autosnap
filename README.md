@@ -74,9 +74,7 @@ For the planning process using an external machine:
 * Completely rewritten in C#
 * Use native api REST Proxmox VE (library C#)
 * Independent os (Windows, Linux, Macosx)
-* Installation
-  * Portable all files request are included
-  * Native installation (deb, rpm, zip)
+* Installation unzip file extract binary
 * Not require installation in Proxmox VE
 * Execute out side Proxmox VE
 * For KVM and LXC
@@ -94,12 +92,12 @@ For the planning process using an external machine:
 
 ## Configuration and use
 
-E.g. install on debian package
+E.g. install on linux 64
 
-Download last package e.g. Debian cv4pve-autosnap_?.?.?-?_all.deb, on your os and install:
+Download last package e.g. Debian cv4pve-autosnap-linux-x64.zip, on your os and install:
 
 ```sh
-root@debian:~# dpkg -i cv4pve-autosnap_?.?.?-?_all.deb
+root@debian:~# unzip cv4pve-autosnap-linux-x64.zip
 ```
 
 This tool need basically no configuration.
@@ -164,5 +162,9 @@ CV4PVE_AUTOSNAP_VMTYPE
 CV4PVE_AUTOSNAP_LABEL
 CV4PVE_AUTOSNAP_KEEP
 CV4PVE_AUTOSNAP_SNAP_NAME
-CV4PVE_AUTOSNAP_VMSTATE
+CV4PVE_AUTOSNAP_VMSTATE     #1/0
+CV4PVE_AUTOSNAP_DEBUG       #1/0
+CV4PVE_AUTOSNAP_DRY_RUN     #1/0
 ```
+
+See example hook file script-hook.bat, script-hook.sh

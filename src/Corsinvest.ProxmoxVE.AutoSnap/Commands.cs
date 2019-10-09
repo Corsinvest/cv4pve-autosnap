@@ -1,4 +1,22 @@
-﻿using System;
+﻿/*
+ * This file is part of the cv4pve-autosnap https://github.com/Corsinvest/cv4pve-autosnap,
+ * Copyright (C) 2016 Corsinvest Srl
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,21 +32,21 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
     /// </summary>
     public class Commands
     {
-        private const string PREFIX = "auto";
+        private static readonly string PREFIX = "auto";
 
-        private const string TIMESTAMP_FORMAT = "yyMMddHHmmss";
+        private static readonly string TIMESTAMP_FORMAT = "yyMMddHHmmss";
 
         /// <summary>
         /// Application name
         /// </summary>
-        public const string APPLICATION_NAME = "cv4pve-autosnap";
+        public static readonly string APPLICATION_NAME = "cv4pve-autosnap";
 
         /// <summary>
         /// Old application name
         /// </summary>
-        private const string OLD_APPLICATION_NAME = "eve4pve-autosnap";
+        private static readonly string OLD_APPLICATION_NAME = "eve4pve-autosnap";
 
-        private readonly Client _client;
+        private readonly PveClient _client;
         private readonly TextWriter _stdOut;
         private readonly bool _dryRun;
         private readonly bool _debug;
@@ -40,7 +58,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// <param name="stdOut"></param>
         /// <param name="dryRun"></param>
         /// <param name="debug"></param>
-        public Commands(Client client, TextWriter stdOut, bool dryRun, bool debug)
+        public Commands(PveClient client, TextWriter stdOut, bool dryRun, bool debug)
             => (_client, _stdOut, _dryRun, _debug) = (client, stdOut, dryRun, debug);
 
         /// <summary>
@@ -68,10 +86,21 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
 
             switch (outputType)
             {
-                case OutputType.Text: _stdOut.Write(snapshots.Info(true)); break;
-                case OutputType.Json: _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))))); break;
-                case OutputType.JsonPretty: _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))), Formatting.Indented)); break;
-                default: _stdOut.Write(snapshots.Info(true)); break;
+                case OutputType.Text:
+                    _stdOut.Write(snapshots.Info(true));
+                    break;
+
+                case OutputType.Json:
+                    _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true)))));
+                    break;
+
+                case OutputType.JsonPretty:
+                    _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))), Formatting.Indented));
+                    break;
+
+                default:
+                    _stdOut.Write(snapshots.Info(true));
+                    break;
             }
         }
 
@@ -134,7 +163,17 @@ State: {state}");
                     var oldWaitTimeout = ResultExtension.WaitTimeout;
                     ResultExtension.WaitTimeout = 30000;
 
-                    inError = vm.Snapshots.Create(snapName, APPLICATION_NAME, state, true).LogInError(_stdOut);
+                    var result = vm.Snapshots.Create(snapName, APPLICATION_NAME, state, true);
+                    inError = result.LogInError(_stdOut);
+
+                    //check error in task
+                    var task = _client.Nodes[vm.Node].Tasks[(result.Response.data as string)];
+                    var data = task.Status.ReadTaskStatus().Response.data;
+                    if (data.exitstatus != "OK")
+                    {
+                        _stdOut.WriteLine($"Error in task: {data.exitstatus}");
+                        inError = true;
+                    }
 
                     ResultExtension.WaitTimeout = oldWaitTimeout;
                 }
@@ -158,6 +197,8 @@ State: {state}");
             }
 
             CallPhaseEvent("snap-job-end", null, label, keep, null, state);
+
+            if (_debug) { _stdOut.WriteLine($"Snap Exit: {ret}"); }
 
             return ret;
         }
@@ -211,6 +252,8 @@ Keep:  {keep}");
 
                 if (inError)
                 {
+                    if (_debug) { _stdOut.WriteLine($"Snap remove: problem in remove "); }
+
                     CallPhaseEvent("snap-remove-abort", vm, label, keep, snapshot.Name, false);
                     return false;
                 }

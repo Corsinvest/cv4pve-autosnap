@@ -7,9 +7,11 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/dotnet/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj"
+                "${workspaceFolder}/src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$tsc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "publish",
@@ -17,9 +19,11 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/src/dotnet/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj"
+                "${workspaceFolder}/src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$tsc"
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "watch",
@@ -28,9 +32,11 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/src/dotnet/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj"
+                "${workspaceFolder}/src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$tsc"
+            "problemMatcher": "$msCompile"
         }
     ]
 }

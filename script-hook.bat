@@ -1,0 +1,39 @@
+@ECHO OFF
+
+REM Corsinvest automatic snapshot for Proxmox VE cv4pve-autosnap hook script.
+REM Process environment variables as received from and set by cv4pve-autosnap.
+
+ECHO CV4PVE_AUTOSNAP_PHASE:         %CV4PVE_AUTOSNAP_PHASE%
+ECHO CV4PVE_AUTOSNAP_VMID:          %CV4PVE_AUTOSNAP_VMID%
+ECHO CV4PVE_AUTOSNAP_VMTECHNOLOGY:  %CV4PVE_AUTOSNAP_VMTECHNOLOGY%
+ECHO CV4PVE_AUTOSNAP_LABEL:         %CV4PVE_AUTOSNAP_LABEL%
+ECHO CV4PVE_AUTOSNAP_KEEP:          %CV4PVE_AUTOSNAP_KEEP%
+ECHO CV4PVE_AUTOSNAP_VMSTATE:       %CV4PVE_AUTOSNAP_VMSTATE%
+ECHO CV4PVE_AUTOSNAP_SNAP_NAME:     %CV4PVE_AUTOSNAP_SNAP_NAME%
+ECHO CV4PVE_AUTOSNAP_DEBUG:         %CV4PVE_AUTOSNAP_DEBUG%
+ECHO CV4PVE_AUTOSNAP_DRY_RUN:       %CV4PVE_AUTOSNAP_DRYRUN%
+
+IF "%CV4PVE_AUTOSNAP_PHASE%"=="clean-job-start" (
+    REM 
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="clean-job-end" (
+    REM
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-job-start" (
+    REM    
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-job-end" (
+    REM
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-create-pre" (
+    REM
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-create-post" (
+    REM
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-create-abort" (
+    REM
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-remove-pre" (
+    REM
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-remove-post" (
+    REM
+) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-remove-abort" (
+    REM
+) ELSE (
+    ECHO "unknown phase '$CV4PVE_BARC_PHASE'"
+    EXIT 1
+)
