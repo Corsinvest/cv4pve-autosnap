@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <Version>1.3.0</Version>
+    <Version>1.4.0</Version>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>cv4pve-autosnap</AssemblyName>
     <Company>Corsinvest Srl</Company>
@@ -16,9 +16,7 @@
     <!-- Fix RedHat, Centos,Fedora -->
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
 
-    <!--
-    <ProjectReference Include="..\..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj" />
-    -->
+    <!-- <ProjectReference Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj" /> -->
     <PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="2.0.0" />
   </ItemGroup>
 </Project>
