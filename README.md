@@ -1,6 +1,6 @@
 # cv4pve-autosnap
 
-[![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](LICENSE.md) [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg)
+[![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](LICENSE.md) [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg) [![AppVeyor branch](https://img.shields.io/appveyor/ci/franklupo/cv4pve-autosnap/master.svg)](https://ci.appveyor.com/project/franklupo/cv4pve-autosnap)
 
 Proxmox VE automatic snapshot tool
 
@@ -87,6 +87,7 @@ For the planning process using an external machine:
 * Waiting for the snapshot process to finish
 * Alerting in QEMU, agent not enabled.
 * Save memory VM Qemu in snap using parameter --state.
+* No stop on error
 
 ## Configuration and use
 

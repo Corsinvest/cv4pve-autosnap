@@ -177,7 +177,7 @@ State: {state}");
                     CallPhaseEvent("snap-create-abort", vm, label, keep, snapName, state);
 
                     ret = false;
-                    break;
+                    continue;
                 }
 
                 CallPhaseEvent("snap-create-post", vm, label, keep, snapName, state);
@@ -186,7 +186,7 @@ State: {state}");
                 if (!SnapshotsRemove(vm, label, keep))
                 {
                     ret = false;
-                    break;
+                    continue;
                 }
             }
 
