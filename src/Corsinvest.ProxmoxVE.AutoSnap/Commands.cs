@@ -16,7 +16,9 @@ using System.IO;
 using System.Linq;
 using Corsinvest.ProxmoxVE.Api;
 using Corsinvest.ProxmoxVE.Api.Extension;
+using Corsinvest.ProxmoxVE.Api.Extension.Node;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
+using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
 using Newtonsoft.Json;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap
@@ -71,17 +73,35 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// </summary>
         /// <param name="vmIdsOrNames"></param>
         /// <param name="label"></param>
-        public void Status(string vmIdsOrNames, string label = null, OutputType outputType = OutputType.Text)
+        public void Status(string vmIdsOrNames, string label = null, OutputType outputType = OutputType.Unicode)
         {
             //select snapshot and filter
-            var snapshots = FilterApp(_client.GetVMs(vmIdsOrNames).SelectMany(a => a.Snapshots));
+            var snapshots = FilterApp(_client.GetVMs(vmIdsOrNames)
+                                             .Where(a => _client.GetNode(a.Node).IsOnline)
+                                             .SelectMany(a => a.Snapshots));
 
             if (!string.IsNullOrWhiteSpace(label)) { snapshots = FilterLabel(snapshots, label); }
 
             switch (outputType)
             {
                 case OutputType.Text:
-                    _stdOut.Write(snapshots.Info(true));
+                case OutputType.Html:
+                case OutputType.Markdown:
+                case OutputType.Unicode:
+                case OutputType.UnicodeAlt:
+
+                    var tableOutputType = TableOutputType.Unicode;
+                    switch (outputType)
+                    {
+                        case OutputType.Html: tableOutputType = TableOutputType.Html; break;
+                        case OutputType.Markdown: tableOutputType = TableOutputType.Markdown; break;
+                        case OutputType.Text: tableOutputType = TableOutputType.Text; break;
+                        case OutputType.Unicode: tableOutputType = TableOutputType.Unicode; break;
+                        case OutputType.UnicodeAlt: tableOutputType = TableOutputType.UnicodeAlt; break;
+                        default: tableOutputType = TableOutputType.Unicode; break;
+                    }
+
+                    _stdOut.Write(snapshots.Info(true,tableOutputType));
                     break;
 
                 case OutputType.Json:
@@ -89,11 +109,12 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                     break;
 
                 case OutputType.JsonPretty:
-                    _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))), Formatting.Indented));
+                    _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))), 
+                                                              Formatting.Indented));
                     break;
 
                 default:
-                    _stdOut.Write(snapshots.Info(true));
+                    _stdOut.Write(snapshots.Info(true, TableOutputType.Unicode));
                     break;
             }
         }
@@ -114,8 +135,9 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// <param name="label"></param>
         /// <param name="keep"></param>
         /// <param name="state"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        public bool Snap(string vmIdsOrNames, string label, int keep, bool state)
+        public bool Snap(string vmIdsOrNames, string label, int keep, bool state, long timeout)
         {
             _stdOut.WriteLine($@"ACTION Snap 
 VMs:   {vmIdsOrNames}  
@@ -154,10 +176,7 @@ State: {state}");
                 var inError = true;
                 if (!_dryRun)
                 {
-                    var oldWaitTimeout = ResultExtension.WaitTimeout;
-                    ResultExtension.WaitTimeout = 30000;
-
-                    var result = vm.Snapshots.Create(snapName, APPLICATION_NAME, state, true);
+                    var result = vm.Snapshots.Create(snapName, APPLICATION_NAME, state, timeout);
                     inError = result.LogInError(_stdOut);
 
                     //check error in task
@@ -168,8 +187,6 @@ State: {state}");
                         _stdOut.WriteLine($"Error in task: {data.exitstatus}");
                         inError = true;
                     }
-
-                    ResultExtension.WaitTimeout = oldWaitTimeout;
                 }
 
                 if (inError)
@@ -183,7 +200,7 @@ State: {state}");
                 CallPhaseEvent("snap-create-post", vm, label, keep, snapName, state);
 
                 //remove old snapshot
-                if (!SnapshotsRemove(vm, label, keep))
+                if (!SnapshotsRemove(vm, label, keep, timeout))
                 {
                     ret = false;
                     continue;
@@ -203,8 +220,9 @@ State: {state}");
         /// <param name="vmIdsOrNames"></param>
         /// <param name="label"></param>
         /// <param name="keep"></param>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        public bool Clean(string vmIdsOrNames, string label, int keep)
+        public bool Clean(string vmIdsOrNames, string label, int keep, long timeout)
         {
             _stdOut.WriteLine($@"ACTION Clean 
 VMs:   {vmIdsOrNames}  
@@ -217,7 +235,7 @@ Keep:  {keep}");
             foreach (var vm in _client.GetVMs(vmIdsOrNames))
             {
                 _stdOut.WriteLine($"----- VM {vm.Id} -----");
-                if (!SnapshotsRemove(vm, label, keep)) { ret = false; }
+                if (!SnapshotsRemove(vm, label, keep, timeout)) { ret = false; }
             }
 
             CallPhaseEvent("clean-job-end", null, label, keep, null, false);
@@ -225,7 +243,7 @@ Keep:  {keep}");
             return ret;
         }
 
-        private bool SnapshotsRemove(VMInfo vm, string label, int keep)
+        private bool SnapshotsRemove(VMInfo vm, string label, int keep, long timeout)
         {
             foreach (var snapshot in FilterLabel(vm.Snapshots, label).Reverse().Skip(keep).Reverse())
             {
@@ -236,12 +254,7 @@ Keep:  {keep}");
                 var inError = false;
                 if (!_dryRun)
                 {
-                    var oldWaitTimeout = ResultExtension.WaitTimeout;
-                    ResultExtension.WaitTimeout = 30000;
-
-                    inError = vm.Snapshots.Remove(snapshot, true).LogInError(_stdOut);
-
-                    ResultExtension.WaitTimeout = oldWaitTimeout;
+                    inError = vm.Snapshots.Remove(snapshot, timeout).LogInError(_stdOut);
                 }
 
                 if (inError)

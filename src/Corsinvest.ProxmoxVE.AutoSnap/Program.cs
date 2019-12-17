@@ -10,8 +10,7 @@
  * Copyright (C) 2016 Corsinvest Srl	GPLv3 and CEL
  */
 
-using System;
-using Corsinvest.ProxmoxVE.Api.Extension.Helpers.Shell;
+using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap
 {
@@ -19,9 +18,10 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
     {
         static int Main(string[] args)
         {
-            var app = ShellHelper.CreateConsoleApp(Commands.APPLICATION_NAME, "Automatic snapshot VM/CT with retention");
+            var app = ShellHelper.CreateConsoleApp(Commands.APPLICATION_NAME, 
+                                                   "Automatic snapshot VM/CT with retention");
             new ShellCommands(app);
-            return app.ExecuteConsoleApp(Console.Out, args);
+            return app.ExecuteConsoleApp(args);
         }
     }
 }

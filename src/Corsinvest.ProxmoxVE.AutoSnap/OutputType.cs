@@ -18,9 +18,29 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
     public enum OutputType
     {
         /// <summary>
+        /// Unicode
+        /// </summary>
+        Unicode,
+
+        /// <summary>
         /// Text
         /// </summary>
         Text,
+
+        /// <summary>
+        /// Unicode
+        /// </summary>
+        UnicodeAlt,
+
+        /// <summary>
+        /// Markdown
+        /// </summary>
+        Markdown,
+
+        /// <summary>
+        /// Html
+        /// </summary>
+        Html,
 
         /// <summary>
         /// Json

@@ -22,22 +22,28 @@ Proxmox VE automatic snapshot tool
 Usage: cv4pve-autosnap [options] [command]
 
 Options:
-  -?|-h|--help  Show help information
-  --host        The host name host[:port]
-  --username    User name <username>@<realm>
-  --password    The password. Specify 'file:path_file' to store password in file.
-  --version     Show version information
-  --vmid        The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
-                -vmid or -name exclude (e.g. -200, -TestUbuntu),
-                'all-???' for all VM/CT in specific host (e.g. all-pve1, all-\$(hostname)),
-                'all' for all VM/CT in cluster
+  -?|-h|--help      Show help information
+  --version         Show version information
+  --host            The host name host[:port],host1[:port],host2[:port]
+  --username        User name <username>@<realm>
+  --password        The password. Specify 'file:path_file' to store password in file.
+  --vmid            The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
+                    -vmid or -name exclude (e.g. -200,-TestUbuntu)
+                    'all-???' for all VM/CT in specific host (e.g. all-pve1, all-\$(hostname)),
+                    'all' for all VM/CT in cluster
+  --timeout         Timeout operation in seconds
 
 Commands:
-  clean         Remove auto snapshots
-  snap          Will snap one time
-  status        Get list of all auto snapshots
+  app-check-update  Check update application
+  app-upgrade       Upgrade application
+  clean             Remove auto snapshots
+  snap              Will snap one time
+  status            Get list of all auto snapshots
 
 Run 'cv4pve-autosnap [command] --help' for more information about a command.
+
+cv4pve-autosnap is a part of suite cv4pve-tools.
+For more information visit https://www.cv4pve-tools.com
 ```
 
 ## Copyright and License
@@ -47,7 +53,7 @@ For licensing details please visit [LICENSE.md](LICENSE.md)
 
 ## Commercial Support
 
-This software is part of a suite of tools called cv4pve-tools. If you want commercial support, visit the [site](https://www.corsinvest.it/cv4pve-tools)
+This software is part of a suite of tools called cv4pve-tools. If you want commercial support, visit the [site](https://www.cv4pve-tools.com)
 
 ## Introduction
 
@@ -88,6 +94,11 @@ For the planning process using an external machine:
 * Alerting in QEMU, agent not enabled.
 * Save memory VM Qemu in snap using parameter --state.
 * No stop on error
+* Script hook for [metrics](https://github.com/Corsinvest/cv4pve-metrics)
+* Timeout remove/create snapshot in --timeout parameter specify in second
+* Support multiple host for HA in --host parameter es. host[:port],host1[:port],host2[:port]
+* Multiple output text,unicode,unicodeAlt,markdown,html
+* Check-Update and Upgrade application
 
 ## Configuration and use
 
@@ -117,6 +128,9 @@ This command snap all VMs except 111.
 
 The --keep tells that it should be kept 2 snapshots, if there are more than 2 snapshots, the 3 one will be erased (sorted by creation time).
 The --state save memory VM.
+The --timeout specify the timeout remove/creation snapshot.
+
+When create a snapshot the software add "auto" prefix of the name the snapshot.
 
 ## Clean a VM/CT one time
 
