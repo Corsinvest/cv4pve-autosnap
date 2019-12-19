@@ -70,6 +70,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                           {
                                               {"CV4PVE_AUTOSNAP_PHASE", e.phase},
                                               {"CV4PVE_AUTOSNAP_VMID", e.vm?.Id + ""},
+                                              {"CV4PVE_AUTOSNAP_VMNAME", e.vm?.Name },
                                               {"CV4PVE_AUTOSNAP_VMTYPE", e.vm?.Type + ""},
                                               {"CV4PVE_AUTOSNAP_LABEL", e.label},
                                               {"CV4PVE_AUTOSNAP_KEEP", e.keep + ""},
