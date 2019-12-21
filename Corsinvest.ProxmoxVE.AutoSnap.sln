@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C6B0694C-362
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Corsinvest.ProxmoxVE.AutoSnap", "src\Corsinvest.ProxmoxVE.AutoSnap\Corsinvest.ProxmoxVE.AutoSnap.csproj", "{6D4D450B-25C7-4CC8-AFB5-3EFCBD32EC37}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Corsinvest.ProxmoxVE.AutoSnap.Api", "src\Corsinvest.ProxmoxVE.AutoSnap.Api\Corsinvest.ProxmoxVE.AutoSnap.Api.csproj", "{857DC686-6FB8-4FA6-8534-B062768152E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,12 +31,25 @@ Global
 		{6D4D450B-25C7-4CC8-AFB5-3EFCBD32EC37}.Release|x64.Build.0 = Release|Any CPU
 		{6D4D450B-25C7-4CC8-AFB5-3EFCBD32EC37}.Release|x86.ActiveCfg = Release|Any CPU
 		{6D4D450B-25C7-4CC8-AFB5-3EFCBD32EC37}.Release|x86.Build.0 = Release|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Debug|x64.Build.0 = Debug|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Debug|x86.Build.0 = Debug|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Release|x64.ActiveCfg = Release|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Release|x64.Build.0 = Release|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Release|x86.ActiveCfg = Release|Any CPU
+		{857DC686-6FB8-4FA6-8534-B062768152E3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6D4D450B-25C7-4CC8-AFB5-3EFCBD32EC37} = {C6B0694C-362C-4BEE-8EBA-28ECF5780D57}
+		{857DC686-6FB8-4FA6-8534-B062768152E3} = {C6B0694C-362C-4BEE-8EBA-28ECF5780D57}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FF0CE8AE-82AF-4E55-B4CF-21752D47280F}

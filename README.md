@@ -1,6 +1,7 @@
 # cv4pve-autosnap
 
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](LICENSE.md) [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg) [![AppVeyor branch](https://img.shields.io/appveyor/ci/franklupo/cv4pve-autosnap/master.svg)](https://ci.appveyor.com/project/franklupo/cv4pve-autosnap)
+![Nuget](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg)
 
 Proxmox VE automatic snapshot tool
 

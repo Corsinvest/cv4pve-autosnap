@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <Version>1.2.0</Version>
+    <Company>Corsinvest Srl</Company>
+    <Authors>Daniele Corsini</Authors>
+    <Copyright>Corsinvest Srl</Copyright>
+    <Product>Corsinvest for Proxmox VE AutpSnap Api</Product>
+    <AssemblyTitle>Corsinvest for Proxmox VE AutpSnap Api</AssemblyTitle>
+    <Description>Corsinvest for Proxmox VE AutpSnap Api</Description>
+
+    <PackageTags>ProxmoxVE;Api,Client;Rest;Corsinvest;AutoSnap</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryType>Github</RepositoryType>
+    <RepositoryUrl>https://github.com/Corsinvest/cv4pve-autosnap</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE.md" Pack="true" PackagePath="" />
+    <None Include="..\..\icon.png" Pack="true" PackagePath="" />
+    <none Include="..\..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- <ProjectReference Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Shell\Corsinvest.ProxmoxVE.Api.Shell.csproj" /> -->
+    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="2.2.0" />
+  </ItemGroup>
+</Project>

@@ -11,6 +11,7 @@
  */
 
 using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
+using Corsinvest.ProxmoxVE.AutoSnap.Api;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap
 {
@@ -18,7 +19,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
     {
         static int Main(string[] args)
         {
-            var app = ShellHelper.CreateConsoleApp(Commands.APPLICATION_NAME, 
+            var app = ShellHelper.CreateConsoleApp(Application.NAME, 
                                                    "Automatic snapshot VM/CT with retention");
             new ShellCommands(app);
             return app.ExecuteConsoleApp(args);

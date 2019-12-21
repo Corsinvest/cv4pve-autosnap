@@ -12,10 +12,12 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Corsinvest.ProxmoxVE.Api.Extension;
-using Corsinvest.ProxmoxVE.Api.Extension.VM;
 using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
+using Corsinvest.ProxmoxVE.AutoSnap.Api;
 using McMaster.Extensions.CommandLineUtils;
+using Newtonsoft.Json;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap
 {
@@ -25,6 +27,9 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
     public class ShellCommands
     {
         private string _scriptHook;
+        private TextWriter _stdOut;
+        private bool _dryRun;
+        private bool _debug;
 
         /// <summary>
         /// Shell command for cli.
@@ -32,6 +37,10 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// <param name="parent"></param>
         public ShellCommands(CommandLineApplication parent)
         {
+            _stdOut = parent.Out;
+            _dryRun = parent.DryRunIsActive();
+            _debug = parent.DebugIsActive();
+
             var optVmIds = parent.VmIdsOrNamesOption().DependOn(parent, CommandOptionExtension.HOST_OPTION_NAME);
             var optTimeout = parent.TimeoutOption();
 
@@ -40,27 +49,14 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
             Status(parent, optVmIds);
         }
 
-        private Commands CreateApp(CommandLineApplication parent)
+        private Application CreateApp(CommandLineApplication parent)
         {
-            var app = new Commands(parent.ClientTryLogin(),
-                                   parent.Out,
-                                   parent.DryRunIsActive(),
-                                   parent.DebugIsActive());
-
+            var app = new Application(parent.ClientTryLogin(), _stdOut, _dryRun, _debug);
             app.PhaseEvent += App_PhaseEvent;
             return app;
         }
 
-        private void App_PhaseEvent(object sender,
-                                    (string phase,
-                                     VMInfo vm,
-                                     string label,
-                                     int keep,
-                                     string snapName,
-                                     bool state,
-                                     TextWriter stdOut,
-                                     bool dryRun,
-                                     bool debug) e)
+        private void App_PhaseEvent(object sender, PhaseEventArgs e)
         {
             if (!File.Exists(_scriptHook)) { return; }
 
@@ -68,29 +64,29 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                           true,
                                           new Dictionary<string, string>
                                           {
-                                              {"CV4PVE_AUTOSNAP_PHASE", e.phase},
-                                              {"CV4PVE_AUTOSNAP_VMID", e.vm?.Id + ""},
-                                              {"CV4PVE_AUTOSNAP_VMNAME", e.vm?.Name },
-                                              {"CV4PVE_AUTOSNAP_VMTYPE", e.vm?.Type + ""},
-                                              {"CV4PVE_AUTOSNAP_LABEL", e.label},
-                                              {"CV4PVE_AUTOSNAP_KEEP", e.keep + ""},
-                                              {"CV4PVE_AUTOSNAP_SNAP_NAME", e.snapName},
-                                              {"CV4PVE_AUTOSNAP_VMSTATE", e.state ? "1" :"0"},
-                                              {"CV4PVE_AUTOSNAP_DEBUG", e.debug ? "1" :"0"},
-                                              {"CV4PVE_AUTOSNAP_DRY_RUN", e.dryRun ? "1" :"0"},
+                                              {"CV4PVE_AUTOSNAP_PHASE", e.Phase},
+                                              {"CV4PVE_AUTOSNAP_VMID", e.VM?.Id + ""},
+                                              {"CV4PVE_AUTOSNAP_VMNAME", e.VM?.Name },
+                                              {"CV4PVE_AUTOSNAP_VMTYPE", e.VM?.Type + ""},
+                                              {"CV4PVE_AUTOSNAP_LABEL", e.Label},
+                                              {"CV4PVE_AUTOSNAP_KEEP", e.Keep + ""},
+                                              {"CV4PVE_AUTOSNAP_SNAP_NAME", e.SnapName},
+                                              {"CV4PVE_AUTOSNAP_VMSTATE", e.State ? "1" :"0"},
+                                              {"CV4PVE_AUTOSNAP_DEBUG", _debug ? "1" :"0"},
+                                              {"CV4PVE_AUTOSNAP_DRY_RUN", _dryRun ? "1" :"0"},
                                           },
-                                          e.stdOut,
-                                          e.dryRun,
-                                          e.debug);
+                                          _stdOut,
+                                          _dryRun,
+                                          _debug);
 
             if (ret.ExitCode != 0)
             {
-                e.stdOut.WriteLine($"Script return code: {ret.ExitCode}");
+                _stdOut.WriteLine($"Script return code: {ret.ExitCode}");
             }
 
             if (!string.IsNullOrWhiteSpace(ret.StandardOutput))
             {
-                e.stdOut.Write(ret.StandardOutput);
+                _stdOut.Write(ret.StandardOutput);
             }
         }
 
@@ -104,9 +100,49 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                 var optLabel = cmd.LabelOption();
                 var optOutput = cmd.OptionEnum<OutputType>("--output|-o", "Type output (default: unicode)");
 
-                cmd.OnExecute(() => CreateApp(parent).Status(optVmIds.Value(),
-                                                             optLabel.Value(),
-                                                             optOutput.GetEnumValue<OutputType>()));
+                cmd.OnExecute(() =>
+                {
+                    var snapshots = CreateApp(parent).Status(optVmIds.Value(), optLabel.Value());
+                    //optOutput.GetEnumValue<OutputType>())
+
+                    var outputType = optOutput.GetEnumValue<OutputType>();
+
+                    switch (outputType)
+                    {
+                        case OutputType.Text:
+                        case OutputType.Html:
+                        case OutputType.Markdown:
+                        case OutputType.Unicode:
+                        case OutputType.UnicodeAlt:
+
+                            var tableOutputType = TableOutputType.Unicode;
+                            switch (outputType)
+                            {
+                                case OutputType.Html: tableOutputType = TableOutputType.Html; break;
+                                case OutputType.Markdown: tableOutputType = TableOutputType.Markdown; break;
+                                case OutputType.Text: tableOutputType = TableOutputType.Text; break;
+                                case OutputType.Unicode: tableOutputType = TableOutputType.Unicode; break;
+                                case OutputType.UnicodeAlt: tableOutputType = TableOutputType.UnicodeAlt; break;
+                                default: tableOutputType = TableOutputType.Unicode; break;
+                            }
+
+                            parent.Out.Write(snapshots.Info(true, tableOutputType));
+                            break;
+
+                        case OutputType.Json:
+                            parent.Out.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true)))));
+                            break;
+
+                        case OutputType.JsonPretty:
+                            parent.Out.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))),
+                                                                         Formatting.Indented));
+                            break;
+
+                        default:
+                            parent.Out.Write(snapshots.Info(true, TableOutputType.Unicode));
+                            break;
+                    }
+                });
             });
         }
 

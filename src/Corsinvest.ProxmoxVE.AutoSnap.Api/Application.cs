@@ -18,15 +18,13 @@ using Corsinvest.ProxmoxVE.Api;
 using Corsinvest.ProxmoxVE.Api.Extension;
 using Corsinvest.ProxmoxVE.Api.Extension.Node;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
-using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
-using Newtonsoft.Json;
 
-namespace Corsinvest.ProxmoxVE.AutoSnap
+namespace Corsinvest.ProxmoxVE.AutoSnap.Api
 {
     /// <summary>
     /// Command autosnap.
     /// </summary>
-    public class Commands
+    public class Application
     {
         private static readonly string PREFIX = "auto";
 
@@ -35,12 +33,12 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// <summary>
         /// Application name
         /// </summary>
-        public static readonly string APPLICATION_NAME = "cv4pve-autosnap";
+        public static readonly string NAME = "cv4pve-autosnap";
 
         /// <summary>
         /// Old application name
         /// </summary>
-        private static readonly string OLD_APPLICATION_NAME = "eve4pve-autosnap";
+        private static readonly string OLD_NAME = "eve4pve-autosnap";
 
         private readonly PveClient _client;
         private readonly TextWriter _stdOut;
@@ -54,18 +52,23 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// <param name="stdOut"></param>
         /// <param name="dryRun"></param>
         /// <param name="debug"></param>
-        public Commands(PveClient client, TextWriter stdOut, bool dryRun, bool debug)
+        public Application(PveClient client, TextWriter stdOut, bool dryRun, bool debug)
             => (_client, _stdOut, _dryRun, _debug) = (client, stdOut, dryRun, debug);
 
         /// <summary>
         /// Event phase.
         /// </summary>
-        public event EventHandler<(string Phase, VMInfo VM, string Label, int Keep, string SnapName, bool State, TextWriter StdOut, bool DryRun, bool Debug)> PhaseEvent;
+        public event EventHandler<PhaseEventArgs> PhaseEvent;
 
         private void CallPhaseEvent(string phase, VMInfo vm, string label, int keep, string snapName, bool state)
         {
             if (_debug) { _stdOut.WriteLine($"Phase: {phase}"); }
-            PhaseEvent?.Invoke(this, (phase, vm, label, keep, snapName, state, _stdOut, _dryRun, _debug));
+            PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
+                                                        vm,
+                                                        label,
+                                                        keep,
+                                                        snapName,
+                                                        state));
         }
 
         /// <summary>
@@ -73,7 +76,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// </summary>
         /// <param name="vmIdsOrNames"></param>
         /// <param name="label"></param>
-        public void Status(string vmIdsOrNames, string label = null, OutputType outputType = OutputType.Unicode)
+        public IEnumerable<Snapshot> Status(string vmIdsOrNames, string label = null)
         {
             //select snapshot and filter
             var snapshots = FilterApp(_client.GetVMs(vmIdsOrNames)
@@ -82,45 +85,11 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
 
             if (!string.IsNullOrWhiteSpace(label)) { snapshots = FilterLabel(snapshots, label); }
 
-            switch (outputType)
-            {
-                case OutputType.Text:
-                case OutputType.Html:
-                case OutputType.Markdown:
-                case OutputType.Unicode:
-                case OutputType.UnicodeAlt:
-
-                    var tableOutputType = TableOutputType.Unicode;
-                    switch (outputType)
-                    {
-                        case OutputType.Html: tableOutputType = TableOutputType.Html; break;
-                        case OutputType.Markdown: tableOutputType = TableOutputType.Markdown; break;
-                        case OutputType.Text: tableOutputType = TableOutputType.Text; break;
-                        case OutputType.Unicode: tableOutputType = TableOutputType.Unicode; break;
-                        case OutputType.UnicodeAlt: tableOutputType = TableOutputType.UnicodeAlt; break;
-                        default: tableOutputType = TableOutputType.Unicode; break;
-                    }
-
-                    _stdOut.Write(snapshots.Info(true,tableOutputType));
-                    break;
-
-                case OutputType.Json:
-                    _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true)))));
-                    break;
-
-                case OutputType.JsonPretty:
-                    _stdOut.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))), 
-                                                              Formatting.Indented));
-                    break;
-
-                default:
-                    _stdOut.Write(snapshots.Info(true, TableOutputType.Unicode));
-                    break;
-            }
+            return snapshots;
         }
 
         private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots)
-            => snapshots.Where(a => (a.Description == APPLICATION_NAME || a.Description == OLD_APPLICATION_NAME));
+            => snapshots.Where(a => (a.Description == NAME || a.Description == OLD_NAME));
 
         private static string GetPrefix(string label) => PREFIX + label;
 
@@ -176,7 +145,7 @@ State: {state}");
                 var inError = true;
                 if (!_dryRun)
                 {
-                    var result = vm.Snapshots.Create(snapName, APPLICATION_NAME, state, timeout);
+                    var result = vm.Snapshots.Create(snapName, NAME, state, timeout);
                     inError = result.LogInError(_stdOut);
 
                     //check error in task
