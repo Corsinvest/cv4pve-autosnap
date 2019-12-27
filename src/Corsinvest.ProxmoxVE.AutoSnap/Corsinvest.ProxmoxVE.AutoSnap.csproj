@@ -19,10 +19,10 @@
     <TrimmerRootAssembly Include="System.Net.WebClient" />
 
     <!-- <ProjectReference Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Shell\Corsinvest.ProxmoxVE.Api.Shell.csproj" /> -->
-    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Shell" Version="1.0.0" />
+    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Shell" Version="1.0.1" />
 
     <!-- <ProjectReference Include="..\Corsinvest.ProxmoxVE.AutoSnap.Api\Corsinvest.ProxmoxVE.AutoSnap.Api.csproj" /> -->
-    <PackageReference Include="Corsinvest.ProxmoxVE.AutoSnap.Api" Version="1.2.0" />
+    <PackageReference Include="Corsinvest.ProxmoxVE.AutoSnap.Api" Version="1.2.1" />
 
   </ItemGroup>
 </Project>
