@@ -16,8 +16,10 @@ using System.Linq;
 using Corsinvest.ProxmoxVE.Api.Extension;
 using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
 using Corsinvest.ProxmoxVE.AutoSnap.Api;
+using Corsinvest.ProxmoxVE.Api.Extension.VM;
 using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
+using Corsinvest.ProxmoxVE.Api.Extension.Helpers;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap
 {
@@ -27,7 +29,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
     public class ShellCommands
     {
         private string _scriptHook;
-        private TextWriter _stdOut;
+        private TextWriter _out;
         private bool _dryRun;
         private bool _debug;
 
@@ -37,7 +39,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         /// <param name="parent"></param>
         public ShellCommands(CommandLineApplication parent)
         {
-            _stdOut = parent.Out;
+            _out = parent.Out;
             _dryRun = parent.DryRunIsActive();
             _debug = parent.DebugIsActive();
 
@@ -51,7 +53,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
 
         private Application CreateApp(CommandLineApplication parent)
         {
-            var app = new Application(parent.ClientTryLogin(), _stdOut, _dryRun, _debug);
+            var app = new Application(parent.ClientTryLogin(), _out, _dryRun, _debug);
             app.PhaseEvent += App_PhaseEvent;
             return app;
         }
@@ -62,31 +64,23 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
 
             var ret = ShellHelper.Execute(_scriptHook,
                                           true,
-                                          new Dictionary<string, string>
+                                          new Dictionary<string, string>(e.Environments)
                                           {
-                                              {"CV4PVE_AUTOSNAP_PHASE", e.Phase},
-                                              {"CV4PVE_AUTOSNAP_VMID", e.VM?.Id + ""},
-                                              {"CV4PVE_AUTOSNAP_VMNAME", e.VM?.Name },
-                                              {"CV4PVE_AUTOSNAP_VMTYPE", e.VM?.Type + ""},
-                                              {"CV4PVE_AUTOSNAP_LABEL", e.Label},
-                                              {"CV4PVE_AUTOSNAP_KEEP", e.Keep + ""},
-                                              {"CV4PVE_AUTOSNAP_SNAP_NAME", e.SnapName},
-                                              {"CV4PVE_AUTOSNAP_VMSTATE", e.State ? "1" :"0"},
-                                              {"CV4PVE_AUTOSNAP_DEBUG", _debug ? "1" :"0"},
-                                              {"CV4PVE_AUTOSNAP_DRY_RUN", _dryRun ? "1" :"0"},
+                                                {"CV4PVE_AUTOSNAP_DEBUG", _debug ? "1" :"0"},
+                                                {"CV4PVE_AUTOSNAP_DRY_RUN", _dryRun ? "1" :"0"},
                                           },
-                                          _stdOut,
+                                          _out,
                                           _dryRun,
                                           _debug);
 
             if (ret.ExitCode != 0)
             {
-                _stdOut.WriteLine($"Script return code: {ret.ExitCode}");
+                _out.WriteLine($"Script return code: {ret.ExitCode}");
             }
 
             if (!string.IsNullOrWhiteSpace(ret.StandardOutput))
             {
-                _stdOut.Write(ret.StandardOutput);
+                _out.Write(ret.StandardOutput);
             }
         }
 
@@ -103,8 +97,6 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                 cmd.OnExecute(() =>
                 {
                     var snapshots = CreateApp(parent).Status(optVmIds.Value(), optLabel.Value());
-                    //optOutput.GetEnumValue<OutputType>())
-
                     var outputType = optOutput.GetEnumValue<OutputType>();
 
                     switch (outputType)

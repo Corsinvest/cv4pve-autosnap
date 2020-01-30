@@ -10,6 +10,7 @@
  * Copyright (C) 2016 Corsinvest Srl	GPLv3 and CEL
  */
 
+using System.Collections.Generic;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api
@@ -77,5 +78,22 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         /// <value></value>
         public bool State { get; }
+
+        /// <summary>
+        /// Environments
+        /// </summary>
+        /// <value></value>
+        public IReadOnlyDictionary<string, string> Environments
+            => new Dictionary<string, string>
+                {
+                    {"CV4PVE_AUTOSNAP_PHASE", Phase},
+                    {"CV4PVE_AUTOSNAP_VMID", VM?.Id + ""},
+                    {"CV4PVE_AUTOSNAP_VMNAME", VM?.Name },
+                    {"CV4PVE_AUTOSNAP_VMTYPE", VM?.Type + ""},
+                    {"CV4PVE_AUTOSNAP_LABEL", Label},
+                    {"CV4PVE_AUTOSNAP_KEEP", Keep + ""},
+                    {"CV4PVE_AUTOSNAP_SNAP_NAME", SnapName},
+                    {"CV4PVE_AUTOSNAP_VMSTATE", State ? "1" :"0"},
+                };
     }
 }

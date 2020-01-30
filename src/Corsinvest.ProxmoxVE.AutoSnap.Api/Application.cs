@@ -36,12 +36,20 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         public static readonly string NAME = "cv4pve-autosnap";
 
         /// <summary>
+        /// Get label from description
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static string GetLabelFromName(string name)
+            => name.Substring(PREFIX.Length, name.Length - TIMESTAMP_FORMAT.Length - PREFIX.Length);
+
+        /// <summary>
         /// Old application name
         /// </summary>
         private static readonly string OLD_NAME = "eve4pve-autosnap";
 
         private readonly PveClient _client;
-        private readonly TextWriter _stdOut;
+        private readonly TextWriter _out;
         private readonly bool _dryRun;
         private readonly bool _debug;
 
@@ -49,11 +57,11 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// Constructor command
         /// </summary>
         /// <param name="client"></param>
-        /// <param name="stdOut"></param>
+        /// <param name="out"></param>
         /// <param name="dryRun"></param>
         /// <param name="debug"></param>
-        public Application(PveClient client, TextWriter stdOut, bool dryRun, bool debug)
-            => (_client, _stdOut, _dryRun, _debug) = (client, stdOut, dryRun, debug);
+        public Application(PveClient client, TextWriter @out, bool dryRun, bool debug)
+            => (_client, _out, _dryRun, _debug) = (client, @out, dryRun, debug);
 
         /// <summary>
         /// Event phase.
@@ -62,7 +70,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
 
         private void CallPhaseEvent(string phase, VMInfo vm, string label, int keep, string snapName, bool state)
         {
-            if (_debug) { _stdOut.WriteLine($"Phase: {phase}"); }
+            if (_debug) { _out.WriteLine($"Phase: {phase}"); }
             PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
                                                         vm,
                                                         label,
@@ -108,7 +116,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <returns></returns>
         public bool Snap(string vmIdsOrNames, string label, int keep, bool state, long timeout)
         {
-            _stdOut.WriteLine($@"ACTION Snap 
+            _out.WriteLine($@"ACTION Snap 
 VMs:   {vmIdsOrNames}  
 Label: {label} 
 Keep:  {keep} 
@@ -118,21 +126,22 @@ State: {state}");
 
             var ret = true;
 
-            foreach (var vm in _client.GetVMs(vmIdsOrNames))
+            foreach (var vm in _client.GetVMs(vmIdsOrNames)
+                                      .Where(a => _client.GetNode(a.Node).IsOnline))
             {
-                _stdOut.WriteLine($"----- VM {vm.Id} -----");
+                _out.WriteLine($"----- VM {vm.Id} -----");
 
                 //exclude template
                 if (vm.IsTemplate)
                 {
-                    _stdOut.WriteLine("Skip VM is template");
+                    _out.WriteLine("Skip VM is template");
                     continue;
                 }
 
                 //check agent enabled
                 if (vm.Type == VMTypeEnum.Qemu && !((ConfigQemu)vm.Config).AgentEnabled)
                 {
-                    _stdOut.WriteLine(((ConfigQemu)vm.Config).GetMessageEnablingAgent());
+                    _out.WriteLine(((ConfigQemu)vm.Config).GetMessageEnablingAgent());
                 }
 
                 //create snapshot
@@ -140,20 +149,20 @@ State: {state}");
 
                 CallPhaseEvent("snap-create-pre", vm, label, keep, snapName, state);
 
-                _stdOut.WriteLine($"Create snapshot: {snapName}");
+                _out.WriteLine($"Create snapshot: {snapName}");
 
                 var inError = true;
                 if (!_dryRun)
                 {
                     var result = vm.Snapshots.Create(snapName, NAME, state, timeout);
-                    inError = result.LogInError(_stdOut);
+                    inError = result.LogInError(_out);
 
                     //check error in task
                     var task = _client.Nodes[vm.Node].Tasks[(result.Response.data as string)];
                     var data = task.Status.ReadTaskStatus().Response.data;
                     if (data.exitstatus != "OK")
                     {
-                        _stdOut.WriteLine($"Error in task: {data.exitstatus}");
+                        _out.WriteLine($"Error in task: {data.exitstatus}");
                         inError = true;
                     }
                 }
@@ -178,7 +187,7 @@ State: {state}");
 
             CallPhaseEvent("snap-job-end", null, label, keep, null, state);
 
-            if (_debug) { _stdOut.WriteLine($"Snap Exit: {ret}"); }
+            if (_debug) { _out.WriteLine($"Snap Exit: {ret}"); }
 
             return ret;
         }
@@ -193,7 +202,7 @@ State: {state}");
         /// <returns></returns>
         public bool Clean(string vmIdsOrNames, string label, int keep, long timeout)
         {
-            _stdOut.WriteLine($@"ACTION Clean 
+            _out.WriteLine($@"ACTION Clean 
 VMs:   {vmIdsOrNames}  
 Label: {label} 
 Keep:  {keep}");
@@ -201,9 +210,10 @@ Keep:  {keep}");
             var ret = true;
             CallPhaseEvent("clean-job-start", null, label, keep, null, false);
 
-            foreach (var vm in _client.GetVMs(vmIdsOrNames))
+            foreach (var vm in _client.GetVMs(vmIdsOrNames)
+                                      .Where(a => _client.GetNode(a.Node).IsOnline))
             {
-                _stdOut.WriteLine($"----- VM {vm.Id} -----");
+                _out.WriteLine($"----- VM {vm.Id} -----");
                 if (!SnapshotsRemove(vm, label, keep, timeout)) { ret = false; }
             }
 
@@ -218,17 +228,17 @@ Keep:  {keep}");
             {
                 CallPhaseEvent("snap-remove-pre", vm, label, keep, snapshot.Name, false);
 
-                _stdOut.WriteLine($"Remove snapshot: {snapshot.Name}");
+                _out.WriteLine($"Remove snapshot: {snapshot.Name}");
 
                 var inError = false;
                 if (!_dryRun)
                 {
-                    inError = vm.Snapshots.Remove(snapshot, timeout).LogInError(_stdOut);
+                    inError = vm.Snapshots.Remove(snapshot, timeout).LogInError(_out);
                 }
 
                 if (inError)
                 {
-                    if (_debug) { _stdOut.WriteLine($"Snap remove: problem in remove "); }
+                    if (_debug) { _out.WriteLine($"Snap remove: problem in remove "); }
 
                     CallPhaseEvent("snap-remove-abort", vm, label, keep, snapshot.Name, false);
                     return false;

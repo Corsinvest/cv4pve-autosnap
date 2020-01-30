@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <Company>Corsinvest Srl</Company>
     <Authors>Daniele Corsini</Authors>
     <Copyright>Corsinvest Srl</Copyright>
@@ -29,6 +29,6 @@
 
   <ItemGroup>
     <!-- <ProjectReference Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj" /> -->
-    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="2.2.1" />
+    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="2.2.2" />
   </ItemGroup>
 </Project>
