@@ -29,9 +29,9 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
     public class ShellCommands
     {
         private string _scriptHook;
-        private TextWriter _out;
-        private bool _dryRun;
-        private bool _debug;
+        private readonly TextWriter _out;
+        private readonly bool _dryRun;
+        private readonly bool _debug;
 
         /// <summary>
         /// Shell command for cli.

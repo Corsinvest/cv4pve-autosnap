@@ -83,8 +83,15 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// Status auto snapshot.
         /// </summary>
         /// <param name="vmIdsOrNames"></param>
+        /// <returns></returns>
+        public IEnumerable<Snapshot> Status(string vmIdsOrNames) => Status(vmIdsOrNames, null);
+
+        /// <summary>
+        /// Status auto snapshot.
+        /// </summary>
+        /// <param name="vmIdsOrNames"></param>
         /// <param name="label"></param>
-        public IEnumerable<Snapshot> Status(string vmIdsOrNames, string label = null)
+        public IEnumerable<Snapshot> Status(string vmIdsOrNames, string label)
         {
             //select snapshot and filter
             var snapshots = FilterApp(_client.GetVMs(vmIdsOrNames)
