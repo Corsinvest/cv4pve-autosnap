@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <Version>1.7.2</Version>
+    <Version>1.7.3</Version>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>cv4pve-autosnap</AssemblyName>
     <Company>Corsinvest Srl</Company>
@@ -19,9 +19,9 @@
     <TrimmerRootAssembly Include="System.Net.WebClient" />
 
     <!-- <ProjectReference Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Shell\Corsinvest.ProxmoxVE.Api.Shell.csproj" /> -->
-    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Shell" Version="1.1.1" />
+    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Shell" Version="1.2.0" />
 
     <!-- <ProjectReference Include="..\Corsinvest.ProxmoxVE.AutoSnap.Api\Corsinvest.ProxmoxVE.AutoSnap.Api.csproj" /> -->
-    <PackageReference Include="Corsinvest.ProxmoxVE.AutoSnap.Api" Version="1.2.3" />
+    <PackageReference Include="Corsinvest.ProxmoxVE.AutoSnap.Api" Version="1.3.0" />
   </ItemGroup>
 </Project>

@@ -43,7 +43,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
             _dryRun = parent.DryRunIsActive();
             _debug = parent.DebugIsActive();
 
-            var optVmIds = parent.VmIdsOrNamesOption().DependOn(parent, CommandOptionExtension.HOST_OPTION_NAME);
+            var optVmIds = parent.VmIdsOrNamesOption()
+                                    .DependOn(parent, CommandOptionExtension.HOST_OPTION_NAME);
             var optTimeout = parent.TimeoutOption();
 
             Snap(parent, optVmIds, optTimeout);

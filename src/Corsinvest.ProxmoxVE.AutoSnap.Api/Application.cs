@@ -86,6 +86,13 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <returns></returns>
         public IEnumerable<Snapshot> Status(string vmIdsOrNames) => Status(vmIdsOrNames, null);
 
+        private IEnumerable<VMInfo> GetVMs(string vmIdsOrNames)
+        {
+            var nodes = _client.GetNodes().Select(a => new { a.Node, a.IsOnline }).ToList();
+            return _client.GetVMs(vmIdsOrNames)
+                          .Where(a => nodes.Any(n => n.Node == a.Node && n.IsOnline));
+        }
+
         /// <summary>
         /// Status auto snapshot.
         /// </summary>
@@ -94,13 +101,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         public IEnumerable<Snapshot> Status(string vmIdsOrNames, string label)
         {
             //select snapshot and filter
-            var snapshots = FilterApp(_client.GetVMs(vmIdsOrNames)
-                                             .Where(a => _client.GetNode(a.Node).IsOnline)
-                                             .SelectMany(a => a.Snapshots));
-
-            if (!string.IsNullOrWhiteSpace(label)) { snapshots = FilterLabel(snapshots, label); }
-
-            return snapshots;
+            var snapshots = FilterApp(GetVMs(vmIdsOrNames).SelectMany(a => a.Snapshots));
+            return string.IsNullOrWhiteSpace(label) ? snapshots : FilterLabel(snapshots, label);
         }
 
         private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots)
@@ -133,8 +135,7 @@ State: {state}");
 
             var ret = true;
 
-            foreach (var vm in _client.GetVMs(vmIdsOrNames)
-                                      .Where(a => _client.GetNode(a.Node).IsOnline))
+            foreach (var vm in GetVMs(vmIdsOrNames))
             {
                 _out.WriteLine($"----- VM {vm.Id} -----");
 
@@ -217,8 +218,7 @@ Keep:  {keep}");
             var ret = true;
             CallPhaseEvent("clean-job-start", null, label, keep, null, false);
 
-            foreach (var vm in _client.GetVMs(vmIdsOrNames)
-                                      .Where(a => _client.GetNode(a.Node).IsOnline))
+            foreach (var vm in GetVMs(vmIdsOrNames))
             {
                 _out.WriteLine($"----- VM {vm.Id} -----");
                 if (!SnapshotsRemove(vm, label, keep, timeout)) { ret = false; }
