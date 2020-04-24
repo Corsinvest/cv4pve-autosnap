@@ -11,6 +11,7 @@
     <AssemblyTitle>Corsinvest for Proxmox VE AutpSnap Api</AssemblyTitle>
     <Description>Corsinvest for Proxmox VE AutpSnap Api</Description>
 
+    <PackageProjectUrl>https://github.com/Corsinvest/cv4pve-autosnap</PackageProjectUrl>
     <PackageTags>ProxmoxVE;Api,Client;Rest;Corsinvest;AutoSnap</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PackageReleaseNotes></PackageReleaseNotes>
