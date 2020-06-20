@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using Corsinvest.ProxmoxVE.Api;
 using Corsinvest.ProxmoxVE.Api.Extension;
-using Corsinvest.ProxmoxVE.Api.Extension.Node;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api
@@ -40,8 +39,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static string GetLabelFromName(string name)
-            => name.Substring(PREFIX.Length, name.Length - TIMESTAMP_FORMAT.Length - PREFIX.Length);
+        public static string GetLabelFromName(string name) => name[PREFIX.Length..^TIMESTAMP_FORMAT.Length];
 
         /// <summary>
         /// Old application name
@@ -87,11 +85,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         public IEnumerable<Snapshot> Status(string vmIdsOrNames) => Status(vmIdsOrNames, null);
 
         private IEnumerable<VMInfo> GetVMs(string vmIdsOrNames)
-        {
-            var nodes = _client.GetNodes().Select(a => new { a.Node, a.IsOnline }).ToList();
-            return _client.GetVMs(vmIdsOrNames)
-                          .Where(a => nodes.Any(n => n.Node == a.Node && n.IsOnline));
-        }
+            => _client.GetVMs(vmIdsOrNames).Where(a => a.Status != "unknown");
 
         /// <summary>
         /// Status auto snapshot.
@@ -123,7 +117,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="state"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        public bool Snap(string vmIdsOrNames, string label, int keep, bool state, long timeout)
+        public ResultSnap Snap(string vmIdsOrNames, string label, int keep, bool state, long timeout)
         {
             _out.WriteLine($@"ACTION Snap 
 VMs:   {vmIdsOrNames}  
@@ -131,18 +125,27 @@ Label: {label}
 Keep:  {keep} 
 State: {state}");
 
-            CallPhaseEvent("snap-job-start", null, label, keep, null, state);
+            var ret = new ResultSnap();
+            ret.Start();
 
-            var ret = true;
+            CallPhaseEvent("snap-job-start", null, label, keep, null, state);
 
             foreach (var vm in GetVMs(vmIdsOrNames))
             {
+                var execSnapVm = new ResultSnapVm
+                {
+                    VmId = int.Parse(vm.Id)
+                };
+                ret.Vms.Add(execSnapVm);
+                execSnapVm.Start();
+
                 _out.WriteLine($"----- VM {vm.Id} -----");
 
                 //exclude template
                 if (vm.IsTemplate)
                 {
                     _out.WriteLine("Skip VM is template");
+                    execSnapVm.Stop();
                     continue;
                 }
 
@@ -179,7 +182,7 @@ State: {state}");
                 {
                     CallPhaseEvent("snap-create-abort", vm, label, keep, snapName, state);
 
-                    ret = false;
+                    execSnapVm.Stop();
                     continue;
                 }
 
@@ -188,14 +191,23 @@ State: {state}");
                 //remove old snapshot
                 if (!SnapshotsRemove(vm, label, keep, timeout))
                 {
-                    ret = false;
+                    execSnapVm.Stop();
                     continue;
                 }
+
+                execSnapVm.Stop();
+                execSnapVm.Status = true;
+
+                _out.WriteLine($"VM execution {execSnapVm.Elapsed}");
             }
 
             CallPhaseEvent("snap-job-end", null, label, keep, null, state);
 
-            if (_debug) { _out.WriteLine($"Snap Exit: {ret}"); }
+            ret.Stop();
+
+            _out.WriteLine($"Total execution {ret.Elapsed}");
+
+            if (_debug) { _out.WriteLine($"Snap Exit: {ret.Status}"); }
 
             return ret;
         }

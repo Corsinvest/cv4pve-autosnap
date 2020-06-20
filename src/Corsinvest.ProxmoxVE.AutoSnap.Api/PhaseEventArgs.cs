@@ -39,6 +39,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
             Phase = phase;
             VM = vm;
             Label = label;
+            Keep = keep;
             SnapName = snapName;
             State = state;
         }

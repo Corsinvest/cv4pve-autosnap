@@ -12,13 +12,11 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Corsinvest.ProxmoxVE.Api.Extension;
 using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
 using Corsinvest.ProxmoxVE.AutoSnap.Api;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
 using McMaster.Extensions.CommandLineUtils;
-using Newtonsoft.Json;
 using Corsinvest.ProxmoxVE.Api.Extension.Helpers;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap
@@ -74,15 +72,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                           _dryRun,
                                           _debug);
 
-            if (ret.ExitCode != 0)
-            {
-                _out.WriteLine($"Script return code: {ret.ExitCode}");
-            }
-
-            if (!string.IsNullOrWhiteSpace(ret.StandardOutput))
-            {
-                _out.Write(ret.StandardOutput);
-            }
+            if (ret.ExitCode != 0) { _out.WriteLine($"Script return code: {ret.ExitCode}"); }
+            if (!string.IsNullOrWhiteSpace(ret.StandardOutput)) { _out.Write(ret.StandardOutput); }
         }
 
         private void Status(CommandLineApplication parent, CommandOption optVmIds)
@@ -93,55 +84,17 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                 cmd.AddFullNameLogo();
 
                 var optLabel = cmd.LabelOption();
-                var optOutput = cmd.OptionEnum<OutputType>("--output|-o", "Type output (default: unicode)");
+                var optOutput = cmd.OutputTypeArgument();
 
                 cmd.OnExecute(() =>
                 {
                     var snapshots = CreateApp(parent).Status(optVmIds.Value(), optLabel.Value());
-                    var outputType = optOutput.GetEnumValue<OutputType>();
-
-                    switch (outputType)
-                    {
-                        case OutputType.Text:
-                        case OutputType.Html:
-                        case OutputType.Markdown:
-                        case OutputType.Unicode:
-                        case OutputType.UnicodeAlt:
-
-                            var tableOutputType = TableOutputType.Unicode;
-                            switch (outputType)
-                            {
-                                case OutputType.Html: tableOutputType = TableOutputType.Html; break;
-                                case OutputType.Markdown: tableOutputType = TableOutputType.Markdown; break;
-                                case OutputType.Text: tableOutputType = TableOutputType.Text; break;
-                                case OutputType.Unicode: tableOutputType = TableOutputType.Unicode; break;
-                                case OutputType.UnicodeAlt: tableOutputType = TableOutputType.UnicodeAlt; break;
-                                default: tableOutputType = TableOutputType.Unicode; break;
-                            }
-
-                            parent.Out.Write(snapshots.Info(true, tableOutputType));
-                            break;
-
-                        case OutputType.Json:
-                            parent.Out.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true)))));
-                            break;
-
-                        case OutputType.JsonPretty:
-                            parent.Out.Write(JsonConvert.SerializeObject((snapshots.Select(a => a.GetRowInfo(true))),
-                                                                         Formatting.Indented));
-                            break;
-
-                        default:
-                            parent.Out.Write(snapshots.Info(true, TableOutputType.Unicode));
-                            break;
-                    }
+                    parent.Out.Write(snapshots.Info(true, optOutput.GetEnumValue<TableOutputType>()));
                 });
             });
         }
 
-        private void Clean(CommandLineApplication parent,
-                           CommandOption optVmIds,
-                           CommandOption<long> optTimeout)
+        private void Clean(CommandLineApplication parent, CommandOption optVmIds, CommandOption<long> optTimeout)
         {
             parent.Command("clean", cmd =>
             {
@@ -168,9 +121,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
             });
         }
 
-        private void Snap(CommandLineApplication parent,
-                          CommandOption optVmIds,
-                          CommandOption<long> optTimeout)
+        private void Snap(CommandLineApplication parent, CommandOption optVmIds, CommandOption<long> optTimeout)
         {
             parent.Command("snap", cmd =>
             {
@@ -191,7 +142,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                                   optState.HasValue(),
                                                   optTimeout.HasValue() ?
                                                     optTimeout.ParsedValue * 1000 :
-                                                    ResultExtension.DEFAULT_TIMEOUT) ? 0 : 1;
+                                                    ResultExtension.DEFAULT_TIMEOUT).Status ? 0 : 1;
                 });
             });
         }
