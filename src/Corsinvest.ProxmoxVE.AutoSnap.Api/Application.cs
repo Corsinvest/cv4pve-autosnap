@@ -119,10 +119,10 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <returns></returns>
         public ResultSnap Snap(string vmIdsOrNames, string label, int keep, bool state, long timeout)
         {
-            _out.WriteLine($@"ACTION Snap 
-VMs:   {vmIdsOrNames}  
-Label: {label} 
-Keep:  {keep} 
+            _out.WriteLine($@"ACTION Snap
+VMs:   {vmIdsOrNames}
+Label: {label}
+Keep:  {keep}
 State: {state}");
 
             var ret = new ResultSnap();
@@ -222,9 +222,9 @@ State: {state}");
         /// <returns></returns>
         public bool Clean(string vmIdsOrNames, string label, int keep, long timeout)
         {
-            _out.WriteLine($@"ACTION Clean 
-VMs:   {vmIdsOrNames}  
-Label: {label} 
+            _out.WriteLine($@"ACTION Clean
+VMs:   {vmIdsOrNames}
+Label: {label}
 Keep:  {keep}");
 
             var ret = true;

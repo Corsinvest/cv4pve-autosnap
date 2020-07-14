@@ -33,7 +33,7 @@ foreach ($rid in $rids) {
     $path = "$pathNet\$rid\publish\"
 
     $fileName = Get-ChildItem $path -Exclude *.pdb -name
-    $fileDest = "$pathNet\$fileName-$rid.zip"   
+    $fileDest = "$pathNet\$fileName-$rid.zip"
     Remove-Item $fileDest -ErrorAction SilentlyContinue
     Compress-Archive $path\$fileName $fileDest
 }
