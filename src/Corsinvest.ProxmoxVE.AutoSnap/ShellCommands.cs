@@ -61,7 +61,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         {
             if (!File.Exists(_scriptHook)) { return; }
 
-            var ret = ShellHelper.Execute(_scriptHook,
+            var (StandardOutput, ExitCode) = ShellHelper.Execute(_scriptHook,
                                           true,
                                           new Dictionary<string, string>(e.Environments)
                                           {
@@ -72,8 +72,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                           _dryRun,
                                           _debug);
 
-            if (ret.ExitCode != 0) { _out.WriteLine($"Script return code: {ret.ExitCode}"); }
-            if (!string.IsNullOrWhiteSpace(ret.StandardOutput)) { _out.Write(ret.StandardOutput); }
+            if (ExitCode != 0) { _out.WriteLine($"Script return code: {ExitCode}"); }
+            if (!string.IsNullOrWhiteSpace(StandardOutput)) { _out.Write(StandardOutput); }
         }
 
         private void Status(CommandLineApplication parent, CommandOption optVmIds)

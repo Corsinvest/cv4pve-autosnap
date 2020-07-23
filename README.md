@@ -26,6 +26,8 @@ Options:
   -?|-h|--help      Show help information
   --version         Show version information
   --host            The host name host[:port],host1[:port],host2[:port]
+  --api-token       Api token (eg root@pam!app=8a8c1cd4-d373-43f1-b366-05ce4cb8061f).
+                    Require Proxmox VE 6.2 or later
   --username        User name <username>@<realm>
   --password        The password. Specify 'file:path_file' to store password in file.
   --vmid            The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
@@ -104,6 +106,13 @@ For the planning process using an external machine:
 * Support multiple host for HA in --host parameter es. host[:port],host1[:port],host2[:port]
 * Multiple output text,unicode,unicodeAlt,markdown,html
 * Check-Update and Upgrade application
+* Use Api token --api-token parameter
+
+## Api token
+
+From version 6.2 of Proxmox VE is possible to use [Api token](https://pve.proxmox.com/pve-docs/pveum-plain.html).
+This feature permit execute Api without using user and password.
+If using **Privilege Separation** when create api token remember specify in permission.
 
 ## Configuration and use
 
