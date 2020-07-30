@@ -26,8 +26,7 @@ Options:
   -?|-h|--help      Show help information
   --version         Show version information
   --host            The host name host[:port],host1[:port],host2[:port]
-  --api-token       Api token (eg root@pam!app=8a8c1cd4-d373-43f1-b366-05ce4cb8061f).
-                    Require Proxmox VE 6.2 or later
+  --api-token       Api token format 'USER@REALM!TOKENID=UUID'. Require Proxmox VE 6.2 or later
   --username        User name <username>@<realm>
   --password        The password. Specify 'file:path_file' to store password in file.
   --vmid            The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
