@@ -120,10 +120,11 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         public ResultSnap Snap(string vmIdsOrNames, string label, int keep, bool state, long timeout)
         {
             _out.WriteLine($@"ACTION Snap
-VMs:   {vmIdsOrNames}
-Label: {label}
-Keep:  {keep}
-State: {state}");
+VMs:     {vmIdsOrNames}
+Label:   {label}
+Keep:    {keep}
+State:   {state}
+Timeout: {timeout}");
 
             var ret = new ResultSnap();
             ret.Start();
