@@ -140,7 +140,7 @@ Timeout: {timeout}");
                 ret.Vms.Add(execSnapVm);
                 execSnapVm.Start();
 
-                _out.WriteLine($"----- VM {vm.Id} -----");
+                _out.WriteLine($"----- VM {vm.Id} {vm.Type} -----");
 
                 //exclude template
                 if (vm.IsTemplate)
@@ -170,11 +170,10 @@ Timeout: {timeout}");
                     inError = result.LogInError(_out);
 
                     //check error in task
-                    var task = _client.Nodes[vm.Node].Tasks[(result.Response.data as string)];
-                    var data = task.Status.ReadTaskStatus().Response.data;
-                    if (data.exitstatus != "OK")
+                    var taskStatus = _client.GetExitStatusTask(vm.Node, (result.Response.data as string));
+                    if (taskStatus != "OK")
                     {
-                        _out.WriteLine($"Error in task: {data.exitstatus}");
+                        _out.WriteLine($"Error in task: {taskStatus}");
                         inError = true;
                     }
                 }
@@ -224,16 +223,24 @@ Timeout: {timeout}");
         public bool Clean(string vmIdsOrNames, string label, int keep, long timeout)
         {
             _out.WriteLine($@"ACTION Clean
-VMs:   {vmIdsOrNames}
-Label: {label}
-Keep:  {keep}");
+VMs:     {vmIdsOrNames}
+Label:   {label}
+Keep:    {keep}
+Timeout: {timeout}");
 
             var ret = true;
             CallPhaseEvent("clean-job-start", null, label, keep, null, false);
 
             foreach (var vm in GetVMs(vmIdsOrNames))
             {
-                _out.WriteLine($"----- VM {vm.Id} -----");
+                //exclude template
+                if (vm.IsTemplate)
+                {
+                    _out.WriteLine("Skip VM is template");
+                    continue;
+                }
+
+                _out.WriteLine($"----- VM {vm.Id} {vm.Type} -----");
                 if (!SnapshotsRemove(vm, label, keep, timeout)) { ret = false; }
             }
 
@@ -253,7 +260,16 @@ Keep:  {keep}");
                 var inError = false;
                 if (!_dryRun)
                 {
-                    inError = vm.Snapshots.Remove(snapshot, timeout).LogInError(_out);
+                    var result = vm.Snapshots.Remove(snapshot, timeout);
+                    inError = result.LogInError(_out);
+
+                    //check error in task
+                    var taskStatus = _client.GetExitStatusTask(vm.Node, (result.Response.data as string));
+                    if (taskStatus != "OK")
+                    {
+                        _out.WriteLine($"Error in task: {taskStatus}");
+                        inError = true;
+                    }
                 }
 
                 if (inError)
