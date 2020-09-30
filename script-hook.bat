@@ -6,12 +6,13 @@ REM  - GNU General Public License version 3 (GPLv3)
 REM  - Corsinvest Enterprise License (CEL)
 REM  Full copyright and license information is available in
 REM  LICENSE.md which is distributed with this source code.
-REM 
+REM
 REM  Copyright (C) 2016 Corsinvest Srl	GPLv3 and CEL
 
 REM Corsinvest automatic snapshot for Proxmox VE cv4pve-autosnap hook script.
 REM Process environment variables as received from and set by cv4pve-autosnap.
 
+ECHO ----------------------------------------------------------
 ECHO CV4PVE_AUTOSNAP_PHASE:         %CV4PVE_AUTOSNAP_PHASE%
 ECHO CV4PVE_AUTOSNAP_VMID:          %CV4PVE_AUTOSNAP_VMID%
 ECHO CV4PVE_AUTOSNAP_VMNAME:        %CV4PVE_AUTOSNAP_VMNAME%
@@ -22,13 +23,15 @@ ECHO CV4PVE_AUTOSNAP_VMSTATE:       %CV4PVE_AUTOSNAP_VMSTATE%
 ECHO CV4PVE_AUTOSNAP_SNAP_NAME:     %CV4PVE_AUTOSNAP_SNAP_NAME%
 ECHO CV4PVE_AUTOSNAP_DEBUG:         %CV4PVE_AUTOSNAP_DEBUG%
 ECHO CV4PVE_AUTOSNAP_DRY_RUN:       %CV4PVE_AUTOSNAP_DRYRUN%
+ECHO CV4PVE_AUTOSNAP_DURATION       %CV4PVE_AUTOSNAP_DURATION%
+ECHO CV4PVE_AUTOSNAP_STATE          %CV4PVE_AUTOSNAP_STATE%
 
 IF "%CV4PVE_AUTOSNAP_PHASE%"=="clean-job-start" (
-    REM 
+    REM
 ) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="clean-job-end" (
     REM
 ) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-job-start" (
-    REM    
+    REM
 ) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-job-end" (
     REM
 ) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-create-pre" (

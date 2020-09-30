@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Corsinvest.ProxmoxVE.Api;
@@ -66,7 +67,14 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         public event EventHandler<PhaseEventArgs> PhaseEvent;
 
-        private void CallPhaseEvent(string phase, VMInfo vm, string label, int keep, string snapName, bool state)
+        private void CallPhaseEvent(string phase,
+                                    VMInfo vm,
+                                    string label,
+                                    int keep,
+                                    string snapName,
+                                    bool vmState,
+                                    double duration,
+                                    bool status)
         {
             if (_debug) { _out.WriteLine($"Phase: {phase}"); }
             PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
@@ -74,7 +82,9 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                                                         label,
                                                         keep,
                                                         snapName,
-                                                        state));
+                                                        vmState,
+                                                        duration,
+                                                        status));
         }
 
         /// <summary>
@@ -129,7 +139,7 @@ Timeout: {timeout}");
             var ret = new ResultSnap();
             ret.Start();
 
-            CallPhaseEvent("snap-job-start", null, label, keep, null, state);
+            CallPhaseEvent("snap-job-start", null, label, keep, null, state, 0, true);
 
             foreach (var vm in GetVMs(vmIdsOrNames))
             {
@@ -159,7 +169,7 @@ Timeout: {timeout}");
                 //create snapshot
                 var snapName = GetPrefix(label) + DateTime.Now.ToString(TIMESTAMP_FORMAT);
 
-                CallPhaseEvent("snap-create-pre", vm, label, keep, snapName, state);
+                CallPhaseEvent("snap-create-pre", vm, label, keep, snapName, state, 0, true);
 
                 _out.WriteLine($"Create snapshot: {snapName}");
 
@@ -180,13 +190,10 @@ Timeout: {timeout}");
 
                 if (inError)
                 {
-                    CallPhaseEvent("snap-create-abort", vm, label, keep, snapName, state);
-
                     execSnapVm.Stop();
+                    CallPhaseEvent("snap-create-abort", vm, label, keep, snapName, state, execSnapVm.Elapsed.TotalSeconds, false);
                     continue;
                 }
-
-                CallPhaseEvent("snap-create-post", vm, label, keep, snapName, state);
 
                 //remove old snapshot
                 if (!SnapshotsRemove(vm, label, keep, timeout))
@@ -198,12 +205,14 @@ Timeout: {timeout}");
                 execSnapVm.Stop();
                 execSnapVm.Status = true;
 
+                CallPhaseEvent("snap-create-post", vm, label, keep, snapName, state, execSnapVm.Elapsed.TotalSeconds, execSnapVm.Status);
+
                 _out.WriteLine($"VM execution {execSnapVm.Elapsed}");
             }
 
-            CallPhaseEvent("snap-job-end", null, label, keep, null, state);
-
             ret.Stop();
+
+            CallPhaseEvent("snap-job-end", null, label, keep, null, state, ret.Elapsed.TotalSeconds, ret.Status);
 
             _out.WriteLine($"Total execution {ret.Elapsed}");
 
@@ -228,8 +237,11 @@ Label:   {label}
 Keep:    {keep}
 Timeout: {timeout}");
 
+            var watch = new Stopwatch();
+            watch.Start();
+
             var ret = true;
-            CallPhaseEvent("clean-job-start", null, label, keep, null, false);
+            CallPhaseEvent("clean-job-start", null, label, keep, null, false, 0, false);
 
             foreach (var vm in GetVMs(vmIdsOrNames))
             {
@@ -244,7 +256,8 @@ Timeout: {timeout}");
                 if (!SnapshotsRemove(vm, label, keep, timeout)) { ret = false; }
             }
 
-            CallPhaseEvent("clean-job-end", null, label, keep, null, false);
+            watch.Stop();
+            CallPhaseEvent("clean-job-end", null, label, keep, null, false, watch.Elapsed.TotalSeconds, true);
 
             return ret;
         }
@@ -253,7 +266,10 @@ Timeout: {timeout}");
         {
             foreach (var snapshot in FilterLabel(vm.Snapshots, label).Reverse().Skip(keep).Reverse())
             {
-                CallPhaseEvent("snap-remove-pre", vm, label, keep, snapshot.Name, false);
+                var watch = new Stopwatch();
+                watch.Start();
+
+                CallPhaseEvent("snap-remove-pre", vm, label, keep, snapshot.Name, false, 0, false);
 
                 _out.WriteLine($"Remove snapshot: {snapshot.Name}");
 
@@ -272,15 +288,16 @@ Timeout: {timeout}");
                     }
                 }
 
+                watch.Stop();
                 if (inError)
                 {
                     if (_debug) { _out.WriteLine($"Snap remove: problem in remove "); }
 
-                    CallPhaseEvent("snap-remove-abort", vm, label, keep, snapshot.Name, false);
+                    CallPhaseEvent("snap-remove-abort", vm, label, keep, snapshot.Name, false, watch.Elapsed.TotalSeconds, false);
                     return false;
                 }
 
-                CallPhaseEvent("snap-remove-post", vm, label, keep, snapshot.Name, false);
+                CallPhaseEvent("snap-remove-post", vm, label, keep, snapshot.Name, false, watch.Elapsed.TotalSeconds, true);
             }
 
             return true;

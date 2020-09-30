@@ -149,7 +149,7 @@ When create a snapshot the software add "auto" prefix of the name the snapshot.
 
 ```sh
 root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid=111 clean --label='4hours' --keep=2
------ VM 100 -----
+----- VM 100 QEMU -----
 Remove snapshot: auto4hours190617080002
 Remove snapshot: auto4hours190617120002
 Remove snapshot: auto4hours190617160002
@@ -193,6 +193,8 @@ CV4PVE_AUTOSNAP_SNAP_NAME
 CV4PVE_AUTOSNAP_VMSTATE     #1/0
 CV4PVE_AUTOSNAP_DEBUG       #1/0
 CV4PVE_AUTOSNAP_DRY_RUN     #1/0
+CV4PVE_AUTOSNAP_DURATION
+CV4PVE_AUTOSNAP_STATE       #1/0
 ```
 
 See example hook file script-hook.bat, script-hook.sh

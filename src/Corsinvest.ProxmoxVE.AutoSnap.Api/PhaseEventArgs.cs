@@ -28,20 +28,26 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="label"></param>
         /// <param name="keep"></param>
         /// <param name="snapName"></param>
-        /// <param name="state"></param>
+        /// <param name="vmState"></param>
+        /// <param name="duration"></param>
+        /// <param name="status"></param>
         public PhaseEventArgs(string phase,
                               VMInfo vm,
                               string label,
                               int keep,
                               string snapName,
-                              bool state)
+                              bool vmState,
+                              double duration,
+                              bool status)
         {
             Phase = phase;
             VM = vm;
             Label = label;
             Keep = keep;
             SnapName = snapName;
-            State = state;
+            VMState = vmState;
+            Duration = duration;
+            Status = status;
         }
 
         /// <summary>
@@ -78,7 +84,19 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// State memory
         /// </summary>
         /// <value></value>
-        public bool State { get; }
+        public bool VMState { get; }
+
+        /// <summary>
+        /// Duration
+        /// </summary>
+        /// <value></value>
+        public double Duration { get; }
+
+        /// <summary>
+        /// Status
+        /// </summary>
+        /// <value></value>
+        public bool Status { get; }
 
         /// <summary>
         /// Environments
@@ -94,7 +112,9 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                     {"CV4PVE_AUTOSNAP_LABEL", Label},
                     {"CV4PVE_AUTOSNAP_KEEP", Keep + ""},
                     {"CV4PVE_AUTOSNAP_SNAP_NAME", SnapName},
-                    {"CV4PVE_AUTOSNAP_VMSTATE", State ? "1" :"0"},
+                    {"CV4PVE_AUTOSNAP_VMSTATE", VMState ? "1" : "0"},
+                    {"CV4PVE_AUTOSNAP_DURATION", Duration + ""},
+                    {"CV4PVE_AUTOSNAP_STATE", Status ? "1" : "0"},
                 };
     }
 }
