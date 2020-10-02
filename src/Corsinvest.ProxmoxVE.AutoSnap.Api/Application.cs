@@ -143,22 +143,21 @@ Timeout: {timeout}");
 
             foreach (var vm in GetVMs(vmIdsOrNames))
             {
-                var execSnapVm = new ResultSnapVm
-                {
-                    VmId = int.Parse(vm.Id)
-                };
-                ret.Vms.Add(execSnapVm);
-                execSnapVm.Start();
-
                 _out.WriteLine($"----- VM {vm.Id} {vm.Type} -----");
 
                 //exclude template
                 if (vm.IsTemplate)
                 {
                     _out.WriteLine("Skip VM is template");
-                    execSnapVm.Stop();
                     continue;
                 }
+
+                var execSnapVm = new ResultSnapVm
+                {
+                    VmId = int.Parse(vm.Id)
+                };
+                ret.Vms.Add(execSnapVm);
+                execSnapVm.Start();
 
                 //check agent enabled
                 if (vm.Type == VMTypeEnum.Qemu && !((ConfigQemu)vm.Config).AgentEnabled)
