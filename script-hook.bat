@@ -47,6 +47,6 @@ IF "%CV4PVE_AUTOSNAP_PHASE%"=="clean-job-start" (
 ) ELSE IF "%CV4PVE_AUTOSNAP_PHASE%"=="snap-remove-abort" (
     REM
 ) ELSE (
-    ECHO "unknown phase '$CV4PVE_BARC_PHASE'"
+    ECHO "unknown phase '$CV4PVE_AUTOSNAP_PHASE'"
     EXIT 1
 )

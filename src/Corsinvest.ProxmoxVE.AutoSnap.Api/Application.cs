@@ -67,7 +67,39 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         public event EventHandler<PhaseEventArgs> PhaseEvent;
 
-        private void CallPhaseEvent(string phase,
+        /// <summary>
+        /// Phases
+        /// </summary>
+        /// <value></value>
+        public static Dictionary<string, HookPhase> Phases = new Dictionary<string, HookPhase>
+        {
+            { "clean-job-start" , HookPhase.CleanJobStart },
+            { "clean-job-end" , HookPhase.CleanJobEnd },
+            { "snap-job-start" , HookPhase.SnapJobStart },
+            { "snap-job-end" , HookPhase.SnapJobEnd },
+            { "snap-create-pre" , HookPhase.SnapCreatePre },
+            { "snap-create-post" , HookPhase.SnapCreatePost },
+            { "snap-create-abort" , HookPhase.SnapCreateAbort },
+            { "snap-remove-pre" , HookPhase.SnapRemovePre },
+            { "snap-remove-post" , HookPhase.SnapRemovePost },
+            { "snap-remove-abort" , HookPhase.SnapRemoveAbort }
+        };
+
+        /// <summary>
+        /// Phase string to enum
+        /// </summary>
+        /// <param name="phase"></param>
+        /// <returns></returns>
+        public static HookPhase PhaseStrToEnum(string phase) => Phases[phase];
+
+        /// <summary>
+        /// Phase enum to string
+        /// </summary>
+        /// <param name="phase"></param>
+        /// <returns></returns>
+        public static string PhaseEnumToStr(HookPhase phase) => Phases.SingleOrDefault(a => a.Value == phase).Key;
+
+        private void CallPhaseEvent(HookPhase phase,
                                     VMInfo vm,
                                     string label,
                                     int keep,
@@ -76,7 +108,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                                     double duration,
                                     bool status)
         {
-            if (_debug) { _out.WriteLine($"Phase: {phase}"); }
+            if (_debug) { _out.WriteLine($"Phase: {PhaseEnumToStr(phase)}"); }
             PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
                                                         vm,
                                                         label,
@@ -139,7 +171,7 @@ Timeout: {timeout}");
             var ret = new ResultSnap();
             ret.Start();
 
-            CallPhaseEvent("snap-job-start", null, label, keep, null, state, 0, true);
+            CallPhaseEvent(HookPhase.SnapJobStart, null, label, keep, null, state, 0, true);
 
             foreach (var vm in GetVMs(vmIdsOrNames))
             {
@@ -168,7 +200,7 @@ Timeout: {timeout}");
                 //create snapshot
                 var snapName = GetPrefix(label) + DateTime.Now.ToString(TIMESTAMP_FORMAT);
 
-                CallPhaseEvent("snap-create-pre", vm, label, keep, snapName, state, 0, true);
+                CallPhaseEvent(HookPhase.SnapCreatePre, vm, label, keep, snapName, state, 0, true);
 
                 _out.WriteLine($"Create snapshot: {snapName}");
 
@@ -190,7 +222,7 @@ Timeout: {timeout}");
                 if (inError)
                 {
                     execSnapVm.Stop();
-                    CallPhaseEvent("snap-create-abort", vm, label, keep, snapName, state, execSnapVm.Elapsed.TotalSeconds, false);
+                    CallPhaseEvent(HookPhase.SnapCreateAbort, vm, label, keep, snapName, state, execSnapVm.Elapsed.TotalSeconds, false);
                     continue;
                 }
 
@@ -204,14 +236,14 @@ Timeout: {timeout}");
                 execSnapVm.Stop();
                 execSnapVm.Status = true;
 
-                CallPhaseEvent("snap-create-post", vm, label, keep, snapName, state, execSnapVm.Elapsed.TotalSeconds, execSnapVm.Status);
+                CallPhaseEvent(HookPhase.SnapCreatePost, vm, label, keep, snapName, state, execSnapVm.Elapsed.TotalSeconds, execSnapVm.Status);
 
                 _out.WriteLine($"VM execution {execSnapVm.Elapsed}");
             }
 
             ret.Stop();
 
-            CallPhaseEvent("snap-job-end", null, label, keep, null, state, ret.Elapsed.TotalSeconds, ret.Status);
+            CallPhaseEvent(HookPhase.SnapJobEnd, null, label, keep, null, state, ret.Elapsed.TotalSeconds, ret.Status);
 
             _out.WriteLine($"Total execution {ret.Elapsed}");
 
@@ -240,7 +272,7 @@ Timeout: {timeout}");
             watch.Start();
 
             var ret = true;
-            CallPhaseEvent("clean-job-start", null, label, keep, null, false, 0, false);
+            CallPhaseEvent(HookPhase.CleanJobStart, null, label, keep, null, false, 0, false);
 
             foreach (var vm in GetVMs(vmIdsOrNames))
             {
@@ -256,7 +288,7 @@ Timeout: {timeout}");
             }
 
             watch.Stop();
-            CallPhaseEvent("clean-job-end", null, label, keep, null, false, watch.Elapsed.TotalSeconds, true);
+            CallPhaseEvent(HookPhase.CleanJobEnd, null, label, keep, null, false, watch.Elapsed.TotalSeconds, true);
 
             return ret;
         }
@@ -268,7 +300,7 @@ Timeout: {timeout}");
                 var watch = new Stopwatch();
                 watch.Start();
 
-                CallPhaseEvent("snap-remove-pre", vm, label, keep, snapshot.Name, false, 0, false);
+                CallPhaseEvent(HookPhase.SnapRemovePre, vm, label, keep, snapshot.Name, false, 0, false);
 
                 _out.WriteLine($"Remove snapshot: {snapshot.Name}");
 
@@ -292,11 +324,11 @@ Timeout: {timeout}");
                 {
                     if (_debug) { _out.WriteLine($"Snap remove: problem in remove "); }
 
-                    CallPhaseEvent("snap-remove-abort", vm, label, keep, snapshot.Name, false, watch.Elapsed.TotalSeconds, false);
+                    CallPhaseEvent(HookPhase.SnapRemoveAbort, vm, label, keep, snapshot.Name, false, watch.Elapsed.TotalSeconds, false);
                     return false;
                 }
 
-                CallPhaseEvent("snap-remove-post", vm, label, keep, snapshot.Name, false, watch.Elapsed.TotalSeconds, true);
+                CallPhaseEvent(HookPhase.SnapRemovePost, vm, label, keep, snapshot.Name, false, watch.Elapsed.TotalSeconds, true);
             }
 
             return true;

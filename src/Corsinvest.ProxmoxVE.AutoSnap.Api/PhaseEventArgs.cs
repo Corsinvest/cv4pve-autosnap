@@ -11,6 +11,7 @@
  */
 
 using System.Collections.Generic;
+using System.Globalization;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api
@@ -31,7 +32,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="vmState"></param>
         /// <param name="duration"></param>
         /// <param name="status"></param>
-        public PhaseEventArgs(string phase,
+        public PhaseEventArgs(HookPhase phase,
                               VMInfo vm,
                               string label,
                               int keep,
@@ -54,7 +55,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// Phase
         /// </summary>
         /// <value></value>
-        public string Phase { get; }
+        public HookPhase Phase { get; }
 
         /// <summary>
         /// VM Info
@@ -105,16 +106,16 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         public IReadOnlyDictionary<string, string> Environments
             => new Dictionary<string, string>
                 {
-                    {"CV4PVE_AUTOSNAP_PHASE", Phase},
-                    {"CV4PVE_AUTOSNAP_VMID", VM?.Id + ""},
+                    {"CV4PVE_AUTOSNAP_PHASE", Application.PhaseEnumToStr(Phase)},
+                    {"CV4PVE_AUTOSNAP_VMID", VM?.Id + "" },
                     {"CV4PVE_AUTOSNAP_VMNAME", VM?.Name },
-                    {"CV4PVE_AUTOSNAP_VMTYPE", VM?.Type + ""},
-                    {"CV4PVE_AUTOSNAP_LABEL", Label},
-                    {"CV4PVE_AUTOSNAP_KEEP", Keep + ""},
-                    {"CV4PVE_AUTOSNAP_SNAP_NAME", SnapName},
-                    {"CV4PVE_AUTOSNAP_VMSTATE", VMState ? "1" : "0"},
-                    {"CV4PVE_AUTOSNAP_DURATION", Duration + ""},
-                    {"CV4PVE_AUTOSNAP_STATE", Status ? "1" : "0"},
+                    {"CV4PVE_AUTOSNAP_VMTYPE", VM?.Type + "" },
+                    {"CV4PVE_AUTOSNAP_LABEL", Label },
+                    {"CV4PVE_AUTOSNAP_KEEP", Keep + "" },
+                    {"CV4PVE_AUTOSNAP_SNAP_NAME", SnapName },
+                    {"CV4PVE_AUTOSNAP_VMSTATE", VMState ? "1" : "0" },
+                    {"CV4PVE_AUTOSNAP_DURATION", (Duration + "").Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator,".") },
+                    {"CV4PVE_AUTOSNAP_STATE", Status ? "1" : "0" },
                 };
     }
 }

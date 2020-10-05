@@ -113,135 +113,6 @@ From version 6.2 of Proxmox VE is possible to use [Api token](https://pve.proxmo
 This feature permit execute Api without using user and password.
 If using **Privilege Separation** when create api token remember specify in permission.
 
-## Some words about Snapshot consistency and what qemu-guest-agent can do for you
-
-Bear in mind, that when taking a snapshot of a running VM, it's basically like if you have a server which gets pulled away from the Power. Often this is not cathastrophic as the next fsck will try to fix Filesystem Issues, but in the worst case this could leave you with a severely damaged Filesystem, or even worse, half written Inodes which were in-flight when the power failed lead to silent data corruption. To overcome these things, we have the qemu-guest-agent to improve the consistency of the Filesystem while taking a snapshot. It won't leave you a clean filesystem, but it sync()'s outstanding writes and halts all i/o until the snapshot is complete. Still, there might me issues on the Application layer. Databases processes might have unwritten data in memory, which is the most common case. Here you have the opportunity to do additional tuning, and use hooks to tell your vital processes things to do prio and post freezes.
-
-First, you want to make sure that your guest has the qemu-guest-agent running and is working properly. Now we use custom hooks to tell your services with volatile data, to flush all unwritten data to disk. On debian based linux systems the hook file can be set in ```/etc/default/qemu-guest-agent``` and could simply contain this line:
-
-```
-DAEMON_ARGS="-F/etc/qemu/fsfreeze-hook"
-```
-
-Create ```/etc/qemu/fsfreeze-hook``` and make ist look like:
-
-```
-#!/bin/sh
-
-# This script is executed when a guest agent receives fsfreeze-freeze and
-# fsfreeze-thaw command, if it is specified in --fsfreeze-hook (-F)
-# option of qemu-ga or placed in default path (/etc/qemu/fsfreeze-hook).
-# When the agent receives fsfreeze-freeze request, this script is issued with
-# "freeze" argument before the filesystem is frozen. And for fsfreeze-thaw
-# request, it is issued with "thaw" argument after filesystem is thawed.
-
-LOGFILE=/var/log/qga-fsfreeze-hook.log
-FSFREEZE_D=$(dirname -- "$0")/fsfreeze-hook.d
-
-# Check whether file $1 is a backup or rpm-generated file and should be ignored
-is_ignored_file() {
-    case "$1" in
-        *~ | *.bak | *.orig | *.rpmnew | *.rpmorig | *.rpmsave | *.sample | *.dpkg-old | *.dpkg-new | *.dpkg-tmp | *.dpkg-dist |
-*.dpkg-bak | *.dpkg-backup | *.dpkg-remove)
-            return 0 ;;
-    esac
-    return 1
-}
-
-# Iterate executables in directory "fsfreeze-hook.d" with the specified args
-[ ! -d "$FSFREEZE_D" ] && exit 0
-for file in "$FSFREEZE_D"/* ; do
-    is_ignored_file "$file" && continue
-    [ -x "$file" ] || continue
-    printf "$(date): execute $file $@\n" >>$LOGFILE
-    "$file" "$@" >>$LOGFILE 2>&1
-    STATUS=$?
-    printf "$(date): $file finished with status=$STATUS\n" >>$LOGFILE
-done
-
-exit 0
-```
-
-For testing purposes place this into ```/etc/qemu/fsfreeze-hook.d/10-info```:
-
-```
-#!/bin/bash
-dt=$(date +%s)
-
-case "$1" in
-    freeze)
-        echo "frozen on $dt" | tee >(cat >/tmp/fsfreeze)
-    ;;
-    thaw)
-        echo "thawed on $dt" | tee >(cat >>/tmp/fsfreeze)
-    ;;
-esac
-
-```
-
-Now you can place files for different Services in ```/etc/qemu/fsfreeze-hook.d/``` that tell those services what to to prior and post snapshots. A very common example is mysql. Create a file ```/etc/qemu/fsfreeze-hook.d/20-mysql``` containing
-
-```
-#!/bin/sh
-
-# Flush MySQL tables to the disk before the filesystem is frozen.
-# At the same time, this keeps a read lock in order to avoid write accesses
-# from the other clients until the filesystem is thawed.
-
-MYSQL="/usr/bin/mysql"
-#MYSQL_OPTS="-uroot" #"-prootpassword"
-MYSQL_OPTS="--defaults-extra-file=/etc/mysql/debian.cnf"
-FIFO=/var/run/mysql-flush.fifo
-
-# Check mysql is installed and the server running
-[ -x "$MYSQL" ] && "$MYSQL" $MYSQL_OPTS < /dev/null || exit 0
-
-flush_and_wait() {
-    printf "FLUSH TABLES WITH READ LOCK \\G\n"
-    trap 'printf "$(date): $0 is killed\n">&2' HUP INT QUIT ALRM TERM
-    read < $FIFO
-    printf "UNLOCK TABLES \\G\n"
-    rm -f $FIFO
-}
-
-case "$1" in
-    freeze)
-        mkfifo $FIFO || exit 1
-        flush_and_wait | "$MYSQL" $MYSQL_OPTS &
-        # wait until every block is flushed
-        while [ "$(echo 'SHOW STATUS LIKE "Key_blocks_not_flushed"' |\
-                 "$MYSQL" $MYSQL_OPTS | tail -1 | cut -f 2)" -gt 0 ]; do
-            sleep 1
-        done
-        # for InnoDB, wait until every log is flushed
-        INNODB_STATUS=$(mktemp /tmp/mysql-flush.XXXXXX)
-        [ $? -ne 0 ] && exit 2
-        trap "rm -f $INNODB_STATUS; exit 1" HUP INT QUIT ALRM TERM
-        while :; do
-            printf "SHOW ENGINE INNODB STATUS \\G" |\
-                "$MYSQL" $MYSQL_OPTS > $INNODB_STATUS
-            LOG_CURRENT=$(grep 'Log sequence number' $INNODB_STATUS |\
-                          tr -s ' ' | cut -d' ' -f4)
-            LOG_FLUSHED=$(grep 'Log flushed up to' $INNODB_STATUS |\
-                          tr -s ' ' | cut -d' ' -f5)
-            [ "$LOG_CURRENT" = "$LOG_FLUSHED" ] && break
-            sleep 1
-        done
-        rm -f $INNODB_STATUS
-        ;;
-
-    thaw)
-        [ ! -p $FIFO ] && exit 1
-        echo > $FIFO
-        ;;
-
-    *)
-        exit 1
-        ;;
-esac
-
-```
-
 ## Configuration and use
 
 E.g. install on linux 64
@@ -327,3 +198,131 @@ CV4PVE_AUTOSNAP_STATE       #1/0
 ```
 
 See example hook file script-hook.bat, script-hook.sh
+
+## Some words about Snapshot consistency and what qemu-guest-agent can do for you
+
+Bear in mind, that when taking a snapshot of a running VM, it's basically like if you have a server which gets pulled away from the Power. Often this is not cathastrophic as the next fsck will try to fix Filesystem Issues, but in the worst case this could leave you with a severely damaged Filesystem, or even worse, half written Inodes which were in-flight when the power failed lead to silent data corruption. To overcome these things, we have the qemu-guest-agent to improve the consistency of the Filesystem while taking a snapshot. It won't leave you a clean filesystem, but it sync()'s outstanding writes and halts all i/o until the snapshot is complete. Still, there might me issues on the Application layer. Databases processes might have unwritten data in memory, which is the most common case. Here you have the opportunity to do additional tuning, and use hooks to tell your vital processes things to do prio and post freezes.
+
+First, you want to make sure that your guest has the qemu-guest-agent running and is working properly. Now we use custom hooks to tell your services with volatile data, to flush all unwritten data to disk. On debian based linux systems the hook file can be set in ```/etc/default/qemu-guest-agent``` and could simply contain this line:
+
+```sh
+DAEMON_ARGS="-F/etc/qemu/fsfreeze-hook"
+```
+
+Create ```/etc/qemu/fsfreeze-hook``` and make ist look like:
+
+```sh
+#!/bin/sh
+
+# This script is executed when a guest agent receives fsfreeze-freeze and
+# fsfreeze-thaw command, if it is specified in --fsfreeze-hook (-F)
+# option of qemu-ga or placed in default path (/etc/qemu/fsfreeze-hook).
+# When the agent receives fsfreeze-freeze request, this script is issued with
+# "freeze" argument before the filesystem is frozen. And for fsfreeze-thaw
+# request, it is issued with "thaw" argument after filesystem is thawed.
+
+LOGFILE=/var/log/qga-fsfreeze-hook.log
+FSFREEZE_D=$(dirname -- "$0")/fsfreeze-hook.d
+
+# Check whether file $1 is a backup or rpm-generated file and should be ignored
+is_ignored_file() {
+    case "$1" in
+        *~ | *.bak | *.orig | *.rpmnew | *.rpmorig | *.rpmsave | *.sample | *.dpkg-old | *.dpkg-new | *.dpkg-tmp | *.dpkg-dist |
+*.dpkg-bak | *.dpkg-backup | *.dpkg-remove)
+            return 0 ;;
+    esac
+    return 1
+}
+
+# Iterate executables in directory "fsfreeze-hook.d" with the specified args
+[ ! -d "$FSFREEZE_D" ] && exit 0
+for file in "$FSFREEZE_D"/* ; do
+    is_ignored_file "$file" && continue
+    [ -x "$file" ] || continue
+    printf "$(date): execute $file $@\n" >>$LOGFILE
+    "$file" "$@" >>$LOGFILE 2>&1
+    STATUS=$?
+    printf "$(date): $file finished with status=$STATUS\n" >>$LOGFILE
+done
+
+exit 0
+```
+
+For testing purposes place this into ```/etc/qemu/fsfreeze-hook.d/10-info```:
+
+```
+#!/bin/bash
+dt=$(date +%s)
+
+case "$1" in
+    freeze)
+        echo "frozen on $dt" | tee >(cat >/tmp/fsfreeze)
+    ;;
+    thaw)
+        echo "thawed on $dt" | tee >(cat >>/tmp/fsfreeze)
+    ;;
+esac
+
+```
+
+Now you can place files for different Services in ```/etc/qemu/fsfreeze-hook.d/``` that tell those services what to to prior and post snapshots. A very common example is mysql. Create a file ```/etc/qemu/fsfreeze-hook.d/20-mysql``` containing
+
+```sh
+#!/bin/sh
+
+# Flush MySQL tables to the disk before the filesystem is frozen.
+# At the same time, this keeps a read lock in order to avoid write accesses
+# from the other clients until the filesystem is thawed.
+
+MYSQL="/usr/bin/mysql"
+#MYSQL_OPTS="-uroot" #"-prootpassword"
+MYSQL_OPTS="--defaults-extra-file=/etc/mysql/debian.cnf"
+FIFO=/var/run/mysql-flush.fifo
+
+# Check mysql is installed and the server running
+[ -x "$MYSQL" ] && "$MYSQL" $MYSQL_OPTS < /dev/null || exit 0
+
+flush_and_wait() {
+    printf "FLUSH TABLES WITH READ LOCK \\G\n"
+    trap 'printf "$(date): $0 is killed\n">&2' HUP INT QUIT ALRM TERM
+    read < $FIFO
+    printf "UNLOCK TABLES \\G\n"
+    rm -f $FIFO
+}
+
+case "$1" in
+    freeze)
+        mkfifo $FIFO || exit 1
+        flush_and_wait | "$MYSQL" $MYSQL_OPTS &
+        # wait until every block is flushed
+        while [ "$(echo 'SHOW STATUS LIKE "Key_blocks_not_flushed"' |\
+                 "$MYSQL" $MYSQL_OPTS | tail -1 | cut -f 2)" -gt 0 ]; do
+            sleep 1
+        done
+        # for InnoDB, wait until every log is flushed
+        INNODB_STATUS=$(mktemp /tmp/mysql-flush.XXXXXX)
+        [ $? -ne 0 ] && exit 2
+        trap "rm -f $INNODB_STATUS; exit 1" HUP INT QUIT ALRM TERM
+        while :; do
+            printf "SHOW ENGINE INNODB STATUS \\G" |\
+                "$MYSQL" $MYSQL_OPTS > $INNODB_STATUS
+            LOG_CURRENT=$(grep 'Log sequence number' $INNODB_STATUS |\
+                          tr -s ' ' | cut -d' ' -f4)
+            LOG_FLUSHED=$(grep 'Log flushed up to' $INNODB_STATUS |\
+                          tr -s ' ' | cut -d' ' -f5)
+            [ "$LOG_CURRENT" = "$LOG_FLUSHED" ] && break
+            sleep 1
+        done
+        rm -f $INNODB_STATUS
+        ;;
+
+    thaw)
+        [ ! -p $FIFO ] && exit 1
+        echo > $FIFO
+        ;;
+
+    *)
+        exit 1
+        ;;
+esac
+```

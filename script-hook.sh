@@ -25,7 +25,7 @@ hook() {
     echo "CV4PVE_AUTOSNAP_DEBUG:         $CV4PVE_AUTOSNAP_DEBUG"
     echo "CV4PVE_AUTOSNAP_DRY_RUN:       $CV4PVE_AUTOSNAP_DRY_RUN"
     echo "CV4PVE_AUTOSNAP_DURATION       $CV4PVE_AUTOSNAP_DURATION"
-    echo "CV4PVE_AUTOSNAP_STATE          $CV4PVE_AUTOSNAP_STATE%"
+    echo "CV4PVE_AUTOSNAP_STATE          $CV4PVE_AUTOSNAP_STATE"
 
     case "$CV4PVE_AUTOSNAP_PHASE" in
         #clean job status
@@ -46,7 +46,7 @@ hook() {
         snap-remove-post);;
         snap-remove-abort);;
 
-        *) echo "unknown phase '$CV4PVE_BARC_PHASE'"; return 1;;
+        *) echo "unknown phase '$CV4PVE_AUTOSNAP_PHASE'"; return 1;;
     esac
 }
 
