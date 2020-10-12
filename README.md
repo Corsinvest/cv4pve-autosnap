@@ -106,6 +106,7 @@ For the planning process using an external machine:
 * Multiple output text,unicode,unicodeAlt,markdown,html
 * Check-Update and Upgrade application
 * Use Api token --api-token parameter
+* Support range vmid 100:103,134,200:204,-102
 
 ## Api token
 
