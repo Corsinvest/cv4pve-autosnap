@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <Version>1.6.12</Version>
+    <Version>1.6.13</Version>
     <Company>Corsinvest Srl</Company>
     <Authors>Daniele Corsini</Authors>
     <Copyright>Corsinvest Srl</Copyright>
@@ -33,6 +33,12 @@
 
   <ItemGroup>
     <!-- <ProjectReference Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj" /> -->
-    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="2.6.11" />
+    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="2.7.0" />
   </ItemGroup>
+
+  <Target Name="SpicNSpan" AfterTargets="Clean">
+    <RemoveDir Directories="$(TargetDir)" />
+    <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" />
+    <RemoveDir Directories="$(ProjectDir)$(BaseOutputPath)" />
+  </Target>
 </Project>
