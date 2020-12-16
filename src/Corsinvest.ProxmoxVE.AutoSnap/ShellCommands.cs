@@ -45,9 +45,13 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                     .DependOn(parent, CommandOptionExtension.HOST_OPTION_NAME);
             var optTimeout = parent.TimeoutOption();
 
-            Snap(parent, optVmIds, optTimeout);
-            Clean(parent, optVmIds, optTimeout);
-            Status(parent, optVmIds);
+            var optTimestampFormat = parent.Option("--timestamp-format",
+                                                   $"Specify different timestamp format. Default: {Application.DEFAULT_TIMESTAMP_FORMAT} ",
+                                                   CommandOptionType.SingleValue);
+
+            Snap(parent, optVmIds, optTimeout, optTimestampFormat);
+            Clean(parent, optVmIds, optTimeout, optTimestampFormat);
+            Status(parent, optVmIds, optTimestampFormat);
         }
 
         private Application CreateApp(CommandLineApplication parent)
@@ -76,7 +80,9 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
             if (!string.IsNullOrWhiteSpace(StandardOutput)) { _out.Write(StandardOutput); }
         }
 
-        private void Status(CommandLineApplication parent, CommandOption optVmIds)
+        private void Status(CommandLineApplication parent,
+                            CommandOption optVmIds,
+                            CommandOption optTimestampFormat)
         {
             parent.Command("status", cmd =>
             {
@@ -88,13 +94,18 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
 
                 cmd.OnExecute(() =>
                 {
-                    var snapshots = CreateApp(parent).Status(optVmIds.Value(), optLabel.Value());
+                    var snapshots = CreateApp(parent).Status(optVmIds.Value(),
+                                                             optLabel.Value(),
+                                                             optTimestampFormat.Value());
                     parent.Out.Write(snapshots.Info(true, optOutput.GetEnumValue<TableOutputType>()));
                 });
             });
         }
 
-        private void Clean(CommandLineApplication parent, CommandOption optVmIds, CommandOption<long> optTimeout)
+        private void Clean(CommandLineApplication parent,
+                           CommandOption optVmIds,
+                           CommandOption<long> optTimeout,
+                           CommandOption optTimestampFormat)
         {
             parent.Command("clean", cmd =>
             {
@@ -116,12 +127,16 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                                    optKeep.ParsedValue,
                                                    optTimeout.HasValue() ?
                                                         optTimeout.ParsedValue * 1000 :
-                                                        ResultExtension.DEFAULT_TIMEOUT) ? 0 : 1;
+                                                        ResultExtension.DEFAULT_TIMEOUT,
+                                                   optTimestampFormat.Value()) ? 0 : 1;
                 });
             });
         }
 
-        private void Snap(CommandLineApplication parent, CommandOption optVmIds, CommandOption<long> optTimeout)
+        private void Snap(CommandLineApplication parent,
+                          CommandOption optVmIds,
+                          CommandOption<long> optTimeout,
+                          CommandOption optTimestampFormat)
         {
             parent.Command("snap", cmd =>
             {
@@ -142,7 +157,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                                   optState.HasValue(),
                                                   optTimeout.HasValue() ?
                                                     optTimeout.ParsedValue * 1000 :
-                                                    ResultExtension.DEFAULT_TIMEOUT).Status ? 0 : 1;
+                                                    ResultExtension.DEFAULT_TIMEOUT,
+                                                  optTimestampFormat.Value()).Status ? 0 : 1;
                 });
             });
         }

@@ -23,24 +23,25 @@ Proxmox VE automatic snapshot tool
 Usage: cv4pve-autosnap [options] [command]
 
 Options:
-  -?|-h|--help      Show help information
-  --version         Show version information
-  --host            The host name host[:port],host1[:port],host2[:port]
-  --api-token       Api token format 'USER@REALM!TOKENID=UUID'. Require Proxmox VE 6.2 or later
-  --username        User name <username>@<realm>
-  --password        The password. Specify 'file:path_file' to store password in file.
-  --vmid            The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
-                    -vmid or -name exclude (e.g. -200,-TestUbuntu)
-                    'all-???' for all VM/CT in specific host (e.g. all-pve1, all-\$(hostname)),
-                    'all' for all VM/CT in cluster
-  --timeout         Timeout operation in seconds
+  -?|-h|--help        Show help information
+  --version           Show version information
+  --host              The host name host[:port],host1[:port],host2[:port]
+  --api-token         Api token format 'USER@REALM!TOKENID=UUID'. Require Proxmox VE 6.2 or later
+  --username          User name <username>@<realm>
+  --password          The password. Specify 'file:path_file' to store password in file.
+  --vmid              The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
+                      -vmid or -name exclude (e.g. -200,-TestUbuntu)
+                      'all-???' for all VM/CT in specific host (e.g. all-pve1,   all-\$(hostname)),
+                      'all' for all VM/CT in cluster
+  --timeout           Timeout operation in seconds
+  --timestamp-format  Specify different timestamp format. Default: yyMMddHHmmss
 
 Commands:
-  app-check-update  Check update application
-  app-upgrade       Upgrade application
-  clean             Remove auto snapshots
-  snap              Will snap one time
-  status            Get list of all auto snapshots
+  app-check-update    Check update application
+  app-upgrade         Upgrade application
+  clean               Remove auto snapshots
+  snap                Will snap one time
+  status              Get list of all auto snapshots
 
 Run 'cv4pve-autosnap [command] --help' for more information about a command.
 
@@ -107,12 +108,17 @@ For the planning process using an external machine:
 * Check-Update and Upgrade application
 * Use Api token --api-token parameter
 * Support range vmid 100:103,134,200:204,-102
+* Support different timestamp format with parameter --timestamp-format
 
 ## Api token
 
 From version 6.2 of Proxmox VE is possible to use [Api token](https://pve.proxmox.com/pve-docs/pveum-plain.html).
 This feature permit execute Api without using user and password.
 If using **Privilege Separation** when create api token remember specify in permission.
+
+## Custom timestamp format
+
+Timestamp format is based on [C# date and time format string](https://docs.microsoft.com/it-it/dotnet/standard/base-types/custom-date-and-time-format-strings).
 
 ## Configuration and use
 

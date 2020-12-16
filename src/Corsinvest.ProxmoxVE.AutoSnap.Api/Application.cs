@@ -28,19 +28,27 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
     {
         private static readonly string PREFIX = "auto";
 
-        private static readonly string TIMESTAMP_FORMAT = "yyMMddHHmmss";
+        /// <summary>
+        /// Default time stamp format
+        /// </summary>
+        public static readonly string DEFAULT_TIMESTAMP_FORMAT = "yyMMddHHmmss";
 
         /// <summary>
         /// Application name
         /// </summary>
         public static readonly string NAME = "cv4pve-autosnap";
 
+        private static string GetTimestampFormat(string timestampFormat)
+            => string.IsNullOrWhiteSpace(timestampFormat) ? DEFAULT_TIMESTAMP_FORMAT : timestampFormat;
+
         /// <summary>
         /// Get label from description
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="timestampFormat"></param>
         /// <returns></returns>
-        public static string GetLabelFromName(string name) => name[PREFIX.Length..^TIMESTAMP_FORMAT.Length];
+        public static string GetLabelFromName(string name, string timestampFormat)
+            => name[PREFIX.Length..^GetTimestampFormat(timestampFormat).Length];
 
         /// <summary>
         /// Old application name
@@ -119,13 +127,6 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                                                         status));
         }
 
-        /// <summary>
-        /// Status auto snapshot.
-        /// </summary>
-        /// <param name="vmIdsOrNames"></param>
-        /// <returns></returns>
-        public IEnumerable<Snapshot> Status(string vmIdsOrNames) => Status(vmIdsOrNames, null);
-
         private IEnumerable<VMInfo> GetVMs(string vmIdsOrNames)
             => _client.GetVMs(vmIdsOrNames).Where(a => a.Status != "unknown");
 
@@ -134,11 +135,12 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         /// <param name="vmIdsOrNames"></param>
         /// <param name="label"></param>
-        public IEnumerable<Snapshot> Status(string vmIdsOrNames, string label)
+        /// <param name="timestampFormat"></param>
+        public IEnumerable<Snapshot> Status(string vmIdsOrNames, string label, string timestampFormat)
         {
             //select snapshot and filter
             var snapshots = FilterApp(GetVMs(vmIdsOrNames).SelectMany(a => a.Snapshots));
-            return string.IsNullOrWhiteSpace(label) ? snapshots : FilterLabel(snapshots, label);
+            return string.IsNullOrWhiteSpace(label) ? snapshots : FilterLabel(snapshots, label, timestampFormat);
         }
 
         private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots)
@@ -146,9 +148,11 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
 
         private static string GetPrefix(string label) => PREFIX + label;
 
-        private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots, string label)
-            => FilterApp(snapshots.Where(a => (a.Name.Length - TIMESTAMP_FORMAT.Length) > 0 &&
-                                               a.Name.Substring(0, a.Name.Length - TIMESTAMP_FORMAT.Length) == GetPrefix(label)));
+        private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots,
+                                                         string label,
+                                                         string timestampFormat)
+            => FilterApp(snapshots.Where(a => (a.Name.Length - GetTimestampFormat(timestampFormat).Length) > 0 &&
+                                               a.Name.Substring(0, a.Name.Length - GetTimestampFormat(timestampFormat).Length) == GetPrefix(label)));
 
         /// <summary>
         /// Execute a autosnap.
@@ -158,15 +162,24 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="keep"></param>
         /// <param name="state"></param>
         /// <param name="timeout"></param>
+        /// <param name="timestampFormat"></param>
         /// <returns></returns>
-        public ResultSnap Snap(string vmIdsOrNames, string label, int keep, bool state, long timeout)
+        public ResultSnap Snap(string vmIdsOrNames,
+                               string label,
+                               int keep,
+                               bool state,
+                               long timeout,
+                               string timestampFormat)
         {
+            timestampFormat = GetTimestampFormat(timestampFormat);
+
             _out.WriteLine($@"ACTION Snap
-VMs:     {vmIdsOrNames}
-Label:   {label}
-Keep:    {keep}
-State:   {state}
-Timeout: {timeout}");
+VMs:              {vmIdsOrNames}
+Label:            {label}
+Keep:             {keep}
+State:            {state}
+Timeout:          {timeout}
+Timestamp format: {timestampFormat}");
 
             var ret = new ResultSnap();
             ret.Start();
@@ -198,7 +211,7 @@ Timeout: {timeout}");
                 }
 
                 //create snapshot
-                var snapName = GetPrefix(label) + DateTime.Now.ToString(TIMESTAMP_FORMAT);
+                var snapName = GetPrefix(label) + DateTime.Now.ToString(timestampFormat);
 
                 CallPhaseEvent(HookPhase.SnapCreatePre, vm, label, keep, snapName, state, 0, true);
 
@@ -227,7 +240,7 @@ Timeout: {timeout}");
                 }
 
                 //remove old snapshot
-                if (!SnapshotsRemove(vm, label, keep, timeout))
+                if (!SnapshotsRemove(vm, label, keep, timeout, timestampFormat))
                 {
                     execSnapVm.Stop();
                     continue;
@@ -259,14 +272,16 @@ Timeout: {timeout}");
         /// <param name="label"></param>
         /// <param name="keep"></param>
         /// <param name="timeout"></param>
+        /// <param name="timestampFormat"></param>
         /// <returns></returns>
-        public bool Clean(string vmIdsOrNames, string label, int keep, long timeout)
+        public bool Clean(string vmIdsOrNames, string label, int keep, long timeout, string timestampFormat)
         {
             _out.WriteLine($@"ACTION Clean
-VMs:     {vmIdsOrNames}
-Label:   {label}
-Keep:    {keep}
-Timeout: {timeout}");
+VMs:              {vmIdsOrNames}
+Label:            {label}
+Keep:             {keep}
+Timeout:          {timeout}
+Timestamp format: {timestampFormat}");
 
             var watch = new Stopwatch();
             watch.Start();
@@ -284,7 +299,7 @@ Timeout: {timeout}");
                 }
 
                 _out.WriteLine($"----- VM {vm.Id} {vm.Type} -----");
-                if (!SnapshotsRemove(vm, label, keep, timeout)) { ret = false; }
+                if (!SnapshotsRemove(vm, label, keep, timeout, timestampFormat)) { ret = false; }
             }
 
             watch.Stop();
@@ -293,9 +308,9 @@ Timeout: {timeout}");
             return ret;
         }
 
-        private bool SnapshotsRemove(VMInfo vm, string label, int keep, long timeout)
+        private bool SnapshotsRemove(VMInfo vm, string label, int keep, long timeout, string timstampFormat)
         {
-            foreach (var snapshot in FilterLabel(vm.Snapshots, label).Reverse().Skip(keep).Reverse())
+            foreach (var snapshot in FilterLabel(vm.Snapshots, label, timstampFormat).Reverse().Skip(keep).Reverse())
             {
                 var watch = new Stopwatch();
                 watch.Start();
