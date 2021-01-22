@@ -62,6 +62,10 @@ This software is part of a suite of tools called cv4pve-tools. If you want comme
 
 [![Tutorial](http://img.youtube.com/vi/kM5KhD9seT4/0.jpg)](https://www.youtube.com/watch?v=kM5KhD9seT4 "Tutorial")
 
+## GUI Version Toolbox
+
+[![Tutorial](http://img.youtube.com/vi/M1V6U7KVm7g/0.jpg)](https://www.youtube.com/watch?v=M1V6U7KVm7g "Tutorial")
+
 ## Introduction
 
 Automatic snapshot for Proxmox VE with retention.
