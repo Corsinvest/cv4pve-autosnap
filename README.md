@@ -133,13 +133,13 @@ This tool need basically no configuration.
 ## Snapshot a VM/CT one time
 
 ```sh
-root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid=111 snap --label='daily' --keep=2
+root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid=111 snap --label=daily --keep=2
 ```
 
 This command snap VM 111.
 
 ```sh
-root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid="all,-111" snap --label='daily' --keep=2
+root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid="all,-111" snap --label=daily --keep=2
 ```
 
 This command snap all VMs except 111.
@@ -153,7 +153,7 @@ When create a snapshot the software add "auto" prefix of the name the snapshot.
 ## Clean a VM/CT one time
 
 ```sh
-root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid=111 clean --label='4hours' --keep=2
+root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid=111 clean --label=4hours --keep=2
 ----- VM 100 QEMU -----
 Remove snapshot: auto4hours190617080002
 Remove snapshot: auto4hours190617120002
