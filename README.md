@@ -31,8 +31,9 @@ Options:
   --password          The password. Specify 'file:path_file' to store password in file.
   --vmid              The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
                       -vmid or -name exclude (e.g. -200,-TestUbuntu)
-                      'all-???' for all VM/CT in specific host (e.g. all-pve1,   all-\$(hostname)),
-                      'all' for all VM/CT in cluster
+                     '@pool-???' for all VM/CT in specific pool (e.g. @pool-customer1),
+                     '@all-???' for all VM/CT in specific host (e.g. @all-pve1, @all-\$(hostname)),
+                     '@all' for all VM/CT in cluster
   --timeout           Timeout operation in seconds
   --timestamp-format  Specify different timestamp format. Default: yyMMddHHmmss
 
@@ -92,7 +93,7 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Clean all snapshots
 * Multiple schedule VM/CT using --label (es. daily,monthly)
 * Hook script
-* Multiple VM/CT (100,102,ubuVm,debVm,pipperoVm,fagianoVm or all) in a single execution
+* Multiple VM/CT (100,102,ubuVm,debVm,pipperoVm,fagianoVm or all or pool) in a single execution
 * Exclusion specific VM/CT using minus e.g --vmid=all,-100
 * Exclusion template from snapshot
 * Waiting for the snapshot process to finish
