@@ -17,7 +17,9 @@ using System.IO;
 using System.Linq;
 using Corsinvest.ProxmoxVE.Api;
 using Corsinvest.ProxmoxVE.Api.Extension;
+using Corsinvest.ProxmoxVE.Api.Extension.Helpers;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
+using Humanizer.Bytes;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api
 {
@@ -38,8 +40,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         public static readonly string NAME = "cv4pve-autosnap";
 
-        private static string GetTimestampFormat(string timestampFormat)
-            => string.IsNullOrWhiteSpace(timestampFormat) ? DEFAULT_TIMESTAMP_FORMAT : timestampFormat;
+        private static string GetTimestampFormat(string timestampFormat) => string.IsNullOrWhiteSpace(timestampFormat) ? DEFAULT_TIMESTAMP_FORMAT : timestampFormat;
 
         /// <summary>
         /// Get label from description
@@ -47,8 +48,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="name"></param>
         /// <param name="timestampFormat"></param>
         /// <returns></returns>
-        public static string GetLabelFromName(string name, string timestampFormat)
-            => name[PREFIX.Length..^GetTimestampFormat(timestampFormat).Length];
+        public static string GetLabelFromName(string name, string timestampFormat) => name[PREFIX.Length.. ^ GetTimestampFormat(timestampFormat).Length];
 
         /// <summary>
         /// Old application name
@@ -67,8 +67,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="out"></param>
         /// <param name="dryRun"></param>
         /// <param name="debug"></param>
-        public Application(PveClient client, TextWriter @out, bool dryRun, bool debug)
-            => (_client, _out, _dryRun, _debug) = (client, @out, dryRun, debug);
+        public Application(PveClient client, TextWriter @out, bool dryRun, bool debug) => (_client, _out, _dryRun, _debug) = (client, @out, dryRun, debug);
 
         /// <summary>
         /// Event phase.
@@ -80,18 +79,17 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         /// <value></value>
         public static Dictionary<string, HookPhase> Phases = new Dictionary<string, HookPhase>
-        {
-            { "clean-job-start" , HookPhase.CleanJobStart },
-            { "clean-job-end" , HookPhase.CleanJobEnd },
-            { "snap-job-start" , HookPhase.SnapJobStart },
-            { "snap-job-end" , HookPhase.SnapJobEnd },
-            { "snap-create-pre" , HookPhase.SnapCreatePre },
-            { "snap-create-post" , HookPhase.SnapCreatePost },
-            { "snap-create-abort" , HookPhase.SnapCreateAbort },
-            { "snap-remove-pre" , HookPhase.SnapRemovePre },
-            { "snap-remove-post" , HookPhase.SnapRemovePost },
-            { "snap-remove-abort" , HookPhase.SnapRemoveAbort }
-        };
+            { { "clean-job-start", HookPhase.CleanJobStart },
+                { "clean-job-end", HookPhase.CleanJobEnd },
+                { "snap-job-start", HookPhase.SnapJobStart },
+                { "snap-job-end", HookPhase.SnapJobEnd },
+                { "snap-create-pre", HookPhase.SnapCreatePre },
+                { "snap-create-post", HookPhase.SnapCreatePost },
+                { "snap-create-abort", HookPhase.SnapCreateAbort },
+                { "snap-remove-pre", HookPhase.SnapRemovePre },
+                { "snap-remove-post", HookPhase.SnapRemovePost },
+                { "snap-remove-abort", HookPhase.SnapRemoveAbort }
+            };
 
         /// <summary>
         /// Phase string to enum
@@ -108,27 +106,26 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         public static string PhaseEnumToStr(HookPhase phase) => Phases.SingleOrDefault(a => a.Value == phase).Key;
 
         private void CallPhaseEvent(HookPhase phase,
-                                    VMInfo vm,
-                                    string label,
-                                    int keep,
-                                    string snapName,
-                                    bool vmState,
-                                    double duration,
-                                    bool status)
+            VMInfo vm,
+            string label,
+            int keep,
+            string snapName,
+            bool vmState,
+            double duration,
+            bool status)
         {
             if (_debug) { _out.WriteLine($"Phase: {PhaseEnumToStr(phase)}"); }
             PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
-                                                        vm,
-                                                        label,
-                                                        keep,
-                                                        snapName,
-                                                        vmState,
-                                                        duration,
-                                                        status));
+                vm,
+                label,
+                keep,
+                snapName,
+                vmState,
+                duration,
+                status));
         }
 
-        private IEnumerable<VMInfo> GetVMs(string vmIdsOrNames)
-            => _client.GetVMs(vmIdsOrNames).Where(a => a.Status != "unknown");
+        private IEnumerable<VMInfo> GetVMs(string vmIdsOrNames) => _client.GetVMs(vmIdsOrNames).Where(a => a.Status != "unknown");
 
         /// <summary>
         /// Status auto snapshot.
@@ -143,16 +140,14 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
             return string.IsNullOrWhiteSpace(label) ? snapshots : FilterLabel(snapshots, label, timestampFormat);
         }
 
-        private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots)
-            => snapshots.Where(a => (a.Description == NAME || a.Description == OLD_NAME));
+        private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots) => snapshots.Where(a => (a.Description == NAME || a.Description == OLD_NAME));
 
         private static string GetPrefix(string label) => PREFIX + label;
 
         private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots,
-                                                         string label,
-                                                         string timestampFormat)
-            => FilterApp(snapshots.Where(a => (a.Name.Length - GetTimestampFormat(timestampFormat).Length) > 0 &&
-                                               a.Name.Substring(0, a.Name.Length - GetTimestampFormat(timestampFormat).Length) == GetPrefix(label)));
+            string label,
+            string timestampFormat) => FilterApp(snapshots.Where(a => (a.Name.Length - GetTimestampFormat(timestampFormat).Length) > 0
+            && a.Name[..^GetTimestampFormat(timestampFormat).Length] == GetPrefix(label)));
 
         /// <summary>
         /// Execute a autosnap.
@@ -163,13 +158,15 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="state"></param>
         /// <param name="timeout"></param>
         /// <param name="timestampFormat"></param>
+        /// <param name="optMaxPercentageStorage"></param>
         /// <returns></returns>
         public ResultSnap Snap(string vmIdsOrNames,
-                               string label,
-                               int keep,
-                               bool state,
-                               long timeout,
-                               string timestampFormat)
+            string label,
+            int keep,
+            bool state,
+            long timeout,
+            string timestampFormat,
+            int optMaxPercentageStorage)
         {
             timestampFormat = GetTimestampFormat(timestampFormat);
 
@@ -179,12 +176,45 @@ Label:            {label}
 Keep:             {keep}
 State:            {state}
 Timeout:          {timeout}
-Timestamp format: {timestampFormat}");
+Timestamp format: {timestampFormat}
+Max % Storage :   {optMaxPercentageStorage}%");
 
             var ret = new ResultSnap();
             ret.Start();
 
             CallPhaseEvent(HookPhase.SnapJobStart, null, label, keep, null, state, 0, true);
+
+            var storagesCheck = new Dictionary<string, bool>();
+            var storages = new List<object[]>();
+
+            //check storage capacity
+            foreach (var item in _client.Cluster.Resources.Resources("storage").ToEnumerable())
+            {
+                DynamicHelper.CheckKeyOrCreate(item, "disk", 0);
+                DynamicHelper.CheckKeyOrCreate(item, "maxdisk", 0);
+
+                var used = item.disk == 0 || item.maxdisk == 0
+                    ? 0
+                    : Math.Round(item.disk / (double) item.maxdisk * 100, 2);
+
+                var valid = !(item.disk == 0 || item.maxdisk == 0 || used > optMaxPercentageStorage);
+
+                var key = $"{item.node}/{item.storage}";
+                storages.Add(item: new object[]
+                {
+                    key,
+                    (valid? "Ok": "Ko"),
+                    used,
+                    ByteSize.FromBytes(item.maxdisk),
+                    ByteSize.FromBytes(item.disk)
+                });
+
+                storagesCheck.Add(key, valid);
+            }
+
+            _out.Write(TableHelper.Create(new [] { "Storage", "Valid", "Used", "Max Disk", "Disk" },
+                storages,
+                TableOutputType.Text, false));
 
             foreach (var vm in GetVMs(vmIdsOrNames))
             {
@@ -205,9 +235,25 @@ Timestamp format: {timestampFormat}");
                 execSnapVm.Start();
 
                 //check agent enabled
-                if (vm.Type == VMTypeEnum.Qemu && !((ConfigQemu)vm.Config).AgentEnabled)
+                if (vm.Type == VMTypeEnum.Qemu && !((ConfigQemu) vm.Config).AgentEnabled)
                 {
-                    _out.WriteLine(((ConfigQemu)vm.Config).GetMessageEnablingAgent());
+                    _out.WriteLine(((ConfigQemu) vm.Config).GetMessageEnablingAgent());
+                }
+
+                //verify storage
+                var validStorage = false;
+                foreach (var item in vm.Config.Disks)
+                {
+                    validStorage = false;
+                    storagesCheck.TryGetValue($"{vm.Node}/{item.Storage}", out validStorage);
+                    if (!validStorage) { break; }
+                }
+
+                if (!validStorage)
+                {
+                    _out.WriteLine($"Skip VM problem storage space out of {optMaxPercentageStorage}%");
+                    execSnapVm.Stop();
+                    continue;
                 }
 
                 //create snapshot

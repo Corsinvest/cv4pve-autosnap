@@ -31,11 +31,12 @@ Options:
   --password          The password. Specify 'file:path_file' to store password in file.
   --vmid              The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
                       -vmid or -name exclude (e.g. -200,-TestUbuntu)
-                     '@pool-???' for all VM/CT in specific pool (e.g. @pool-customer1),
-                     '@all-???' for all VM/CT in specific host (e.g. @all-pve1, @all-\$(hostname)),
-                     '@all' for all VM/CT in cluster
+                      '@pool-???' for all VM/CT in specific pool (e.g. @pool-customer1),
+                      '@all-???' for all VM/CT in specific host (e.g. @all-pve1, @all-\$(hostname)),
+                      '@all' for all VM/CT in cluster
   --timeout           Timeout operation in seconds
   --timestamp-format  Specify different timestamp format. Default: yyMMddHHmmss
+  --max-perc-storage  Max percentage storage (default 95%)
 
 Commands:
   app-check-update    Check update application
@@ -108,6 +109,7 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Use Api token --api-token parameter
 * Support range vmid 100:103,134,200:204,-102
 * Support different timestamp format with parameter --timestamp-format
+* Check the storage space used by the disks in the VM / CT is available by default (95%) parameter --max-perc-storage
 
 ## Api token
 
@@ -141,6 +143,35 @@ This command snap VM 111.
 
 ```sh
 root@debian:~# cv4pve-autosnap --host=192.168.0.100 --username=root@pam --password=fagiano --vmid="all,-111" snap --label=daily --keep=2
+ACTION Snap
+VMs:              all,-111
+Label:            daily
+Keep:             2
+State:            False
+Timeout:          30000
+Timestamp format: yyMMddHHmmss
+Max % Storage :   95%
+------------------------------------------------------------
+| Storage          | Valid | Used  | Max Disk  | Disk      |
+------------------------------------------------------------
+| cv-pve01/nfs-arc | Ok    | 20,99 | 3,21 TB   | 689,47 GB |
+| cv-pve02/nfs-arc | Ok    | 20,99 | 3,21 TB   | 689,47 GB |
+| cv-pve01/PBS     | Ok    | 37,68 | 4,07 TB   | 1,53 TB   |
+| cv-pve02/PBS     | Ok    | 37,68 | 4,07 TB   | 1,53 TB   |
+| cv-pve01/ssdpool | Ok    | 23,76 | 859,8 GB  | 204,3 GB  |
+| cv-pve02/ssdpool | Ok    | 4,74  | 898,93 GB | 42,62 GB  |
+| cv-pve01/hddpool | Ok    | 58,18 | 1,76 TB   | 1,02 TB   |
+| cv-pve02/hddpool | Ok    | 71,97 | 1,76 TB   | 1,26 TB   |
+------------------------------------------------------------
+----- VM 103 Qemu -----
+VM 103 consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent
+Create snapshot: autodaily211203164953
+Remove snapshot: autodaily211202164953
+VM execution 00:00:02.3060904
+----- VM 105 Qemu -----
+Create snapshot: autodaily211203164955
+Remove snapshot: autodaily211202164955
+....
 ```
 
 This command snap all VMs except 111.
@@ -150,6 +181,8 @@ The --state save memory VM.
 The --timeout specify the timeout remove/creation snapshot.
 
 When create a snapshot the software add "auto" prefix of the name the snapshot.
+
+On the VM it is checked if "QEMU agent" is enabled, otherwise an alert is displayed.
 
 ## Clean a VM/CT one time
 

@@ -13,11 +13,11 @@
 using System.Collections.Generic;
 using System.IO;
 using Corsinvest.ProxmoxVE.Api.Extension;
+using Corsinvest.ProxmoxVE.Api.Extension.Helpers;
+using Corsinvest.ProxmoxVE.Api.Extension.VM;
 using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
 using Corsinvest.ProxmoxVE.AutoSnap.Api;
-using Corsinvest.ProxmoxVE.Api.Extension.VM;
 using McMaster.Extensions.CommandLineUtils;
-using Corsinvest.ProxmoxVE.Api.Extension.Helpers;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap
 {
@@ -42,14 +42,18 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
             _debug = parent.DebugIsActive();
 
             var optVmIds = parent.VmIdsOrNamesOption()
-                                    .DependOn(parent, CommandOptionExtension.HOST_OPTION_NAME);
+                .DependOn(parent, CommandOptionExtension.HOST_OPTION_NAME);
             var optTimeout = parent.TimeoutOption();
 
             var optTimestampFormat = parent.Option("--timestamp-format",
-                                                   $"Specify different timestamp format. Default: {Application.DEFAULT_TIMESTAMP_FORMAT} ",
-                                                   CommandOptionType.SingleValue);
+                $"Specify different timestamp format. Default: {Application.DEFAULT_TIMESTAMP_FORMAT} ",
+                CommandOptionType.SingleValue);
 
-            Snap(parent, optVmIds, optTimeout, optTimestampFormat);
+            var optMaxPercentageStorage  = parent.Option<int>("--max-perc-storage",
+                "Max percentage storage (default 95%)",
+                CommandOptionType.SingleValue);
+
+            Snap(parent, optVmIds, optTimeout, optTimestampFormat, optMaxPercentageStorage);
             Clean(parent, optVmIds, optTimeout, optTimestampFormat);
             Status(parent, optVmIds, optTimestampFormat);
         }
@@ -65,24 +69,22 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
         {
             if (!File.Exists(_scriptHook)) { return; }
 
-            var (StandardOutput, ExitCode) = ShellHelper.Execute(_scriptHook,
-                                          true,
-                                          new Dictionary<string, string>(e.Environments)
-                                          {
-                                                {"CV4PVE_AUTOSNAP_DEBUG", _debug ? "1" :"0"},
-                                                {"CV4PVE_AUTOSNAP_DRY_RUN", _dryRun ? "1" :"0"},
-                                          },
-                                          _out,
-                                          _dryRun,
-                                          _debug);
+            var(StandardOutput, ExitCode) = ShellHelper.Execute(_scriptHook,
+                true,
+                new Dictionary<string, string>(e.Environments)
+                { { "CV4PVE_AUTOSNAP_DEBUG", _debug ? "1" : "0" }, { "CV4PVE_AUTOSNAP_DRY_RUN", _dryRun ? "1" : "0" },
+                },
+                _out,
+                _dryRun,
+                _debug);
 
             if (ExitCode != 0) { _out.WriteLine($"Script return code: {ExitCode}"); }
             if (!string.IsNullOrWhiteSpace(StandardOutput)) { _out.Write(StandardOutput); }
         }
 
         private void Status(CommandLineApplication parent,
-                            CommandOption optVmIds,
-                            CommandOption optTimestampFormat)
+            CommandOption optVmIds,
+            CommandOption optTimestampFormat)
         {
             parent.Command("status", cmd =>
             {
@@ -95,17 +97,17 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                 cmd.OnExecute(() =>
                 {
                     var snapshots = CreateApp(parent).Status(optVmIds.Value(),
-                                                             optLabel.Value(),
-                                                             optTimestampFormat.Value());
+                        optLabel.Value(),
+                        optTimestampFormat.Value());
                     parent.Out.Write(snapshots.Info(true, optOutput.GetEnumValue<TableOutputType>()));
                 });
             });
         }
 
         private void Clean(CommandLineApplication parent,
-                           CommandOption optVmIds,
-                           CommandOption<long> optTimeout,
-                           CommandOption optTimestampFormat)
+            CommandOption optVmIds,
+            CommandOption<long> optTimeout,
+            CommandOption optTimestampFormat)
         {
             parent.Command("clean", cmd =>
             {
@@ -123,20 +125,21 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                 {
                     _scriptHook = optScriptHook.Value();
                     return CreateApp(parent).Clean(optVmIds.Value(),
-                                                   optLabel.Value(),
-                                                   optKeep.ParsedValue,
-                                                   optTimeout.HasValue() ?
-                                                        optTimeout.ParsedValue * 1000 :
-                                                        ResultExtension.DEFAULT_TIMEOUT,
-                                                   optTimestampFormat.Value()) ? 0 : 1;
+                        optLabel.Value(),
+                        optKeep.ParsedValue,
+                        optTimeout.HasValue()
+                        ? optTimeout.ParsedValue * 1000
+                        : ResultExtension.DEFAULT_TIMEOUT,
+                        optTimestampFormat.Value()) ? 0 : 1;
                 });
             });
         }
 
         private void Snap(CommandLineApplication parent,
-                          CommandOption optVmIds,
-                          CommandOption<long> optTimeout,
-                          CommandOption optTimestampFormat)
+            CommandOption optVmIds,
+            CommandOption<long> optTimeout,
+            CommandOption optTimestampFormat,
+            CommandOption<int> optMaxPercentageStorage)
         {
             parent.Command("snap", cmd =>
             {
@@ -152,13 +155,17 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                 {
                     _scriptHook = optScriptHook.Value();
                     return CreateApp(parent).Snap(optVmIds.Value(),
-                                                  optLabel.Value(),
-                                                  optKeep.ParsedValue,
-                                                  optState.HasValue(),
-                                                  optTimeout.HasValue() ?
-                                                    optTimeout.ParsedValue * 1000 :
-                                                    ResultExtension.DEFAULT_TIMEOUT,
-                                                  optTimestampFormat.Value()).Status ? 0 : 1;
+                            optLabel.Value(),
+                            optKeep.ParsedValue,
+                            optState.HasValue(),
+                            optTimeout.HasValue()
+                            ? optTimeout.ParsedValue * 1000
+                            : ResultExtension.DEFAULT_TIMEOUT,
+                            optTimestampFormat.Value(),
+                            optMaxPercentageStorage.HasValue()
+                            ? optMaxPercentageStorage.ParsedValue
+                            : 95)
+                        .Status ? 0 : 1;
                 });
             });
         }
