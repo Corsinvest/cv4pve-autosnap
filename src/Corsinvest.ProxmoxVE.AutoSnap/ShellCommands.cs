@@ -49,9 +49,10 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                 $"Specify different timestamp format. Default: {Application.DEFAULT_TIMESTAMP_FORMAT} ",
                 CommandOptionType.SingleValue);
 
-            var optMaxPercentageStorage  = parent.Option<int>("--max-perc-storage",
+            var optMaxPercentageStorage = parent.Option<int>("--max-perc-storage",
                 "Max percentage storage (default 95%)",
                 CommandOptionType.SingleValue);
+            optMaxPercentageStorage.Accepts().Range(1, 100);
 
             Snap(parent, optVmIds, optTimeout, optTimestampFormat, optMaxPercentageStorage);
             Clean(parent, optVmIds, optTimeout, optTimestampFormat);

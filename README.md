@@ -151,18 +151,18 @@ State:            False
 Timeout:          30000
 Timestamp format: yyMMddHHmmss
 Max % Storage :   95%
-------------------------------------------------------------
-| Storage          | Valid | Used  | Max Disk  | Disk      |
-------------------------------------------------------------
-| cv-pve01/nfs-arc | Ok    | 20,99 | 3,21 TB   | 689,47 GB |
-| cv-pve02/nfs-arc | Ok    | 20,99 | 3,21 TB   | 689,47 GB |
-| cv-pve01/PBS     | Ok    | 37,68 | 4,07 TB   | 1,53 TB   |
-| cv-pve02/PBS     | Ok    | 37,68 | 4,07 TB   | 1,53 TB   |
-| cv-pve01/ssdpool | Ok    | 23,76 | 859,8 GB  | 204,3 GB  |
-| cv-pve02/ssdpool | Ok    | 4,74  | 898,93 GB | 42,62 GB  |
-| cv-pve01/hddpool | Ok    | 58,18 | 1,76 TB   | 1,02 TB   |
-| cv-pve02/hddpool | Ok    | 71,97 | 1,76 TB   | 1,26 TB   |
-------------------------------------------------------------
+------------------------------------------------------------------
+| Storage          | Valid | Used %  | Max Disk (GB) | Disk (GB) |
+------------------------------------------------------------------
+| cv-pve01/PBS     | Ko    | 37.9    | 4163          | 1578      |
+| cv-pve01/hddpool | Ko    | 58.2    | 1797          | 1046      |
+| cv-pve01/nfs-arc | Ko    | 21.1    | 3274          | 689       |
+| cv-pve01/ssdpool | Ko    | 24.3    | 859           | 209       |
+| cv-pve02/PBS     | Ko    | 37.9    | 4163          | 1578      |
+| cv-pve02/hddpool | Ko    | 71.6    | 1797          | 1287      |
+| cv-pve02/nfs-arc | Ko    | 21.1    | 3274          | 689       |
+| cv-pve02/ssdpool | Ok    | 5.2     | 898           | 47        |
+------------------------------------------------------------------
 ----- VM 103 Qemu -----
 VM 103 consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent
 Create snapshot: autodaily211203164953

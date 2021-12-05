@@ -19,7 +19,6 @@ using Corsinvest.ProxmoxVE.Api;
 using Corsinvest.ProxmoxVE.Api.Extension;
 using Corsinvest.ProxmoxVE.Api.Extension.Helpers;
 using Corsinvest.ProxmoxVE.Api.Extension.VM;
-using Humanizer.Bytes;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api
 {
@@ -147,7 +146,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots,
             string label,
             string timestampFormat) => FilterApp(snapshots.Where(a => (a.Name.Length - GetTimestampFormat(timestampFormat).Length) > 0
-            && a.Name[..^GetTimestampFormat(timestampFormat).Length] == GetPrefix(label)));
+            && a.Name[.. ^ GetTimestampFormat(timestampFormat).Length] == GetPrefix(label)));
 
         /// <summary>
         /// Execute a autosnap.
@@ -188,14 +187,17 @@ Max % Storage :   {optMaxPercentageStorage}%");
             var storages = new List<object[]>();
 
             //check storage capacity
-            foreach (var item in _client.Cluster.Resources.Resources("storage").ToEnumerable())
+            foreach (var item in _client.Cluster.Resources.Resources("storage")
+                    .ToEnumerable()
+                    .OrderBy(a => a.node)
+                    .ThenBy(a => a.storage))
             {
-                DynamicHelper.CheckKeyOrCreate(item, "disk", 0);
-                DynamicHelper.CheckKeyOrCreate(item, "maxdisk", 0);
+                DynamicHelper.CheckKeyOrCreate(item, "disk", 0d);
+                DynamicHelper.CheckKeyOrCreate(item, "maxdisk", 0d);
 
                 var used = item.disk == 0 || item.maxdisk == 0
                     ? 0
-                    : Math.Round(item.disk / (double) item.maxdisk * 100, 2);
+                    : Math.Round(item.disk / (double) item.maxdisk * 100, 1);
 
                 var valid = !(item.disk == 0 || item.maxdisk == 0 || used > optMaxPercentageStorage);
 
@@ -205,14 +207,14 @@ Max % Storage :   {optMaxPercentageStorage}%");
                     key,
                     (valid? "Ok": "Ko"),
                     used,
-                    ByteSize.FromBytes(item.maxdisk),
-                    ByteSize.FromBytes(item.disk)
+                    item.maxdisk / 1024 / 1024 / 1024,
+                    item.disk / 1024 / 1024 / 1024,
                 });
 
                 storagesCheck.Add(key, valid);
             }
 
-            _out.Write(TableHelper.Create(new [] { "Storage", "Valid", "Used", "Max Disk", "Disk" },
+            _out.Write(TableHelper.Create(new [] { "Storage", "Valid", "Used % ", "Max Disk (GB)", "Disk (GB)" },
                 storages,
                 TableOutputType.Text, false));
 
