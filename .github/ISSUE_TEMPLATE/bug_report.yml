@@ -26,7 +26,7 @@ body:
     id: logs
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks. Use parameter --debug for full logs. Remeber remove password.
       render: shell
   - type: input
     id: bug-version
