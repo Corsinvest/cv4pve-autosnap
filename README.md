@@ -1,6 +1,6 @@
 # cv4pve-autosnap
 
-[![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](LICENSE.md) [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg) [![AppVeyor branch](https://img.shields.io/appveyor/ci/franklupo/cv4pve-autosnap/master.svg)](https://ci.appveyor.com/project/franklupo/cv4pve-autosnap)
+[![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](LICENSE.md) [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg)
 ![Nuget](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg)
 
 Proxmox VE automatic snapshot tool
@@ -151,18 +151,16 @@ State:            False
 Timeout:          30000
 Timestamp format: yyMMddHHmmss
 Max % Storage :   95%
-------------------------------------------------------------------
-| Storage          | Valid | Used %  | Max Disk (GB) | Disk (GB) |
-------------------------------------------------------------------
-| cv-pve01/PBS     | Ko    | 37.9    | 4163          | 1578      |
-| cv-pve01/hddpool | Ko    | 58.2    | 1797          | 1046      |
-| cv-pve01/nfs-arc | Ko    | 21.1    | 3274          | 689       |
-| cv-pve01/ssdpool | Ko    | 24.3    | 859           | 209       |
-| cv-pve02/PBS     | Ko    | 37.9    | 4163          | 1578      |
-| cv-pve02/hddpool | Ko    | 71.6    | 1797          | 1287      |
-| cv-pve02/nfs-arc | Ko    | 21.1    | 3274          | 689       |
-| cv-pve02/ssdpool | Ok    | 5.2     | 898           | 47        |
-------------------------------------------------------------------
+----------------------------------------------------------------------------
+| Storage          | Type    | Valid | Used %  | Max Disk (GB) | Disk (GB) |
+----------------------------------------------------------------------------
+| cv-pve01/hddpool | zfspool | Ok    | 58.2    | 1797          | 1046      |
+| cv-pve01/nfs-arc | nfs     | Ok    | 21.1    | 3269          | 689       |
+| cv-pve01/ssdpool | zfspool | Ok    | 24.4    | 859           | 209       |
+| cv-pve02/hddpool | zfspool | Ok    | 71.7    | 1797          | 1288      |
+| cv-pve02/nfs-arc | nfs     | Ok    | 21.1    | 3269          | 689       |
+| cv-pve02/ssdpool | zfspool | Ok    | 5.5     | 898           | 49        |
+----------------------------------------------------------------------------
 ----- VM 103 Qemu -----
 VM 103 consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent
 Create snapshot: autodaily211203164953

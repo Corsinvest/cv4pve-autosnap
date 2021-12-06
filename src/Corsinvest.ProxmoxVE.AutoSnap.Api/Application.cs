@@ -186,39 +186,54 @@ Max % Storage :   {optMaxPercentageStorage}%");
             var storagesCheck = new Dictionary<string, bool>();
             var storages = new List<object[]>();
 
+            var vms = GetVMs(vmIdsOrNames).ToArray();
+            var nodes = vms.Select(a => a.Node).Distinct().ToList();
+            var contentAllowed = new [] { "images", "rootdir" }.ToList();
+
             //check storage capacity
-            foreach (var item in _client.Cluster.Resources.Resources("storage")
+            foreach (var storage in _client.Cluster.Resources.Resources("storage")
                     .ToEnumerable()
+                    .Where(a => nodes.Contains(a.node)
+                        && ((string) a.content + "").Split(',').Any(a => contentAllowed.Contains(a)))
                     .OrderBy(a => a.node)
                     .ThenBy(a => a.storage))
             {
-                DynamicHelper.CheckKeyOrCreate(item, "disk", 0d);
-                DynamicHelper.CheckKeyOrCreate(item, "maxdisk", 0d);
+                DynamicHelper.CheckKeyOrCreate(storage, "disk", 0d);
+                DynamicHelper.CheckKeyOrCreate(storage, "maxdisk", 0d);
 
-                var used = item.disk == 0 || item.maxdisk == 0
+                var used = storage.disk == 0 || storage.maxdisk == 0
                     ? 0
-                    : Math.Round(item.disk / (double) item.maxdisk * 100, 1);
+                    : Math.Round(storage.disk / (double) storage.maxdisk * 100, 1);
 
-                var valid = !(item.disk == 0 || item.maxdisk == 0 || used > optMaxPercentageStorage);
+                var valid = !(storage.disk == 0 || storage.maxdisk == 0 || used > optMaxPercentageStorage);
 
-                var key = $"{item.node}/{item.storage}";
+                var key = $"{storage.node}/{storage.storage}";
                 storages.Add(item: new object[]
                 {
                     key,
+                    storage.plugintype,
                     (valid? "Ok": "Ko"),
                     used,
-                    item.maxdisk / 1024 / 1024 / 1024,
-                    item.disk / 1024 / 1024 / 1024,
+                    storage.maxdisk / 1024 / 1024 / 1024,
+                    storage.disk / 1024 / 1024 / 1024,
                 });
 
                 storagesCheck.Add(key, valid);
             }
 
-            _out.Write(TableHelper.Create(new [] { "Storage", "Valid", "Used % ", "Max Disk (GB)", "Disk (GB)" },
+            _out.Write(TableHelper.Create(new []
+                {
+                    "Storage",
+                    "Type",
+                    "Valid",
+                    "Used % ",
+                    "Max Disk (GB)",
+                    "Disk (GB)"
+                },
                 storages,
                 TableOutputType.Text, false));
 
-            foreach (var vm in GetVMs(vmIdsOrNames))
+            foreach (var vm in vms)
             {
                 _out.WriteLine($"----- VM {vm.Id} {vm.Type} -----");
 
