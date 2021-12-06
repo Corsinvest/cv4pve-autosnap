@@ -1,0 +1,65 @@
+name: Bug Report
+description: File a bug report
+labels: [triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report. Note that this template is only for bug reports.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Please describe the issue briefly. You can use log, screenshots, gifs or videos to further explain your problem.
+      placeholder: Describe your issue!
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: Please provide a clear and concise description of what you expected to happen.
+      placeholder: Describe the expected behavior!
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: input
+    id: bug-version
+    attributes:
+      label: Version (bug)
+      description: With which version are you experiencing the issue?
+      placeholder: 1.X.X
+    validations:
+      required: true
+  - type: input
+    id: working-version
+    attributes:
+      label: Version (working)
+      description: Did it work on a previous version? If so, which version?
+      placeholder: 1.X.X
+   - type: dropdown
+    id: os
+    attributes:
+      label: On what operating system are you experiencing the issue?
+      description: You don't have to test it on every os.
+      multiple: true
+      options:
+        - Windows
+        - Mac OSX
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Pull Request
+      description: Are you interested in implementing a fix via a Pull Request? That would be the fastest way to resolve your issue. We appreciate every contribution!
+      options:
+        - label: I would like to do a Pull Request
