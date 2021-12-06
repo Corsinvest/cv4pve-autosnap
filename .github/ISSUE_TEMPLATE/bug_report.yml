@@ -42,7 +42,7 @@ body:
       label: Version (working)
       description: Did it work on a previous version? If so, which version?
       placeholder: 1.X.X
-   - type: dropdown
+  - type: dropdown
     id: os
     attributes:
       label: On what operating system are you experiencing the issue?
