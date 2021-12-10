@@ -29,6 +29,14 @@ body:
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks. Use parameter --debug for full logs. Remeber remove password.
       render: shell
   - type: input
+    id: proxmox-ve-version
+    attributes:
+      label: Proxmox VE Version
+      description: Proxmox VE Version
+      placeholder: 5.X.X
+    validations:
+      required: true
+  - type: input
     id: bug-version
     attributes:
       label: Version (bug)
