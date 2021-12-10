@@ -287,7 +287,7 @@ exit 0
 
 For testing purposes place this into ```/etc/qemu/fsfreeze-hook.d/10-info```:
 
-```
+```sh
 #!/bin/bash
 dt=$(date +%s)
 
