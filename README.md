@@ -1,15 +1,13 @@
 # cv4pve-autosnap
 
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](LICENSE.md) [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg)
-![Nuget](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg)
+[![Nuget](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg)](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api/)
 
 Proxmox VE automatic snapshot tool
 
 [More information about cv4pve-autosnap](http://www.corsinvest.it/continuous-protection-data-proxmox-ve/)
 
 [More information about Qemu guest agent](https://pve.proxmox.com/wiki/Qemu-guest-agent)
-
-## The old bash version inside Proxmox VE is no longer supported because the Proxmox VE developers continue to change output. The risk of incompatibility is high. With the new version that uses native APIs, the problem no longer exists
 
 ```text
     ______                _                      __
@@ -110,6 +108,10 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Support range vmid 100:103,134,200:204,-102
 * Support different timestamp format with parameter --timestamp-format
 * Check the storage space used by the disks in the VM / CT is available by default (95%) parameter --max-perc-storage
+
+## Permission
+
+For execution is required permission: VM.Audit, VM.Snapshot, Datastore.Audit, Pool.Allocate.
 
 ## Api token
 
