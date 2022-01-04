@@ -39,7 +39,10 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         public static readonly string NAME = "cv4pve-autosnap";
 
-        private static string GetTimestampFormat(string timestampFormat) => string.IsNullOrWhiteSpace(timestampFormat) ? DEFAULT_TIMESTAMP_FORMAT : timestampFormat;
+        private static string GetTimestampFormat(string timestampFormat)
+            => string.IsNullOrWhiteSpace(timestampFormat)
+                ? DEFAULT_TIMESTAMP_FORMAT
+                : timestampFormat;
 
         /// <summary>
         /// Get label from description
@@ -47,7 +50,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="name"></param>
         /// <param name="timestampFormat"></param>
         /// <returns></returns>
-        public static string GetLabelFromName(string name, string timestampFormat) => name[PREFIX.Length.. ^ GetTimestampFormat(timestampFormat).Length];
+        public static string GetLabelFromName(string name, string timestampFormat) => name[PREFIX.Length..^GetTimestampFormat(timestampFormat).Length];
 
         /// <summary>
         /// Old application name
@@ -78,7 +81,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         /// <value></value>
         public static Dictionary<string, HookPhase> Phases = new Dictionary<string, HookPhase>
-            { { "clean-job-start", HookPhase.CleanJobStart },
+            {
+                { "clean-job-start", HookPhase.CleanJobStart },
                 { "clean-job-end", HookPhase.CleanJobEnd },
                 { "snap-job-start", HookPhase.SnapJobStart },
                 { "snap-job-end", HookPhase.SnapJobEnd },
@@ -105,13 +109,13 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         public static string PhaseEnumToStr(HookPhase phase) => Phases.SingleOrDefault(a => a.Value == phase).Key;
 
         private void CallPhaseEvent(HookPhase phase,
-            VMInfo vm,
-            string label,
-            int keep,
-            string snapName,
-            bool vmState,
-            double duration,
-            bool status)
+                                    VMInfo vm,
+                                    string label,
+                                    int keep,
+                                    string snapName,
+                                    bool vmState,
+                                    double duration,
+                                    bool status)
         {
             if (_debug) { _out.WriteLine($"Phase: {PhaseEnumToStr(phase)}"); }
             PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
@@ -139,14 +143,14 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
             return string.IsNullOrWhiteSpace(label) ? snapshots : FilterLabel(snapshots, label, timestampFormat);
         }
 
-        private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots) => snapshots.Where(a => (a.Description == NAME || a.Description == OLD_NAME));
-
+        private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots) => snapshots.Where(a => a.Description == NAME || a.Description == OLD_NAME);
         private static string GetPrefix(string label) => PREFIX + label;
 
-        private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots,
-            string label,
-            string timestampFormat) => FilterApp(snapshots.Where(a => (a.Name.Length - GetTimestampFormat(timestampFormat).Length) > 0
-            && a.Name[.. ^ GetTimestampFormat(timestampFormat).Length] == GetPrefix(label)));
+        private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots, string label, string timestampFormat)
+        {
+            var lenTms = GetTimestampFormat(timestampFormat).Length;
+            return FilterApp(snapshots.Where(a => (a.Name.Length - lenTms) > 0 && a.Name[..^lenTms] == GetPrefix(label)));
+        }
 
         /// <summary>
         /// Execute a autosnap.
@@ -160,12 +164,12 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="optMaxPercentageStorage"></param>
         /// <returns></returns>
         public ResultSnap Snap(string vmIdsOrNames,
-            string label,
-            int keep,
-            bool state,
-            long timeout,
-            string timestampFormat,
-            int optMaxPercentageStorage)
+                               string label,
+                               int keep,
+                               bool state,
+                               long timeout,
+                               string timestampFormat,
+                               int optMaxPercentageStorage)
         {
             timestampFormat = GetTimestampFormat(timestampFormat);
 
@@ -187,23 +191,26 @@ Max % Storage :   {optMaxPercentageStorage}%");
             var storages = new List<object[]>();
 
             var vms = GetVMs(vmIdsOrNames).ToArray();
+            if (vms.Count() == 0) { _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'VM.Audit' -----"); }
+
             var nodes = vms.Select(a => a.Node).Distinct().ToList();
-            var contentAllowed = new [] { "images", "rootdir" }.ToList();
+            var contentAllowed = new[] { "images", "rootdir" }.ToList();
+
+            var resStorages = _client.Cluster.Resources.Resources("storage").ToEnumerable();
+            if (resStorages.Count() == 0) { _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'Datastore.Audit' -----"); }
 
             //check storage capacity
-            foreach (var storage in _client.Cluster.Resources.Resources("storage")
-                    .ToEnumerable()
-                    .Where(a => nodes.Contains(a.node)
-                        && ((string) a.content + "").Split(',').Any(a => contentAllowed.Contains(a)))
-                    .OrderBy(a => a.node)
-                    .ThenBy(a => a.storage))
+            foreach (var storage in resStorages.Where(a => nodes.Contains(a.node) &&
+                                                           ((string)a.content + "").Split(',').Any(a => contentAllowed.Contains(a)))
+                                               .OrderBy(a => a.node)
+                                               .ThenBy(a => a.storage))
             {
                 DynamicHelper.CheckKeyOrCreate(storage, "disk", 0d);
                 DynamicHelper.CheckKeyOrCreate(storage, "maxdisk", 0d);
 
                 var used = storage.disk == 0 || storage.maxdisk == 0
                     ? 0
-                    : Math.Round(storage.disk / (double) storage.maxdisk * 100, 1);
+                    : Math.Round(storage.disk / (double)storage.maxdisk * 100, 1);
 
                 var valid = !(storage.disk == 0 || storage.maxdisk == 0 || used > optMaxPercentageStorage);
 
@@ -212,7 +219,7 @@ Max % Storage :   {optMaxPercentageStorage}%");
                 {
                     key,
                     storage.plugintype,
-                    (valid? "Ok": "Ko"),
+                    valid? "Ok": "Ko",
                     used,
                     storage.maxdisk / 1024 / 1024 / 1024,
                     storage.disk / 1024 / 1024 / 1024,
@@ -221,17 +228,18 @@ Max % Storage :   {optMaxPercentageStorage}%");
                 storagesCheck.Add(key, valid);
             }
 
-            _out.Write(TableHelper.Create(new []
-                {
-                    "Storage",
-                    "Type",
-                    "Valid",
-                    "Used % ",
-                    "Max Disk (GB)",
-                    "Disk (GB)"
-                },
-                storages,
-                TableOutputType.Text, false));
+            _out.Write(TableHelper.Create(new[]
+                                          {
+                                            "Storage",
+                                            "Type",
+                                            "Valid",
+                                            "Used % ",
+                                            "Max Disk (GB)",
+                                            "Disk (GB)"
+                                          },
+                                          storages,
+                                          TableOutputType.Text,
+                                          false));
 
             foreach (var vm in vms)
             {
@@ -252,9 +260,9 @@ Max % Storage :   {optMaxPercentageStorage}%");
                 execSnapVm.Start();
 
                 //check agent enabled
-                if (vm.Type == VMTypeEnum.Qemu && !((ConfigQemu) vm.Config).AgentEnabled)
+                if (vm.Type == VMTypeEnum.Qemu && !((ConfigQemu)vm.Config).AgentEnabled)
                 {
-                    _out.WriteLine(((ConfigQemu) vm.Config).GetMessageEnablingAgent());
+                    _out.WriteLine(((ConfigQemu)vm.Config).GetMessageEnablingAgent());
                 }
 
                 //verify storage
