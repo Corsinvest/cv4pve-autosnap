@@ -39,19 +39,6 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// </summary>
         public static readonly string NAME = "cv4pve-autosnap";
 
-        private static string GetTimestampFormat(string timestampFormat)
-            => string.IsNullOrWhiteSpace(timestampFormat)
-                ? DEFAULT_TIMESTAMP_FORMAT
-                : timestampFormat;
-
-        /// <summary>
-        /// Get label from description
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="timestampFormat"></param>
-        /// <returns></returns>
-        public static string GetLabelFromName(string name, string timestampFormat) => name[PREFIX.Length..^GetTimestampFormat(timestampFormat).Length];
-
         /// <summary>
         /// Old application name
         /// </summary>
@@ -69,7 +56,27 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="out"></param>
         /// <param name="dryRun"></param>
         /// <param name="debug"></param>
-        public Application(PveClient client, TextWriter @out, bool dryRun, bool debug) => (_client, _out, _dryRun, _debug) = (client, @out, dryRun, debug);
+        public Application(PveClient client, TextWriter @out, bool dryRun, bool debug)
+            => (_client, _out, _dryRun, _debug) = (client, @out, dryRun, debug);
+
+
+        private static string GetTimestampFormat(string timestampFormat)
+            => string.IsNullOrWhiteSpace(timestampFormat)
+                ? DEFAULT_TIMESTAMP_FORMAT
+                : timestampFormat;
+
+        /// <summary>
+        /// Get label from description
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="timestampFormat"></param>
+        /// <returns></returns>
+        public static string GetLabelFromName(string name, string timestampFormat)
+        {
+            var tmsLen = GetTimestampFormat(timestampFormat).Length;
+            var prfLen = PREFIX.Length;
+            return tmsLen + prfLen < name.Length ? name[prfLen..^tmsLen] : "";
+        }
 
         /// <summary>
         /// Event phase.
@@ -143,7 +150,9 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
             return string.IsNullOrWhiteSpace(label) ? snapshots : FilterLabel(snapshots, label, timestampFormat);
         }
 
-        private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots) => snapshots.Where(a => a.Description == NAME || a.Description == OLD_NAME);
+        private static IEnumerable<Snapshot> FilterApp(IEnumerable<Snapshot> snapshots)
+            => snapshots.Where(a => a.Description == NAME || a.Description == OLD_NAME);
+
         private static string GetPrefix(string label) => PREFIX + label;
 
         private static IEnumerable<Snapshot> FilterLabel(IEnumerable<Snapshot> snapshots, string label, string timestampFormat)
