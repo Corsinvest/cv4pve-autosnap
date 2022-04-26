@@ -1,18 +1,11 @@
 /*
- * This file is part of the cv4pve-autosnap https://github.com/Corsinvest/cv4pve-autosnap,
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Corsinvest Enterprise License (CEL)
- * Full copyright and license information is available in
- * LICENSE.md which is distributed with this source code.
- *
- * Copyright (C) 2016 Corsinvest Srl	GPLv3 and CEL
+ * SPDX-License-Identifier: GPL-3.0-only
+ * SPDX-FileCopyrightText: 2019 Copyright Corsinvest Srl
  */
 
 using System.Collections.Generic;
 using System.Globalization;
-using Corsinvest.ProxmoxVE.Api.Extension.VM;
+using Corsinvest.ProxmoxVE.Api.Shared.Models.Cluster;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api
 {
@@ -33,7 +26,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="duration"></param>
         /// <param name="status"></param>
         public PhaseEventArgs(HookPhase phase,
-                              VMInfo vm,
+                              IClusterResourceVm vm,
                               string label,
                               int keep,
                               string snapName,
@@ -42,7 +35,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                               bool status)
         {
             Phase = phase;
-            VM = vm;
+            Vm = vm;
             Label = label;
             Keep = keep;
             SnapName = snapName;
@@ -61,7 +54,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// VM Info
         /// </summary>
         /// <value></value>
-        public VMInfo VM { get; }
+        public IClusterResourceVm Vm { get; }
 
         /// <summary>
         /// Label
@@ -107,9 +100,9 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
             => new Dictionary<string, string>
                 {
                     {"CV4PVE_AUTOSNAP_PHASE", Application.PhaseEnumToStr(Phase)},
-                    {"CV4PVE_AUTOSNAP_VMID", VM?.Id + "" },
-                    {"CV4PVE_AUTOSNAP_VMNAME", VM?.Name },
-                    {"CV4PVE_AUTOSNAP_VMTYPE", VM?.Type + "" },
+                    {"CV4PVE_AUTOSNAP_VMID", Vm.VmId + "" },
+                    {"CV4PVE_AUTOSNAP_VMNAME", Vm.Name },
+                    {"CV4PVE_AUTOSNAP_VMTYPE", Vm.Type + "" },
                     {"CV4PVE_AUTOSNAP_LABEL", Label },
                     {"CV4PVE_AUTOSNAP_KEEP", Keep + "" },
                     {"CV4PVE_AUTOSNAP_SNAP_NAME", SnapName },

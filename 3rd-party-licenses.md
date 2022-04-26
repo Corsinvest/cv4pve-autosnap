@@ -14,6 +14,3 @@ License: GPLv3
 
 [Dotnet Core](https://github.com/dotnet/core)
 License: MIT
-
-[ReadLine](https://github.com/tonerdo/readline)
-License: MIT
