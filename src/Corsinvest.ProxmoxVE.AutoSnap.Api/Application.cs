@@ -334,11 +334,19 @@ Max % Storage :   {maxPercentageStorage}%");
                     if (inError) { _out.WriteLine(result.GetError()); }
 
                     //check error in task
-                    var taskStatus = await _client.GetExitStatusTask(result.ToData<string>());
-                    if (taskStatus != "OK")
+                    if (await _client.TaskIsRunning(result.ToData<string>()))
                     {
-                        _out.WriteLine($"Error in task: {taskStatus}");
+                        _out.WriteLine($"Error task in run... increase the timeout!");
                         inError = true;
+                    }
+                    else
+                    {
+                        var taskStatus = await _client.GetExitStatusTask(result.ToData<string>());
+                        if (taskStatus != "OK")
+                        {
+                            _out.WriteLine($"Error in task: {taskStatus}");
+                            inError = true;
+                        }
                     }
                 }
 
@@ -445,11 +453,19 @@ Timestamp format: {timestampFormat}");
                     if (inError) { _out.WriteLine(result.GetError()); }
 
                     //check error in task
-                    var taskStatus = await _client.GetExitStatusTask(result.ToData<string>());
-                    if (taskStatus != "OK")
+                    if (await _client.TaskIsRunning(result.ToData<string>()))
                     {
-                        _out.WriteLine($"Error in task: {taskStatus}");
+                        _out.WriteLine($"Error task in run... increase the timeout!");
                         inError = true;
+                    }
+                    else
+                    {
+                        var taskStatus = await _client.GetExitStatusTask(result.ToData<string>());
+                        if (taskStatus != "OK")
+                        {
+                            _out.WriteLine($"Error in task: {taskStatus}");
+                            inError = true;
+                        }
                     }
                 }
 

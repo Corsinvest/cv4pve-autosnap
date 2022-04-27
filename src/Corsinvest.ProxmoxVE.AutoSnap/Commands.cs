@@ -38,7 +38,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
             optVmIds.IsRequired = true;
 
             var optTimeout = command.TimeoutOption();
-            optTimeout.SetDefaultValue(30);
+            optTimeout.SetDefaultValue(30L);
 
             var optTimestampFormat = command.AddOption("--timestamp-format", $"Specify different timestamp format");
             optTimestampFormat.SetDefaultValue(Application.DefaultTimestampFormat);

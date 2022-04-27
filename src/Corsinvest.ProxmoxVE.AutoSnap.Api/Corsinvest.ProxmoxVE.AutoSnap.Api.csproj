@@ -3,7 +3,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-		<Version>1.8.7</Version>
+		<Version>1.8.8</Version>
 		<Company>Corsinvest Srl</Company>
 		<Authors>Daniele Corsini</Authors>
 		<Copyright>Corsinvest Srl</Copyright>
