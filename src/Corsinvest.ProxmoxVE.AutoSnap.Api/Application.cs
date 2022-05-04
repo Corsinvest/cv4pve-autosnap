@@ -164,7 +164,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         }
 
         private static IEnumerable<VmSnapshot> FilterApp(IEnumerable<VmSnapshot> snapshots)
-            => snapshots.Where(a => a.Description == Name || a.Description == OldName);
+            => snapshots.Where(a => (a.Description + "").Replace("\n", "") == Name
+                                    || (a.Description + "").Replace("\n", "") == OldName);
 
         private static string GetPrefix(string label) => Prefix + label;
 
