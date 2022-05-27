@@ -108,6 +108,7 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Support range vmid 100:103,134,200:204,-102
 * Support different timestamp format with parameter --timestamp-format
 * Check the storage space used by the disks in the VM / CT is available by default (95%) parameter --max-perc-storage
+* Execution  with file parameter e.g. @FileParameter.parm
 
 ## Permission
 
@@ -215,6 +216,23 @@ Output type:
 ```Text
 -o|--output   Type output (default: text) Text,Json,JsonPretty
 
+```
+
+## Execution with file parameter
+
+Is possible execute with file parameter
+
+```sh
+root@debian:~# cv4pve-autosnap @FileParameter.parm
+```
+
+File **FileParameter.parm**
+```
+--host=192.168.0.100
+--username=root@pam
+--password=fagiano
+--vmid=100
+status
 ```
 
 ## Hook script
