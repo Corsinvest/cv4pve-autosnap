@@ -227,7 +227,8 @@ root@debian:~# cv4pve-autosnap @FileParameter.parm
 ```
 
 File **FileParameter.parm**
-```
+
+```txt
 --host=192.168.0.100
 --username=root@pam
 --password=fagiano
