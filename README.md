@@ -108,7 +108,7 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Support range vmid 100:103,134,200:204,-102
 * Support different timestamp format with parameter --timestamp-format
 * Check the storage space used by the disks in the VM / CT is available by default (95%) parameter --max-perc-storage
-* Execution  with file parameter e.g. @FileParameter.parm
+* Execution with file parameter e.g. @FileParameter.parm
 
 ## Permission
 
