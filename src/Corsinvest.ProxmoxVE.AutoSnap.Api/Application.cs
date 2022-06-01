@@ -195,8 +195,11 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                                            int maxPercentageStorage)
         {
             timestampFormat = GetTimestampFormat(timestampFormat);
+            var pveFullVersion = (await _client.Version.Version()).ToData().version as string;
+            var pveVersion = double.Parse(pveFullVersion.Split(".")[0]);
 
             _out.WriteLine($@"ACTION Snap
+PVE Version:      {pveFullVersion}
 VMs:              {vmIdsOrNames}
 Label:            {label}
 Keep:             {keep}
@@ -218,50 +221,59 @@ Max % Storage :   {maxPercentageStorage}%");
 
             var nodes = vms.Select(a => a.Node).Distinct().ToList();
 
-            var contentAllowed = new[] { "images", "rootdir" };
-            var storages = (await _client.GetStorages())
-                                .Where(a => !a.IsUnknown
-                                            && nodes.Contains(a.Node)
-                                            && a.Content.Split(',').Any(a => contentAllowed.Contains(a)))
-                                .OrderBy(a => a.Node)
-                                .ThenBy(a => a.Storage);
+            var checkStorage = pveVersion >= 6;
 
-            if (!storages.Any()) { _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'Datastore.Audit' -----"); }
-
-            //check storage capacity
-            foreach (var storage in storages)
+            if (checkStorage)
             {
-                var valid = !(storage.DiskUsage == 0
-                                || storage.DiskSize == 0
-                                || storage.DiskUsagePercentage > maxPercentageStorage);
+                var contentAllowed = new[] { "images", "rootdir" };
+                var storages = (await _client.GetStorages())
+                                    .Where(a => !a.IsUnknown
+                                                && nodes.Contains(a.Node)
+                                                && a.Content.Split(',').Any(a => contentAllowed.Contains(a)))
+                                    .OrderBy(a => a.Node)
+                                    .ThenBy(a => a.Storage);
 
-                var key = $"{storage.Node}/{storage.Storage}";
-                storagesPrint.Add(item: new object[]
+                if (!storages.Any()) { _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'Datastore.Audit' -----"); }
+
+                //check storage capacity
+                foreach (var storage in storages)
                 {
-                    key,
-                    storage.PluginType,
-                    valid? "Ok": "Ko",
-                    Math.Round(storage.DiskUsagePercentage * 100,1),
-                    FormatHelper.FromBytes(storage.DiskSize),
-                    FormatHelper.FromBytes(storage.DiskUsage),
-                });
+                    var valid = !(storage.DiskUsage == 0
+                                    || storage.DiskSize == 0
+                                    || storage.DiskUsagePercentage > maxPercentageStorage);
 
-                storagesCheck.Add(key, valid);
-            }
+                    var key = $"{storage.Node}/{storage.Storage}";
+                    storagesPrint.Add(item: new object[]
+                    {
+                        key,
+                        storage.PluginType,
+                        valid? "Ok": "Ko",
+                        Math.Round(storage.DiskUsagePercentage * 100,1),
+                        FormatHelper.FromBytes(storage.DiskSize),
+                        FormatHelper.FromBytes(storage.DiskUsage),
+                    });
 
-            if (storagesPrint.Any())
-            {
-                var size = new[] { 25, 10, 10, 10, 12, 12 };
-
-                string FormatLine(object[] values)
-                {
-                    var ret = new StringBuilder();
-                    for (int i = 0; i < size.Length; i++) { ret.Append((values[i] + "").PadLeft(size[i])); }
-                    return ret.ToString();
+                    storagesCheck.Add(key, valid);
                 }
 
-                _out.WriteLine(FormatLine(new[] { "Storage", "Type", "Valid", "Used % ", "Disk Size", "Disk Usage" }));
-                foreach (var item in storagesPrint) { _out.WriteLine(FormatLine(item)); }
+                if (storagesPrint.Any())
+                {
+                    var size = new[] { 25, 10, 10, 10, 12, 12 };
+
+                    string FormatLine(object[] values)
+                    {
+                        var ret = new StringBuilder();
+                        for (int i = 0; i < size.Length; i++) { ret.Append((values[i] + "").PadLeft(size[i])); }
+                        return ret.ToString();
+                    }
+
+                    _out.WriteLine(FormatLine(new[] { "Storage", "Type", "Valid", "Used % ", "Disk Size", "Disk Usage" }));
+                    foreach (var item in storagesPrint) { _out.WriteLine(FormatLine(item)); }
+                }
+            }
+            else
+            {
+                _out.WriteLine($"The Proxmox VE version {pveFullVersion} does not verify the storage % usage!");
             }
 
             foreach (var vm in vms)
@@ -295,20 +307,23 @@ Max % Storage :   {maxPercentageStorage}%");
                     _out.WriteLine($"VM {vm.VmId} consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent");
                 }
 
-                //verify storage
-                var validStorage = false;
-                foreach (var item in vmConfig.Disks)
+                if (checkStorage)
                 {
-                    validStorage = false;
-                    storagesCheck.TryGetValue($"{vm.Node}/{item.Storage}", out validStorage);
-                    if (!validStorage) { break; }
-                }
+                    //verify storage
+                    var validStorage = false;
+                    foreach (var item in vmConfig.Disks)
+                    {
+                        validStorage = false;
+                        storagesCheck.TryGetValue($"{vm.Node}/{item.Storage}", out validStorage);
+                        if (!validStorage) { break; }
+                    }
 
-                if (!validStorage)
-                {
-                    _out.WriteLine($"Skip VM problem storage space out of {maxPercentageStorage}%");
-                    execSnapVm.Stop();
-                    continue;
+                    if (!validStorage)
+                    {
+                        _out.WriteLine($"Skip VM problem storage space out of {maxPercentageStorage}%");
+                        execSnapVm.Stop();
+                        continue;
+                    }
                 }
 
                 //create snapshot
