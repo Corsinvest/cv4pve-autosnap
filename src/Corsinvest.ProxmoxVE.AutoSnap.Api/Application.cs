@@ -217,7 +217,11 @@ Max % Storage :   {maxPercentageStorage}%");
             var storagesPrint = new List<object[]>();
 
             var vms = await GetVms(vmIdsOrNames);
-            if (!vms.Any()) { _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'VM.Audit' -----"); }
+            if (!vms.Any())
+            {
+                _out.WriteLine($"----- VMs with '{vmIdsOrNames}' NOT FOUND -----");
+                _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'VM.Audit' -----");
+            }
 
             var nodes = vms.Select(a => a.Node).Distinct().ToList();
 
