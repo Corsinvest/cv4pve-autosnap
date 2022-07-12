@@ -468,7 +468,13 @@ Timestamp format: {timestampFormat}");
                 var inError = false;
                 if (!_dryRun)
                 {
-                    var result = await SnapshotHelper.RemoveSnapshot(_client, vm.Node, vm.VmType, vm.VmId, snapshot.Name, timeout);
+                    var result = await SnapshotHelper.RemoveSnapshot(_client,
+                                                                     vm.Node,
+                                                                     vm.VmType,
+                                                                     vm.VmId,
+                                                                     snapshot.Name,
+                                                                     timeout,
+                                                                     true);
                     inError = result.InError();
                     if (inError) { _out.WriteLine(result.GetError()); }
 
