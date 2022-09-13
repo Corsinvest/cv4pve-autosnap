@@ -230,12 +230,32 @@ Max % Storage :   {maxPercentageStorage}%");
             if (checkStorage)
             {
                 var contentAllowed = new[] { "images", "rootdir" };
+
                 var storages = (await _client.GetStorages())
-                                    .Where(a => !a.IsUnknown
-                                                && nodes.Contains(a.Node)
-                                                && a.Content.Split(',').Any(a => contentAllowed.Contains(a)))
+                                    .Where(a => !a.IsUnknown && nodes.Contains(a.Node))
+                                    .ToList();
+
+                if (storages.Any(a => string.IsNullOrWhiteSpace(a.Content)))
+                {
+                    //content not exists
+                    //found in nodes/storages
+                    foreach (var node in nodes)
+                    {
+                        var nodeStorages = await _client.Nodes[node].Storage.Get(string.Join(",", contentAllowed));
+
+                        foreach (var storage in storages.Where(a => a.Node == node))
+                        {
+                            storage.Content = nodeStorages.FirstOrDefault(a => a.Storage == storage.Storage
+                                                                                && a.Type == storage.PluginType)
+                                                          ?.Content ?? "";
+                        }
+                    }
+                }
+
+                storages = storages.Where(a => a.Content.Split(',').Any(a => contentAllowed.Contains(a)))
                                     .OrderBy(a => a.Node)
-                                    .ThenBy(a => a.Storage);
+                                    .ThenBy(a => a.Storage)
+                                    .ToList();
 
                 if (!storages.Any()) { _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'Datastore.Audit' -----"); }
 
