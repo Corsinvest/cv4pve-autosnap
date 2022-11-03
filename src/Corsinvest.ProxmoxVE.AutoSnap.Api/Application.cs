@@ -28,6 +28,12 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
     {
         private readonly ILogger<Application> _logger;
 
+        /// <summary>
+        /// Permissions request
+        /// </summary>
+        /// <value></value>
+        public IEnumerable<string> Permissions { get; } = new[] { "VM.Audit", "VM.Snapshot", "Datastore.Audit", "Pool.Allocate" };
+
         private static readonly string Prefix = "auto";
 
         /// <summary>
@@ -128,7 +134,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                                     double duration,
                                     bool status)
         {
-            _logger.LogDebug($"Phase: {PhaseEnumToStr(phase)}");
+            _logger.LogDebug("Phase: {phase}", PhaseEnumToStr(phase));
             PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
                                                         vm,
                                                         label,
@@ -185,6 +191,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="timeout"></param>
         /// <param name="timestampFormat"></param>
         /// <param name="maxPercentageStorage"></param>
+        /// <param name="onlyRuns"></param>
         /// <returns></returns>
         public async Task<ResultSnap> Snap(string vmIdsOrNames,
                                            string label,
@@ -192,7 +199,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                                            bool state,
                                            long timeout,
                                            string timestampFormat,
-                                           int maxPercentageStorage)
+                                           int maxPercentageStorage,
+                                           bool onlyRuns)
         {
             timestampFormat = GetTimestampFormat(timestampFormat);
             var pveFullVersion = (await _client.Version.Version()).ToData().version as string;
@@ -204,6 +212,7 @@ VMs:              {vmIdsOrNames}
 Label:            {label}
 Keep:             {keep}
 State:            {state}
+Only running:     {onlyRuns}
 Timeout:          {Math.Round(timeout / 1000.0, 1)} sec.
 Timestamp format: {timestampFormat}
 Max % Storage :   {maxPercentageStorage}%");
@@ -302,7 +311,13 @@ Max % Storage :   {maxPercentageStorage}%");
 
             foreach (var vm in vms)
             {
-                _out.WriteLine($"----- VM {vm.VmId} {vm.Type} -----");
+                _out.WriteLine($"----- VM {vm.VmId} {vm.Type} {vm.Status} -----");
+
+                if (!vm.IsRunning && onlyRuns)
+                {
+                    _out.WriteLine("Skip VM '--only-running' parameter used!");
+                    continue;
+                }
 
                 //exclude template
                 if (vm.IsTemplate)

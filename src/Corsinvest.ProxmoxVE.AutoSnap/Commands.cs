@@ -163,7 +163,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
             var optScript = OptionScript(cmd);
 
             var optState = cmd.AddOption<bool>("--state", "Save the vmstate");
-            //var optRunning = cmd.AddOption<bool>("--only-runs", "Only VM/CT are running");
+
+            var optOnlyRunning = cmd.AddOption<bool>("--only-running", "Only VM/CT are running");
 
             cmd.SetHandler(async (InvocationContext ctx) =>
             {
@@ -175,7 +176,8 @@ namespace Corsinvest.ProxmoxVE.AutoSnap
                                           optState.GetValue(),
                                           optTimeout.GetValue() * 1000,
                                           optTimestampFormat.GetValue(),
-                                          optMaxPercentageStorage.GetValue());
+                                          optMaxPercentageStorage.GetValue(),
+                                          optOnlyRunning.GetValue());
 
                 ctx.ExitCode = snap.Status ? 0 : 1;
             });

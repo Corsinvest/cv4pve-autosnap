@@ -110,6 +110,7 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Check the storage space used by the disks in the VM / CT is available by default (95%) parameter --max-perc-storage
 * Execution with file parameter e.g. @FileParameter.parm
 * Snapshots are removed with **force** parameter
+* Decide only runs VM/CT
 
 ## Permission
 
