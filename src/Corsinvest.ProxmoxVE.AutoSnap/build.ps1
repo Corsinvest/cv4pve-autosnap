@@ -29,4 +29,9 @@ foreach ($rid in $rids) {
     $fileDest = "$pathNet\$fileName-$rid.zip"
     Remove-Item $fileDest -ErrorAction SilentlyContinue
     Compress-Archive $path\$fileName $fileDest
+
+    Remove-Item "$pathNet\$rid" -Recurse -Force
 }
+
+Remove-Item "bin\debug" -Recurse -Force
+Remove-Item "obj" -Recurse -Force
