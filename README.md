@@ -2,12 +2,15 @@
 
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg)](LICENSE.md) [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest) ![GitHub All Releases](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg)
 [![Nuget](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg)](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api/)
+[![.NET C#](https://img.shields.io/badge/.NET-C%23-blue)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 
 Proxmox VE automatic snapshot tool
 
 [More information about cv4pve-autosnap](http://www.corsinvest.it/continuous-protection-data-proxmox-ve/)
 
 [More information about Qemu guest agent](https://pve.proxmox.com/wiki/Qemu-guest-agent)
+
+:star:  We appreciate your star, it helps!
 
 ```text
     ______                _                      __
