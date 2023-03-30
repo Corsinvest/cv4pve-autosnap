@@ -338,8 +338,8 @@ Now you can place files for different Services in ```/etc/qemu/fsfreeze-hook.d/`
 # from the other clients until the filesystem is thawed.
 
 MYSQL="/usr/bin/mysql"
-#MYSQL_OPTS="-uroot" #"-prootpassword"
-MYSQL_OPTS="--defaults-extra-file=/etc/mysql/debian.cnf"
+MYSQL_OPTS="-uroot"
+MYSQL_PWD="mypassword"
 FIFO=/var/run/mysql-flush.fifo
 
 # Check mysql is installed and the server running
