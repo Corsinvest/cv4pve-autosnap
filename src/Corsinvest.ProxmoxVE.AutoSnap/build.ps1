@@ -16,7 +16,7 @@ Write-Output "
  == Build System
  ========================================================="
 
-$pathNet = "Bin\Release\net6.0"
+$pathNet = "Bin\Release\net7.0"
 
 Remove-Item -Path ".\$pathNet"  -Recurse -Force
 
@@ -25,7 +25,7 @@ foreach ($rid in $rids) {
     dotnet publish -r $rid -c Release /p:PublishSingleFile=true --self-contained #/p:EnableCompressionInSingleFile=true
     $path = "$pathNet\$rid\publish\"
 
-    $fileName = Get-ChildItem $path -Exclude *.pdb -name
+    $fileName = Get-ChildItem $path -Exclude *.pdb,*.xml -name
     $fileDest = "$pathNet\$fileName-$rid.zip"
     Remove-Item $fileDest -ErrorAction SilentlyContinue
     Compress-Archive $path\$fileName $fileDest

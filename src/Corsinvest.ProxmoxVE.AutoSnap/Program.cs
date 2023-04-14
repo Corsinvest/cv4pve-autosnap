@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
 using Corsinvest.ProxmoxVE.AutoSnap.Api;
 
-namespace Corsinvest.ProxmoxVE.AutoSnap
+namespace Corsinvest.ProxmoxVE.AutoSnap;
+
+class Program
 {
-    class Program
+    static async Task<int> Main(string[] args)
     {
-        static async Task<int> Main(string[] args)
-        {
-            var rc = ConsoleHelper.CreateApp(Application.Name, "Automatic snapshot VM/CT with retention");
-            _ = new Commands(rc);
-            return await rc.ExecuteApp(args);
-        }
+        var rc = ConsoleHelper.CreateApp(Application.Name, "Automatic snapshot VM/CT with retention");
+        _ = new Commands(rc);
+        return await rc.ExecuteApp(args);
     }
 }

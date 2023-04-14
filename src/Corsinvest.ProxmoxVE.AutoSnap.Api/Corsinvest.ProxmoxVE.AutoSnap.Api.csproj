@@ -1,24 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<OutputType>Library</OutputType>
 
-		<Version>1.8.14</Version>
+		<Version>1.8.15</Version>
+
 		<Company>Corsinvest Srl</Company>
-		<Authors>Daniele Corsini</Authors>
+		<Authors>Corsinvest Srl</Authors>
 		<Copyright>Corsinvest Srl</Copyright>
-		<Product>Corsinvest for Proxmox VE AutpSnap Api</Product>
-		<AssemblyTitle>Corsinvest for Proxmox VE AutpSnap Api</AssemblyTitle>
-		<Description>Corsinvest for Proxmox VE AutpSnap Api</Description>
 
-		<PackageProjectUrl>https://github.com/Corsinvest/cv4pve-autosnap</PackageProjectUrl>
-		<PackageTags>ProxmoxVE;Api,Client;Rest;Corsinvest;AutoSnap</PackageTags>
-		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl>https://github.com/Corsinvest/cv4pve-api-autosnap</PackageProjectUrl>
 		<PackageIcon>icon.png</PackageIcon>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>ProxmoxVE;Api,Client;Rest;Corsinvest;AutoSnap</PackageTags>
+		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+		<PackageOutputPath>..\..\..\.nupkgs\</PackageOutputPath>
 		<RepositoryType>Github</RepositoryType>
-		<RepositoryUrl>https://github.com/Corsinvest/cv4pve-autosnap</RepositoryUrl>
+		<RepositoryUrl>https://github.com/Corsinvest/cv4pve-api-autosnap</RepositoryUrl>
+		<PackageOutputPath>..\..\..\.nupkgs\</PackageOutputPath>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<!-- Include symbol files (*.pdb) in the built .nupkg -->
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>
+			$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -31,13 +35,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- <ProjectReference Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj" /> -->
-		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="7.3.8" />
+		<!-- <ProjectReference
+		Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj"
+		/> -->
+		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="7.4.1" />
 	</ItemGroup>
-
-	<Target Name="SpicNSpan" AfterTargets="Clean">
-		<RemoveDir Directories="$(TargetDir)" />
-		<RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" />
-		<RemoveDir Directories="$(ProjectDir)$(BaseOutputPath)" />
-	</Target>
 </Project>

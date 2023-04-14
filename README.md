@@ -13,43 +13,43 @@ Proxmox VE automatic snapshot tool
 :star:  We appreciate your star, it helps!
 
 ```text
-    ______                _                      __
-   / ____/___  __________(_)___ _   _____  _____/ /_
-  / /   / __ \/ ___/ ___/ / __ \ | / / _ \/ ___/ __/
- / /___/ /_/ / /  (__  ) / / / / |/ /  __(__  ) /_
- \____/\____/_/  /____/_/_/ /_/|___/\___/____/\__/
+     ______                _                      __
+    / ____/___  __________(_)___ _   _____  _____/ /_
+   / /   / __ \/ ___/ ___/ / __ \ | / / _ \/ ___/ __/
+  / /___/ /_/ / /  (__  ) / / / / |/ /  __(__  ) /_
+  \____/\____/_/  /____/_/_/ /_/|___/\___/____/\__/
 
- Corsinvest for Proxmox VE Auto Snapshot    (Made in Italy)
 
-Usage: cv4pve-autosnap [options] [command]
+  Automatic snapshot VM/CT with retention        (Made in Italy)
+
+  cv4pve-autosnap is a part of suite cv4pve.
+  For more information visit https://www.corsinvest.it/cv4pve
+
+Usage:
+  cv4pve-autosnap [command] [options]
 
 Options:
-  -?|-h|--help        Show help information
-  --version           Show version information
-  --host              The host name host[:port],host1[:port],host2[:port]
-  --api-token         Api token format 'USER@REALM!TOKENID=UUID'. Require Proxmox VE 6.2 or later
-  --username          User name <username>@<realm>
-  --password          The password. Specify 'file:path_file' to store password in file.
-  --vmid              The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
-                      -vmid or -name exclude (e.g. -200,-TestUbuntu)
-                      '@pool-???' for all VM/CT in specific pool (e.g. @pool-customer1),
-                      '@all-???' for all VM/CT in specific host (e.g. @all-pve1, @all-\$(hostname)),
-                      '@all' for all VM/CT in cluster
-  --timeout           Timeout operation in seconds
-  --timestamp-format  Specify different timestamp format. Default: yyMMddHHmmss
-  --max-perc-storage  Max percentage storage (default 95%)
+  --api-token <api-token>                Api token format 'USER@REALM!TOKENID=UUID'. Require Proxmox VE 6.2 or later
+  --username <username>                  User name <username>@<realm>
+  --password <password>                  The password. Specify 'file:path_file' to store password in file.
+  --host <host> (REQUIRED)               The host name host[:port],host1[:port],host2[:port]
+  --vmid <vmid> (REQUIRED)               The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
+                                         -vmid or -name exclude (e.g. -200,-TestUbuntu)
+                                         range 100:107,-105,200:204
+                                         '@pool-???' for all VM/CT in specific pool (e.g. @pool-customer1),
+                                         '@tag-???' for all VM/CT in specific tags (e.g. @tag-customerA),
+                                         '@all-???' for all VM/CT in specific host (e.g. @all-pve1, @all-\$(hostname)),
+                                         '@all' for all VM/CT in cluster
+  --timeout <timeout>                    Timeout operation in seconds [default: 30]
+  --timestamp-format <timestamp-format>  Specify different timestamp format [default: yyMMddHHmmss]
+  --max-perc-storage <max-perc-storage>  Max percentage storage [default: 95]
+  --version                              Show version information
+  -?, -h, --help                         Show help and usage information
 
 Commands:
-  app-check-update    Check update application
-  app-upgrade         Upgrade application
-  clean               Remove auto snapshots
-  snap                Will snap one time
-  status              Get list of all auto snapshots
-
-Run 'cv4pve-autosnap [command] --help' for more information about a command.
-
-cv4pve-autosnap is a part of suite cv4pve-tools.
-For more information visit https://www.cv4pve-tools.com
+  snap    Will snap one time
+  clean   Remove auto snapshots
+  status  Get list of all auto snapshots
 ```
 
 ## Copyright and License
@@ -114,6 +114,7 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Execution with file parameter e.g. @FileParameter.parm
 * Snapshots are removed with **force** parameter
 * Decide only runs VM/CT
+* Support [Proxmox VE Tags](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#_tags) in vmid
 
 ## Permission
 
