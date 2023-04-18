@@ -106,7 +106,6 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Timeout remove/create snapshot in --timeout parameter specify in second
 * Support multiple host for HA in --host parameter es. host[:port],host1[:port],host2[:port]
 * Multiple output text,unicode,unicodeAlt,markdown,html
-* Check-Update and Upgrade application
 * Use Api token --api-token parameter
 * Support range vmid 100:103,134,200:204,-102
 * Support different timestamp format with parameter --timestamp-format
