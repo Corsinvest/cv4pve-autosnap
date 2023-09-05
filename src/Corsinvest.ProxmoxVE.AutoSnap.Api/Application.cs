@@ -262,9 +262,9 @@ Max % Storage :   {maxPercentageStorage}%");
                 }
 
                 storages = storages.Where(a => a.Content.Split(',').Any(a => contentAllowed.Contains(a)))
-                                    .OrderBy(a => a.Node)
-                                    .ThenBy(a => a.Storage)
-                                    .ToList();
+                                   .OrderBy(a => a.Node)
+                                   .ThenBy(a => a.Storage)
+                                   .ToList();
 
                 if (!storages.Any()) { _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'Datastore.Audit' -----"); }
 
@@ -346,7 +346,7 @@ Max % Storage :   {maxPercentageStorage}%");
                     _out.WriteLine($"VM {vm.VmId} consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent");
                 }
 
-                if (checkStorage)
+                if (checkStorage && vmConfig.Disks.Any())
                 {
                     //verify storage
                     var validStorage = false;
@@ -487,11 +487,11 @@ Timestamp format: {timestampFormat}");
                                                  string label,
                                                  int keep,
                                                  long timeout,
-                                                 string timstampFormat)
+                                                 string timestampFormat)
         {
             foreach (var snapshot in FilterLabel(await SnapshotHelper.GetSnapshots(_client, vm.Node, vm.VmType, vm.VmId),
                                                  label,
-                                                 timstampFormat).Reverse().Skip(keep).Reverse())
+                                                 timestampFormat).Reverse().Skip(keep).Reverse())
             {
                 var watch = new Stopwatch();
                 watch.Start();
