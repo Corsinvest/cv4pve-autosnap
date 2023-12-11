@@ -34,10 +34,10 @@ Options:
   --password <password>                  The password. Specify 'file:path_file' to store password in file.
   --host <host> (REQUIRED)               The host name host[:port],host1[:port],host2[:port]
   --vmid <vmid> (REQUIRED)               The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
-                                         -vmid or -name exclude (e.g. -200,-TestUbuntu)
-                                         range 100:107,-105,200:204
+                                         -vmid,-name,-@node-???,-@tag-?? exclude from list (e.g. @all,-200,-TestUbuntu,-@tag-customer1) range 100:107,-105,200:204
                                          '@pool-???' for all VM/CT in specific pool (e.g. @pool-customer1),
                                          '@tag-???' for all VM/CT in specific tags (e.g. @tag-customerA),
+                                         '@node-???' for all VM/CT in specific node (e.g. @node-pve1, @node-\$(hostname)),
                                          '@all-???' for all VM/CT in specific host (e.g. @all-pve1, @all-\$(hostname)),
                                          '@all' for all VM/CT in cluster
   --timeout <timeout>                    Timeout operation in seconds [default: 30]
