@@ -117,7 +117,7 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 
 ## Permission
 
-For execution is required permission: VM.Audit, VM.Snapshot, Datastore.Audit, Pool.Allocate.
+For execution is required permission: VM.Audit, VM.Snapshot, Datastore.Audit, Pool.Audit.
 
 ## Api token
 
