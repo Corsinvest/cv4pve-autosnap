@@ -65,9 +65,9 @@ This software is part of a suite of tools called cv4pve-tools. If you want comme
 
 [![Tutorial](http://img.youtube.com/vi/kM5KhD9seT4/0.jpg)](https://www.youtube.com/watch?v=kM5KhD9seT4 "Tutorial")
 
-## GUI Version Toolbox
+## Web GUI Version in cv4pve-admin
 
-[![Tutorial](http://img.youtube.com/vi/M1V6U7KVm7g/0.jpg)](https://www.youtube.com/watch?v=M1V6U7KVm7g "Tutorial")
+[![cv4pve-admin](https://raw.githubusercontent.com/Corsinvest/cv4pve-admin/main/src/Corsinvest.ProxmoxVE.Admin/wwwroot/doc/images/screenshot/modules/autosnap/modules-safe-autosnap.png)](https://github.com/Corsinvest/cv4pve-admin)
 
 ## Introduction
 
