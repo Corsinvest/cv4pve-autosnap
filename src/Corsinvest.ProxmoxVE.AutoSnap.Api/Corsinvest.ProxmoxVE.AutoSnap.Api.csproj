@@ -35,9 +35,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- <ProjectReference
-		Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj"
-		/> -->
-		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="7.4.1" />
+		<!-- <ProjectReference Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj" /> -->
+		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="8.1.7" />
 	</ItemGroup>
 </Project>

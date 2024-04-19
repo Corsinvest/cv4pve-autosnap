@@ -97,7 +97,7 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// Phases
         /// </summary>
         /// <value></value>
-        public static readonly Dictionary<string, HookPhase> Phases = new()
+        public static Dictionary<string, HookPhase> Phases { get; } = new()
         {
             { "clean-job-start", HookPhase.CleanJobStart },
             { "clean-job-end", HookPhase.CleanJobEnd },
@@ -135,18 +135,23 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
                                     bool status)
         {
             _logger.LogDebug("Phase: {phase}", PhaseEnumToStr(phase));
-            PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
-                                                        vm,
-                                                        label,
-                                                        keep,
-                                                        snapName,
-                                                        vmState,
-                                                        duration,
-                                                        status));
+
+            try
+            {
+                PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
+                                                            vm,
+                                                            label,
+                                                            keep,
+                                                            snapName,
+                                                            vmState,
+                                                            duration,
+                                                            status));
+            }
+            catch (Exception ex) { _logger.LogError(ex, ex.Message); }
         }
 
-        private async Task<IEnumerable<IClusterResourceVm>> GetVms(string vmIdsOrNames)
-            => (await _client.GetVms(vmIdsOrNames)).Where(a => !a.IsUnknown);
+        private async Task<IEnumerable<IClusterResourceVm>> GetVmsAsync(string vmIdsOrNames)
+            => (await _client.GetVmsAsync(vmIdsOrNames)).Where(a => !a.IsUnknown);
 
         /// <summary>
         /// Status auto snapshot.
@@ -154,15 +159,15 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="vmIdsOrNames"></param>
         /// <param name="label"></param>
         /// <param name="timestampFormat"></param>
-        public async Task<IReadOnlyDictionary<IClusterResourceVm, IEnumerable<VmSnapshot>>> Status(string vmIdsOrNames, string label, string timestampFormat)
+        public async Task<IReadOnlyDictionary<IClusterResourceVm, IEnumerable<VmSnapshot>>> StatusAsync(string vmIdsOrNames, string label, string timestampFormat)
         {
             timestampFormat = GetTimestampFormat(timestampFormat);
 
             var ret = new Dictionary<IClusterResourceVm, IEnumerable<VmSnapshot>>();
 
-            foreach (var vm in await GetVms(vmIdsOrNames))
+            foreach (var vm in await GetVmsAsync(vmIdsOrNames))
             {
-                var snapshots = FilterApp(await SnapshotHelper.GetSnapshots(_client, vm.Node, vm.VmType, vm.VmId));
+                var snapshots = FilterApp(await SnapshotHelper.GetSnapshotsAsync(_client, vm.Node, vm.VmType, vm.VmId));
                 if (!string.IsNullOrWhiteSpace(label)) { snapshots = FilterLabel(snapshots, label, timestampFormat); }
                 ret.Add(vm, snapshots);
             }
@@ -193,14 +198,14 @@ namespace Corsinvest.ProxmoxVE.AutoSnap.Api
         /// <param name="maxPercentageStorage"></param>
         /// <param name="onlyRuns"></param>
         /// <returns></returns>
-        public async Task<ResultSnap> Snap(string vmIdsOrNames,
-                                           string label,
-                                           int keep,
-                                           bool state,
-                                           long timeout,
-                                           string timestampFormat,
-                                           int maxPercentageStorage,
-                                           bool onlyRuns)
+        public async Task<ResultSnap> SnapAsync(string vmIdsOrNames,
+                                                string label,
+                                                int keep,
+                                                bool state,
+                                                long timeout,
+                                                string timestampFormat,
+                                                int maxPercentageStorage,
+                                                bool onlyRuns)
         {
             timestampFormat = GetTimestampFormat(timestampFormat);
             var pveFullVersion = (await _client.Version.Version()).ToData().version as string;
@@ -225,7 +230,7 @@ Max % Storage :   {maxPercentageStorage}%");
             var storagesCheck = new Dictionary<string, bool>();
             var storagesPrint = new List<object[]>();
 
-            var vms = await GetVms(vmIdsOrNames);
+            var vms = await GetVmsAsync(vmIdsOrNames);
             if (!vms.Any())
             {
                 _out.WriteLine($"----- VMs with '{vmIdsOrNames}' NOT FOUND -----");
@@ -240,17 +245,17 @@ Max % Storage :   {maxPercentageStorage}%");
             {
                 var contentAllowed = new[] { "images", "rootdir" };
 
-                var storages = (await _client.GetStorages())
+                var storages = (await _client.GetStoragesAsync())
                                     .Where(a => !a.IsUnknown && nodes.Contains(a.Node))
                                     .ToList();
 
-                if (storages.Any(a => string.IsNullOrWhiteSpace(a.Content)))
+                if (storages.Exists(a => string.IsNullOrWhiteSpace(a.Content)))
                 {
                     //content not exists
                     //found in nodes/storages
                     foreach (var node in nodes)
                     {
-                        var nodeStorages = await _client.Nodes[node].Storage.Get(string.Join(",", contentAllowed));
+                        var nodeStorages = await _client.Nodes[node].Storage.GetAsync(string.Join(",", contentAllowed));
 
                         foreach (var storage in storages.Where(a => a.Node == node))
                         {
@@ -261,7 +266,8 @@ Max % Storage :   {maxPercentageStorage}%");
                     }
                 }
 
-                storages = storages.Where(a => a.Content.Split(',').Any(a => contentAllowed.Contains(a)))
+                storages = storages.Where(a => a.Content.Split(',')
+                                   .Any(a => contentAllowed.Contains(a)))
                                    .OrderBy(a => a.Node)
                                    .ThenBy(a => a.Storage)
                                    .ToList();
@@ -328,8 +334,8 @@ Max % Storage :   {maxPercentageStorage}%");
 
                 VmConfig vmConfig = vm.VmType switch
                 {
-                    VmType.Qemu => await _client.Nodes[vm.Node].Qemu[vm.VmId].Config.Get(),
-                    VmType.Lxc => await _client.Nodes[vm.Node].Lxc[vm.VmId].Config.Get(),
+                    VmType.Qemu => await _client.Nodes[vm.Node].Qemu[vm.VmId].Config.GetAsync(),
+                    VmType.Lxc => await _client.Nodes[vm.Node].Lxc[vm.VmId].Config.GetAsync(),
                     _ => throw new InvalidEnumArgumentException(),
                 };
 
@@ -352,7 +358,6 @@ Max % Storage :   {maxPercentageStorage}%");
                     var validStorage = false;
                     foreach (var item in vmConfig.Disks)
                     {
-                        validStorage = false;
                         storagesCheck.TryGetValue($"{vm.Node}/{item.Storage}", out validStorage);
                         if (!validStorage) { break; }
                     }
@@ -375,33 +380,23 @@ Max % Storage :   {maxPercentageStorage}%");
                 var inError = true;
                 if (!_dryRun)
                 {
-                    var result = await SnapshotHelper.CreateSnapshot(_client,
-                                                                     vm.Node,
-                                                                     vm.VmType,
-                                                                     vm.VmId,
-                                                                     snapName,
-                                                                     Name,
-                                                                     state,
-                                                                     timeout);
-
-
-                    inError = result.InError();
-                    if (inError) { _out.WriteLine(result.GetError()); }
-
-                    //check error in task
-                    if (await _client.TaskIsRunning(result.ToData<string>()))
+                    try
                     {
-                        _out.WriteLine($"Error task in run... increase the timeout!");
-                        inError = true;
+                        var result = await SnapshotHelper.CreateSnapshotAsync(_client,
+                                                                              vm.Node,
+                                                                              vm.VmType,
+                                                                              vm.VmId,
+                                                                              snapName,
+                                                                              Name,
+                                                                              state,
+                                                                              timeout);
+
+                        inError = await CheckResultAsync(result);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        var taskStatus = await _client.GetExitStatusTask(result.ToData<string>());
-                        if (taskStatus != "OK")
-                        {
-                            _out.WriteLine($"Error in task: {taskStatus}");
-                            inError = true;
-                        }
+                        _logger.LogError(ex, ex.Message);
+                        _out.WriteLine(ex.Message);
                     }
                 }
 
@@ -413,7 +408,7 @@ Max % Storage :   {maxPercentageStorage}%");
                 }
 
                 //remove old snapshot
-                if (!await SnapshotsRemove(vm, label, keep, timeout, timestampFormat))
+                if (!await SnapshotsRemoveAsync(vm, label, keep, timeout, timestampFormat))
                 {
                     execSnapVm.Stop();
                     continue;
@@ -447,7 +442,7 @@ Max % Storage :   {maxPercentageStorage}%");
         /// <param name="timeout"></param>
         /// <param name="timestampFormat"></param>
         /// <returns></returns>
-        public async Task<bool> Clean(string vmIdsOrNames, string label, int keep, long timeout, string timestampFormat)
+        public async Task<bool> CleanAsync(string vmIdsOrNames, string label, int keep, long timeout, string timestampFormat)
         {
             timestampFormat = GetTimestampFormat(timestampFormat);
 
@@ -464,7 +459,7 @@ Timestamp format: {timestampFormat}");
             var ret = true;
             CallPhaseEvent(HookPhase.CleanJobStart, null, label, keep, null, false, 0, false);
 
-            foreach (var vm in await GetVms(vmIdsOrNames))
+            foreach (var vm in await GetVmsAsync(vmIdsOrNames))
             {
                 //exclude template
                 if (vm.IsTemplate)
@@ -474,7 +469,7 @@ Timestamp format: {timestampFormat}");
                 }
 
                 _out.WriteLine($"----- VM {vm.VmId} {vm.Type} -----");
-                if (!await SnapshotsRemove(vm, label, keep, timeout, timestampFormat)) { ret = false; }
+                if (!await SnapshotsRemoveAsync(vm, label, keep, timeout, timestampFormat)) { ret = false; }
             }
 
             watch.Stop();
@@ -483,13 +478,37 @@ Timestamp format: {timestampFormat}");
             return ret;
         }
 
-        private async Task<bool> SnapshotsRemove(IClusterResourceVm vm,
-                                                 string label,
-                                                 int keep,
-                                                 long timeout,
-                                                 string timestampFormat)
+        private async Task<bool> CheckResultAsync(Result result)
         {
-            foreach (var snapshot in FilterLabel(await SnapshotHelper.GetSnapshots(_client, vm.Node, vm.VmType, vm.VmId),
+            var inError = result.InError();
+            if (inError) { _out.WriteLine(result.GetError()); }
+
+            //check error in task
+            if (await _client.TaskIsRunningAsync(result.ToData<string>()))
+            {
+                _out.WriteLine($"Error task in run... increase the timeout!");
+                inError = true;
+            }
+            else
+            {
+                var taskStatus = await _client.GetExitStatusTaskAsync(result.ToData<string>());
+                if (taskStatus != "OK")
+                {
+                    _out.WriteLine($"Error in task: {taskStatus}");
+                    inError = true;
+                }
+            }
+
+            return inError;
+        }
+
+        private async Task<bool> SnapshotsRemoveAsync(IClusterResourceVm vm,
+                                                      string label,
+                                                      int keep,
+                                                      long timeout,
+                                                      string timestampFormat)
+        {
+            foreach (var snapshot in FilterLabel(await SnapshotHelper.GetSnapshotsAsync(_client, vm.Node, vm.VmType, vm.VmId),
                                                  label,
                                                  timestampFormat).Reverse().Skip(keep).Reverse())
             {
@@ -503,30 +522,21 @@ Timestamp format: {timestampFormat}");
                 var inError = false;
                 if (!_dryRun)
                 {
-                    var result = await SnapshotHelper.RemoveSnapshot(_client,
-                                                                     vm.Node,
-                                                                     vm.VmType,
-                                                                     vm.VmId,
-                                                                     snapshot.Name,
-                                                                     timeout,
-                                                                     true);
-                    inError = result.InError();
-                    if (inError) { _out.WriteLine(result.GetError()); }
-
-                    //check error in task
-                    if (await _client.TaskIsRunning(result.ToData<string>()))
+                    try
                     {
-                        _out.WriteLine($"Error task in run... increase the timeout!");
-                        inError = true;
+                        var result = await SnapshotHelper.RemoveSnapshotAsync(_client,
+                                                                              vm.Node,
+                                                                              vm.VmType,
+                                                                              vm.VmId,
+                                                                              snapshot.Name,
+                                                                              timeout,
+                                                                              true);
+                        inError = await CheckResultAsync(result);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        var taskStatus = await _client.GetExitStatusTask(result.ToData<string>());
-                        if (taskStatus != "OK")
-                        {
-                            _out.WriteLine($"Error in task: {taskStatus}");
-                            inError = true;
-                        }
+                        _logger.LogError(ex, ex.Message);
+                        _out.WriteLine(ex.Message);
                     }
                 }
 

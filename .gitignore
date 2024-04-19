@@ -352,3 +352,5 @@ MigrationBackup/
 .ionide/
 
 *.parm
+
+dotnet-releaser.toml

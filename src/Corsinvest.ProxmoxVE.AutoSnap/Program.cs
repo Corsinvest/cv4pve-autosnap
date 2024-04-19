@@ -3,18 +3,13 @@
  * SPDX-FileCopyrightText: 2019 Copyright Corsinvest Srl
  */
 
-using System.Threading.Tasks;
 using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
+using Corsinvest.ProxmoxVE.AutoSnap;
 using Corsinvest.ProxmoxVE.AutoSnap.Api;
+using Microsoft.Extensions.Logging;
 
-namespace Corsinvest.ProxmoxVE.AutoSnap;
+var app = ConsoleHelper.CreateApp(Application.Name, "Automatic snapshot VM/CT with retention");
+var loggerFactory = ConsoleHelper.CreateLoggerFactory<Program>(app.GetLogLevelFromDebug());
 
-class Program
-{
-    static async Task<int> Main(string[] args)
-    {
-        var rc = ConsoleHelper.CreateApp(Application.Name, "Automatic snapshot VM/CT with retention");
-        _ = new Commands(rc);
-        return await rc.ExecuteApp(args);
-    }
-}
+_ = new Commands(app, loggerFactory);
+return await app.ExecuteAppAsync(args, loggerFactory.CreateLogger(typeof(Program)));

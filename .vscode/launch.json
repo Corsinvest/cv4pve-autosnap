@@ -1,29 +1,26 @@
 {
-    // Use IntelliSense to find out which attributes exist for C# debugging
-    // Use hover for the description of the existing attributes
-    // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
     "version": "0.2.0",
     "configurations": [
         {
+            // Usare IntelliSense per individuare gli attributi esistenti per il debug C#
+            // Usa il passaggio del mouse per la descrizione degli attributi esistenti
+            // Per ulteriori informazioni, visitare https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Corsinvest.ProxmoxVE.AutoSnap/bin/Debug/net6.0/cv4pve-autosnap.dll",
-            "args": [
-                "@Parm.parm"
-            ],
+            // Se i framework di destinazione sono stati modificati, assicurarsi di aggiornare il percorso del programma.
+            "program": "${workspaceFolder}/src/Corsinvest.ProxmoxVE.AutoSnap/bin/Debug/net8.0/cv4pve-autosnap.dll",
+            "args": [],
             "cwd": "${workspaceFolder}/src/Corsinvest.ProxmoxVE.AutoSnap",
-            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            // Per ulteriori informazioni sul campo 'console', vedere https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
         },
         {
             "name": ".NET Core Attach",
             "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
+            "request": "attach"
         }
     ]
 }

@@ -32,9 +32,11 @@ Options:
   --api-token <api-token>                Api token format 'USER@REALM!TOKENID=UUID'. Require Proxmox VE 6.2 or later
   --username <username>                  User name <username>@<realm>
   --password <password>                  The password. Specify 'file:path_file' to store password in file.
+  --validate-certificate                 Validate SSL Certificate Proxmox VE node.
   --host <host> (REQUIRED)               The host name host[:port],host1[:port],host2[:port]
   --vmid <vmid> (REQUIRED)               The id or name VM/CT comma separated (eg. 100,101,102,TestDebian)
-                                         -vmid,-name,-@node-???,-@tag-?? exclude from list (e.g. @all,-200,-TestUbuntu,-@tag-customer1) range 100:107,-105,200:204
+                                         -vmid,-name,-@node-???,-@tag-?? exclude from list (e.g. @all,-200,-TestUbuntu,-@tag-customer1)
+                                         range 100:107,-105,200:204
                                          '@pool-???' for all VM/CT in specific pool (e.g. @pool-customer1),
                                          '@tag-???' for all VM/CT in specific tags (e.g. @tag-customerA),
                                          '@node-???' for all VM/CT in specific node (e.g. @node-pve1, @node-\$(hostname)),
@@ -114,6 +116,7 @@ In this version the tool works outside the Proxmox VE host using the API. The re
 * Snapshots are removed with **force** parameter
 * Decide only runs VM/CT
 * Support [Proxmox VE Tags](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#_tags) in vmid
+* Validate certificate SSL, default not validate
 
 ## Permission
 
