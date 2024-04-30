@@ -1,6 +1,6 @@
 @ECHO OFF
-REM  SPDX-License-Identifier: GPL-3.0-only
-REM  SPDX-FileCopyrightText: 2019 Copyright Corsinvest Srl
+REM SPDX-License-Identifier: GPL-3.0-only
+REM SPDX-FileCopyrightText: 2019 Copyright Corsinvest Srl
 REM
 REM Corsinvest automatic snapshot for Proxmox VE cv4pve-autosnap hook script.
 REM Process environment variables as received from and set by cv4pve-autosnap.
