@@ -353,4 +353,5 @@ MigrationBackup/
 
 *.parm
 
+artifacts_exe/
 dotnet-releaser.toml

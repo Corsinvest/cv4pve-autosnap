@@ -139,10 +139,10 @@ public class Commands
             _scriptHook = ctx.ParseResult.GetValueForOption(optScript);
             var app = await CreateAppAsync(command);
             ctx.ExitCode = await app.CleanAsync(ctx.ParseResult.GetValueForOption(optVmIds),
-                                           ctx.ParseResult.GetValueForOption(optLabel),
-                                           ctx.ParseResult.GetValueForOption(optKeep),
-                                           ctx.ParseResult.GetValueForOption(optTimeout) * 1000,
-                                           ctx.ParseResult.GetValueForOption(optTimestampFormat)) ? 0 : 1;
+                                                ctx.ParseResult.GetValueForOption(optLabel),
+                                                ctx.ParseResult.GetValueForOption(optKeep),
+                                                ctx.ParseResult.GetValueForOption(optTimeout) * 1000,
+                                                ctx.ParseResult.GetValueForOption(optTimestampFormat)) ? 0 : 1;
         });
     }
 
