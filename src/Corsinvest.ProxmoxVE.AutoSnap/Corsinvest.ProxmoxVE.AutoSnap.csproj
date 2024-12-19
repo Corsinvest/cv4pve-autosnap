@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <Version>1.14.11</Version>
+    <Version>1.15.0</Version>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>cv4pve-autosnap</AssemblyName>
     <Company>Corsinvest Srl</Company>
@@ -19,7 +19,7 @@
     <!-- <ProjectReference
     Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Shell\Corsinvest.ProxmoxVE.Api.Shell.csproj"
     /> -->
-    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Shell" Version="8.2.5" />
+    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Shell" Version="8.3.0" />
 
     <ProjectReference
       Include="..\Corsinvest.ProxmoxVE.AutoSnap.Api\Corsinvest.ProxmoxVE.AutoSnap.Api.csproj" />
