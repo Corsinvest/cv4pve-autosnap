@@ -3,7 +3,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<OutputType>Library</OutputType>
 
-		<Version>1.8.17</Version>
+		<Version>1.9.0</Version>
 
 		<Company>Corsinvest Srl</Company>
 		<Authors>Corsinvest Srl</Authors>
@@ -37,6 +37,6 @@
 		<!-- <ProjectReference
 		Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj"
 		/> -->
-		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="8.2.5" />
+		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="8.3.0" />
 	</ItemGroup>
 </Project>

@@ -287,7 +287,7 @@ Max % Storage :   {maxPercentageStorage}%");
                         key,
                         storage.PluginType,
                         valid? "Ok": "Ko",
-                        Math.Round(storage.DiskUsagePercentage * 100,1),
+                        Math.Round(storage.DiskUsagePercentage * 100, 1),
                         FormatHelper.FromBytes(storage.DiskSize),
                         FormatHelper.FromBytes(storage.DiskUsage),
                     });
