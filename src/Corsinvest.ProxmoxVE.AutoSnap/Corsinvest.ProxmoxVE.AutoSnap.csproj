@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
     <Version>1.16.0</Version>
     <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>cv4pve-autosnap</AssemblyName>
     <Company>Corsinvest Srl</Company>
     <Authors>Daniele Corsini</Authors>
