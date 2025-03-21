@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFrameworks>net7.0;net8.0;net9.0</TargetFrameworks>
 		<OutputType>Library</OutputType>
 
-		<Version>1.9.2</Version>
+		<Version>1.10.0</Version>
 
 		<Company>Corsinvest Srl</Company>
 		<Authors>Corsinvest Srl</Authors>
@@ -35,9 +35,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		 <!-- <ProjectReference
+		<!-- <ProjectReference
 		Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Extension\Corsinvest.ProxmoxVE.Api.Extension.csproj"
 		/> -->
-		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="8.3.2" />
+		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" Version="8.3.3" />
 	</ItemGroup>
 </Project>
