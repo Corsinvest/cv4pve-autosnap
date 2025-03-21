@@ -3,7 +3,6 @@
  * SPDX-FileCopyrightText: 2020 Copyright Corsinvest Srl
  */
 
-using System;
 using System.Diagnostics;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api

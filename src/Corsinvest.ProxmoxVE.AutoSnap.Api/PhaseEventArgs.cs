@@ -3,7 +3,6 @@
  * SPDX-FileCopyrightText: 2019 Copyright Corsinvest Srl
  */
 
-using System.Collections.Generic;
 using System.Globalization;
 using Corsinvest.ProxmoxVE.Api.Shared.Models.Cluster;
 

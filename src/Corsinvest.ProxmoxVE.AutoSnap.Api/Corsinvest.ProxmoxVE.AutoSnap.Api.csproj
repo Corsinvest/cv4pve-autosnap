@@ -4,7 +4,7 @@
 		<OutputType>Library</OutputType>
 
 		<Version>1.10.0</Version>
-
+		<ImplicitUsings>enable</ImplicitUsings>
 		<Company>Corsinvest Srl</Company>
 		<Authors>Corsinvest Srl</Authors>
 		<Copyright>Corsinvest Srl</Copyright>

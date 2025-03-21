@@ -3,12 +3,7 @@
  * SPDX-FileCopyrightText: 2019 Copyright Corsinvest Srl
  */
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Corsinvest.ProxmoxVE.Api.Shared.Utils;
 using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
 using Corsinvest.ProxmoxVE.AutoSnap.Api;
