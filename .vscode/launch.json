@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // Se i framework di destinazione sono stati modificati, assicurarsi di aggiornare il percorso del programma.
-            "program": "${workspaceFolder}/src/Corsinvest.ProxmoxVE.AutoSnap/bin/Debug/net8.0/cv4pve-autosnap.dll",
+            "program": "${workspaceFolder}/src/Corsinvest.ProxmoxVE.AutoSnap/bin/Debug/net9.0/cv4pve-autosnap.dll",
             "args": [
                 "@Parm.parm"
             ],
