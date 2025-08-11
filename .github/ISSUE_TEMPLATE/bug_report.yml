@@ -1,65 +1,93 @@
-name: Bug Report
-description: File a bug report
-labels: [needs investigation]
+name: 🐛 Bug Report
+description: Report a bug in cv4pve-autosnap
+title: "[BUG] "
+labels: ["bug", "needs investigation"]
+
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report. Note that this template is only for bug reports.
+        ## 🐛 Bug Report
+        
+        Thanks for taking the time to fill out this bug report!
+        
+        **Before submitting:** Search existing issues to avoid duplicates.
+
   - type: textarea
     id: what-happened
     attributes:
       label: What happened?
-      description: Please describe the issue briefly. You can use log, screenshots, gifs or videos to further explain your problem.
+      description: Describe the issue briefly
       placeholder: Describe your issue!
     validations:
       required: true
+
   - type: textarea
     id: expected-behavior
     attributes:
       label: Expected behavior
-      description: Please provide a clear and concise description of what you expected to happen.
+      description: What you expected to happen
       placeholder: Describe the expected behavior!
     validations:
       required: true
+
+  - type: textarea
+    id: command-used
+    attributes:
+      label: Command used
+      description: |
+        Paste the exact command you ran. **Remove passwords and API tokens!**
+      placeholder: |
+        cv4pve-autosnap --host=pve.local --username=user@pam --password=*** --vmid=100 snap --label=daily --keep=7
+      render: bash
+    validations:
+      required: true
+
   - type: textarea
     id: logs
     attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks. Use parameter --debug for full logs. Remeber remove password.
+      label: Log output
+      description: |
+        **Use `--debug` parameter to get detailed logs, then paste the output here.**
+        
+        ⚠️ **ATTENTION: Remove sensitive data (passwords, API keys) before pasting!**
+      placeholder: Run your command with --debug and paste the output here
       render: shell
+    validations:
+      required: true
+
   - type: input
-    id: proxmox-ve-version
+    id: cv4pve-version
+    attributes:
+      label: cv4pve-autosnap Version
+      placeholder: "v1.14.10"
+    validations:
+      required: true
+
+  - type: input
+    id: proxmox-version
     attributes:
       label: Proxmox VE Version
-      description: Proxmox VE Version
-      placeholder: 5.X.X
+      placeholder: "8.0.4"
     validations:
       required: true
-  - type: input
-    id: bug-version
-    attributes:
-      label: Version (bug)
-      description: With which version are you experiencing the issue?
-      placeholder: 1.X.X
-    validations:
-      required: true
+
   - type: input
     id: working-version
     attributes:
-      label: Version (working)
-      description: Did it work on a previous version? If so, which version?
-      placeholder: 1.X.X
+      label: Last working version
+      description: Did it work before? Which version?
+      placeholder: "v1.14.8 or 'Never worked'"
+
   - type: dropdown
     id: os
     attributes:
-      label: On what operating system are you experiencing the issue?
-      description: You don't have to test it on every os.
-      multiple: true
+      label: Operating System
       options:
-        - Windows
-        - Mac OSX
         - Linux
+        - Windows
+        - macOS
+        - Docker
         - Other
     validations:
       required: true
@@ -68,6 +96,5 @@ body:
     id: pr
     attributes:
       label: Pull Request
-      description: Are you interested in implementing a fix via a Pull Request? That would be the fastest way to resolve your issue. We appreciate every contribution!
       options:
         - label: I would like to do a Pull Request
