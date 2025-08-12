@@ -1169,20 +1169,14 @@ We welcome contributions! Here's how you can help:
 
 ---
 
-## 📄 License & Copyright
-
-<div align="center">
+## 📄 License
 
 **Copyright © Corsinvest Srl**
 
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE.md)
-
-This software is part of the **cv4pve-tools** suite.
-
-**[📜 View Full License](LICENSE.md)** • **[🛡️ Commercial Support](https://www.cv4pve-tools.com)**
+This software is part of the "cv4pve-tools" suite. For licensing details, please visit [LICENSE](LICENSE.md).
 
 ---
 
-<sub>Made with ❤️ in Italy 🇮🇹 by [Corsinvest](https://www.corsinvest.it)</sub>
-
+<div align="center">
+  <sub>Part of <a href="https://www.cv4pve-tools.com">cv4pve-tools</a> suite | Made with ❤️ in Italy by <a href="https://www.corsinvest.it">Corsinvest</a></sub>
 </div>
