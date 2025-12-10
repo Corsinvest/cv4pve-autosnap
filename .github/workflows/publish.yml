@@ -1,0 +1,127 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    # Build and archive for different platforms
+    - name: Build and archive for each platform
+      run: |
+        mkdir -p ./publish
+
+        # Define platforms to build
+        declare -a platforms=(
+          "win-x64|cv4pve-autosnap.exe-win-x64.zip|7z a -tzip"
+          "win-x86|cv4pve-autosnap.exe-win-x86.zip|7z a -tzip"
+          "win-arm64|cv4pve-autosnap.exe-win-arm64.zip|7z a -tzip"
+          "linux-x64|cv4pve-autosnap-linux-x64.zip|zip -r"
+          "linux-arm|cv4pve-autosnap-linux-arm.zip|zip -r"
+          "linux-arm64|cv4pve-autosnap-linux-arm64.zip|zip -r"
+          "osx-x64|cv4pve-autosnap-osx-x64.zip|zip -r"
+          "osx-arm64|cv4pve-autosnap-osx-arm64.zip|zip -r"
+        )
+
+        # Loop through platforms and build
+        for platform in "${platforms[@]}"; do
+          IFS='|' read -r rid filename archive_cmd <<< "$platform"
+
+          echo "Building for $rid..."
+          dotnet publish ./src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj -r $rid -c Release --self-contained true -o ./publish/$rid
+
+          echo "Archiving $filename..."
+          cd ./publish/$rid
+          $archive_cmd "../../$filename" .
+          cd ../..
+        done
+
+    # Create GitHub Release and upload assets
+    - name: Create Release and Upload Assets
+      uses: softprops/action-gh-release@v2
+      with:
+        name: Release v${{ steps.version.outputs.version }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: |
+          ./cv4pve-autosnap*.zip
+
+    # Pack NuGet package after creating the release
+    - name: Pack NuGet
+      run: |
+        dotnet pack -c Release --output ./nuget-packages
+
+    # Publish NuGet package after creating the release
+    - name: Publish NuGet
+      run: |
+        for package in ./nuget-packages/*.nupkg; do
+          dotnet nuget push $package --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        done
+
+  # Publish to WinGet (runs after the publish job completes)
+  winget:
+    needs: publish
+    runs-on: windows-latest
+    steps:
+    - name: Publish to WinGet
+      uses: vedantmgoyal9/winget-releaser@v2
+      with:
+        identifier: Corsinvest.cv4pve.autosnap
+        installers-regex: 'cv4pve-autosnap\.exe-win-(x64|x86|arm64)\.zip$'
+        token: ${{ secrets.WINGET_TOKEN }}
+        fork-user: ${{ github.repository_owner }}
+      # Continue workflow even if WinGet publishing fails (e.g., first publication or temporary issues)
+      continue-on-error: true
+
+# Alternative package formats consideration (not implemented):
+#
+# Linux package formats:
+# - .deb (Debian/Ubuntu): Could use 'dotnet publish' with 'fpm' tool to create .deb packages
+#   Example: fpm -s dir -t deb -n cv4pve-autosnap -v [version] --prefix /usr/local/bin ./publish/linux-x64/
+# - .rpm (Fedora/RHEL/CentOS): Similar approach with fpm for RPM format
+#   Example: fpm -s dir -t rpm -n cv4pve-autosnap -v [version] --prefix /usr/local/bin ./publish/linux-x64/
+# - .pkg.tar.zst (Arch Linux): For AUR distribution
+# - .tar.gz: Generic Linux archive (already covered by .zip)
+#
+# Windows package formats:
+# - .msi: Would require WiX Toolset to create Windows installer
+#   Provides integration with Windows Programs & Features
+#
+# macOS package formats:
+# - .pkg: Native macOS installer package
+#   Created with 'productbuild' command
+#
+# Recommendation:
+# Current .zip format is sufficient for most use cases and is already working well.
+# Consider adding .msi for Windows users and .deb/.rpm for popular Linux distributions
+# if you want to provide more "native" installation experiences.
+#
+# Implementation considerations:
+# - Each additional format would require additional build steps
+# - Would need to install packaging tools (fpm, WiX, etc.)
+# - CI/CD complexity would increase
+# - Current .zip approach is cross-platform and simple to maintain

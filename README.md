@@ -1,24 +1,27 @@
-# cv4pve-autosnap ⚡
-
 <div align="center">
 
-![cv4pve-autosnap Banner](https://img.shields.io/badge/cv4pve--autosnap-Automatic%20Snapshot%20Tool-blue?style=for-the-badge&logo=proxmox)
+# cv4pve-autosnap
 
-**🔄 Automatic Snapshot Tool for Proxmox VE with Intelligent Retention**
+```
+   ______                _                      __
+  / ____/___  __________(_)___ _   _____  _____/ /_
+ / /   / __ \/ ___/ ___/ / __ \ | / / _ \/ ___/ __/
+/ /___/ /_/ / /  (__  ) / / / / |/ /  __(__  ) /_
+\____/\____/_/  /____/_/_/ /_/|___/\___/____/\__/
+
+Automatic Snapshot Tool for Proxmox VE (Made in Italy)
+```
 
 [![License](https://img.shields.io/github/license/Corsinvest/cv4pve-autosnap.svg?style=flat-square)](LICENSE.md)
 [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg?style=flat-square)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg?style=flat-square&logo=download)](https://github.com/Corsinvest/cv4pve-autosnap/releases)
 [![NuGet](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api/)
-[![.NET](https://img.shields.io/badge/.NET-C%23-blue?style=flat-square&logo=dotnet)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-
-⭐ **We appreciate your star, it helps!** ⭐
 
 </div>
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Check available releases at: https://github.com/Corsinvest/cv4pve-autosnap/releases
@@ -27,87 +30,71 @@ wget https://github.com/Corsinvest/cv4pve-autosnap/releases/download/VERSION/cv4
 unzip cv4pve-autosnap-linux-x64.zip
 
 # Create snapshot with retention
-./cv4pve-autosnap --host=YOUR_HOST --username=root@pam --password=YOUR_PASSWORD \
-                  --vmid=100 snap --label=daily --keep=7
+./cv4pve-autosnap --host=YOUR_HOST --username=root@pam --password=YOUR_PASSWORD --vmid=100 snap --label=daily --keep=7
 
 # Clean old snapshots
-./cv4pve-autosnap --host=YOUR_HOST --username=root@pam --password=YOUR_PASSWORD \
-                  --vmid=100 clean --label=daily
+./cv4pve-autosnap --host=YOUR_HOST --username=root@pam --password=YOUR_PASSWORD --vmid=100 clean --label=daily
 ```
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 <details>
-<summary>🗂️ <strong>Click to expand navigation</strong></summary>
+<summary><strong>Click to expand navigation</strong></summary>
 
-- [🌟 Features](#-features)
-- [📦 Installation](#-installation)
-- [⚙️ Configuration](#-configuration)
-- [🔧 Usage Examples](#-usage-examples)
-- [🔐 Security & Permissions](#-security--permissions)
-- [📊 Advanced Features](#-advanced-features)
-- [🎯 Best Practices](#-best-practices)
-- [🛠️ Troubleshooting](#-troubleshooting)
-- [📹 Resources](#-resources)
+- [Features](#-features)
+- [Installation](#-installation)
+- [Configuration](#-configuration)
+- [Usage Examples](#-usage-examples)
+- [Security & Permissions](#-security--permissions)
+- [Advanced Features](#-advanced-features)
+- [Best Practices](#-best-practices)
+- [Troubleshooting](#-troubleshooting)
+- [Resources](#-resources)
 
 </details>
 
 ---
 
-## 🌟 Features
+## Features
 
-<div align="center">
-
-```
-     ______                _                      __
-    / ____/___  __________(_)___ _   _____  _____/ /_
-   / /   / __ \/ ___/ ___/ / __ \ | / / _ \/ ___/ __/
-  / /___/ /_/ / /  (__  ) / / / / |/ /  __(__  ) /_
-  \____/\____/_/  /____/_/_/ /_/|___/\___/____/\__/
-
-  🔄 Automatic snapshot VM/CT with retention (Made in Italy)
-```
-
-</div>
-
-### 🏆 Core Capabilities
+### Core Capabilities
 
 <table>
 <tr>
 <td width="50%">
 
-#### ⚡ **Performance & Reliability**
-- ✅ **Native C#** implementation
-- ✅ **Cross-platform** (Windows, Linux, macOS)
-- ✅ **API-based** operation (no root access required)
-- ✅ **Cluster support** with automatic VM/CT resolution
-- ✅ **High availability** with multiple host support
+#### **Performance & Reliability**
+- **Native C#** implementation
+- **Cross-platform** (Windows, Linux, macOS)
+- **API-based** operation (no root access required)
+- **Cluster support** with automatic VM/CT resolution
+- **High availability** with multiple host support
 
-#### 🎯 **Flexible Targeting**
-- ✅ **ID or name** based VM/CT selection
-- ✅ **Bulk operations** with pattern matching
-- ✅ **Pool-based** selections (`@pool-customer1`)
-- ✅ **Tag-based** selections (`@tag-production`)
-- ✅ **Node-specific** operations (`@node-pve1`)
+#### **Flexible Targeting**
+- **ID or name** based VM/CT selection
+- **Bulk operations** with pattern matching
+- **Pool-based** selections (`@pool-customer1`)
+- **Tag-based** selections (`@tag-production`)
+- **Node-specific** operations (`@node-pve1`)
 
 </td>
 <td width="50%">
 
-#### 🔧 **Advanced Management**
-- ✅ **Intelligent retention** with configurable keep policies
-- ✅ **Multiple schedules** using labels (daily, weekly, monthly)
-- ✅ **Hook scripts** for custom automation
-- ✅ **Memory state** preservation with `--state`
-- ✅ **Storage monitoring** with capacity checks
+#### **Advanced Management**
+- **Intelligent retention** with configurable keep policies
+- **Multiple schedules** using labels (daily, weekly, monthly)
+- **Hook scripts** for custom automation
+- **Memory state** preservation with `--state`
+- **Storage monitoring** with capacity checks
 
-#### 🛡️ **Enterprise Features**
-- ✅ **API token** support (Proxmox VE 6.2+)
-- ✅ **SSL validation** options
-- ✅ **Timeout management** for operations
-- ✅ **Error resilience** (no stop on error)
-- ✅ **Comprehensive logging** and status reporting
+#### **Enterprise Features**
+- **API token** support (Proxmox VE 6.2+)
+- **SSL validation** options
+- **Timeout management** for operations
+- **Error resilience** (no stop on error)
+- **Comprehensive logging** and status reporting
 
 </td>
 </tr>
@@ -115,13 +102,13 @@ unzip cv4pve-autosnap-linux-x64.zip
 
 ---
 
-## 📦 Installation
+## Installation
 
 <div align="center">
   <img src="https://img.shields.io/badge/INSTALLATION-GUIDE-green?style=for-the-badge&logo=download" alt="Installation Guide">
 </div>
 
-### 🐧 Linux Installation
+### Linux Installation
 
 ```bash
 # Check available releases and get the specific version number
@@ -131,10 +118,7 @@ unzip cv4pve-autosnap-linux-x64.zip
 wget https://github.com/Corsinvest/cv4pve-autosnap/releases/download/VERSION/cv4pve-autosnap-linux-x64.zip
 
 # Alternative: Get latest release URL programmatically
-LATEST_URL=$(curl -s https://api.github.com/repos/Corsinvest/cv4pve-autosnap/releases/latest \
-| grep browser_download_url \
-| grep linux-x64 \
-| cut -d '"' -f 4)
+LATEST_URL=$(curl -s https://api.github.com/repos/Corsinvest/cv4pve-autosnap/releases/latest | grep browser_download_url | grep linux-x64 | cut -d '"' -f 4)
 wget "$LATEST_URL"
 
 # Extract and make executable
@@ -145,7 +129,7 @@ chmod +x cv4pve-autosnap
 sudo mv cv4pve-autosnap /usr/local/bin/
 ```
 
-### 🪟 Windows Installation
+### Windows Installation
 
 ```powershell
 # Check available releases at: https://github.com/Corsinvest/cv4pve-autosnap/releases
@@ -159,7 +143,7 @@ Expand-Archive cv4pve-autosnap.zip -DestinationPath "C:\Tools\cv4pve-autosnap"
 $env:PATH += ";C:\Tools\cv4pve-autosnap"
 ```
 
-### 🍎 macOS Installation
+### macOS Installation
 
 ```bash
 # Check available releases at: https://github.com/Corsinvest/cv4pve-autosnap/releases
@@ -174,46 +158,35 @@ sudo mv cv4pve-autosnap /usr/local/bin/
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 <div align="center">
   <img src="https://img.shields.io/badge/CONFIGURATION-SETUP-blue?style=for-the-badge&logo=settings" alt="Configuration Setup">
 </div>
 
-### 🔐 Authentication Methods
+### Authentication Methods
 
 <table>
 <tr>
 <td width="50%">
 
-#### 🔑 **Username/Password**
+#### **Username/Password**
 ```bash
-cv4pve-autosnap \
-  --host=192.168.1.100 \
-  --username=backup@pve \
-  --password=your_password \
-  [commands]
+cv4pve-autosnap --host=192.168.1.100 --username=backup@pve --password=your_password [commands]
 ```
 
-#### 🎫 **API Token (Recommended)**
+#### **API Token (Recommended)**
 ```bash
-cv4pve-autosnap \
-  --host=192.168.1.100 \
-  --api-token=backup@pve!token1=uuid-here \
-  [commands]
+cv4pve-autosnap --host=192.168.1.100 --api-token=backup@pve!token1=uuid-here [commands]
 ```
 
 </td>
 <td width="50%">
 
-#### 📁 **Password from File**
+#### **Password from File**
 ```bash
 # Use interactive password prompt that stores to file
-cv4pve-autosnap \
-  --host=192.168.1.100 \
-  --username=backup@pve \
-  --password=file:/etc/cv4pve/password \
-  [commands]
+cv4pve-autosnap --host=192.168.1.100 --username=backup@pve --password=file:/etc/cv4pve/password [commands]
 
 # First run: prompts for password and saves to file
 # Subsequent runs: reads password from file automatically
@@ -223,7 +196,7 @@ cv4pve-autosnap \
 </tr>
 </table>
 
-### 🎯 VM/CT Selection Patterns
+### VM/CT Selection Patterns
 
 The `--vmid` parameter supports powerful pattern matching based on the `GetVmsAsync` method with jolly patterns:
 
@@ -252,17 +225,17 @@ The `--vmid` parameter supports powerful pattern matching based on the `GetVmsAs
 | **Pool Exclusions** | `-@pool-name` | Exclude pool VMs | `--vmid=@pool-prod,-@pool-dev` |
 | **Node Exclusions** | `-@node-name` | Exclude node VMs | `--vmid=@all,-@node-pve2` |
 
-### 🔍 Pattern Examples
+### Pattern Examples
 
 <details>
-<summary><strong>🎯 Real-World Selection Examples</strong></summary>
+<summary><strong>Real-World Selection Examples</strong></summary>
 
 #### Basic Selections
 ```bash
 # Single VM by ID
 --vmid=100
 
-# Single VM by name  
+# Single VM by name
 --vmid=database-server
 
 # Multiple VMs mixed
@@ -323,7 +296,7 @@ The `--vmid` parameter supports powerful pattern matching based on the `GetVmsAs
 # Contains pattern (equivalent to *web* in shell)
 --vmid=%web%              # Matches: web-server, my-web-app, web01
 
-# Starts with pattern (equivalent to web* in shell)  
+# Starts with pattern (equivalent to web* in shell)
 --vmid=web%               # Matches: web-server, webmail, web01
 
 # Ends with pattern (equivalent to *server in shell)
@@ -343,96 +316,86 @@ The `--vmid` parameter supports powerful pattern matching based on the `GetVmsAs
 
 ---
 
-## 🔧 Usage Examples
+## Usage Examples
 
 <div align="center">
   <img src="https://img.shields.io/badge/USAGE-EXAMPLES-orange?style=for-the-badge&logo=terminal" alt="Usage Examples">
 </div>
 
-### 📸 Basic Snapshot Operations
+### Basic Snapshot Operations
 
 <details>
-<summary><strong>🔄 Create Snapshots</strong></summary>
+<summary><strong>Create Snapshots</strong></summary>
 
 #### Single VM Snapshot
 ```bash
-cv4pve-autosnap --host=pve.domain.com --username=root@pam --password=secret \
-                --vmid=100 snap --label=daily --keep=7
+cv4pve-autosnap --host=pve.domain.com --username=root@pam --password=secret --vmid=100 snap --label=daily --keep=7
 ```
 
 #### Multiple VMs with State
 ```bash
-cv4pve-autosnap --host=pve.domain.com --api-token=backup@pve!token=uuid \
-                --vmid=100,101,102 snap --label=backup --keep=3 --state
+cv4pve-autosnap --host=pve.domain.com --api-token=backup@pve!token=uuid --vmid=100,101,102 snap --label=backup --keep=3 --state
 ```
 
 #### All VMs except exclusions
 ```bash
-cv4pve-autosnap --host=pve.domain.com --username=backup@pve --password=secret \
-                --vmid="@all,-100,-test-vm" snap --label=nightly --keep=5
+cv4pve-autosnap --host=pve.domain.com --username=backup@pve --password=secret --vmid="@all,-100,-test-vm" snap --label=nightly --keep=5
 ```
 
 </details>
 
 <details>
-<summary><strong>🧹 Clean Old Snapshots</strong></summary>
+<summary><strong>Clean Old Snapshots</strong></summary>
 
 #### Clean specific label
 ```bash
-cv4pve-autosnap --host=pve.domain.com --username=root@pam --password=secret \
-                --vmid=100 clean --label=daily
+cv4pve-autosnap --host=pve.domain.com --username=root@pam --password=secret --vmid=100 clean --label=daily
 ```
 
 #### Clean with retention
 ```bash
-cv4pve-autosnap --host=pve.domain.com --api-token=backup@pve!token=uuid \
-                --vmid=@pool-production clean --label=weekly --keep=4
+cv4pve-autosnap --host=pve.domain.com --api-token=backup@pve!token=uuid --vmid=@pool-production clean --label=weekly --keep=4
 ```
 
 </details>
 
 <details>
-<summary><strong>📊 Status & Monitoring</strong></summary>
+<summary><strong>Status & Monitoring</strong></summary>
 
 #### View snapshot status
 ```bash
-cv4pve-autosnap --host=pve.domain.com --username=root@pam --password=secret \
-                --vmid=100 status
+cv4pve-autosnap --host=pve.domain.com --username=root@pam --password=secret --vmid=100 status
 ```
 
 #### JSON output for automation
 ```bash
-cv4pve-autosnap --host=pve.domain.com --api-token=backup@pve!token=uuid \
-                --vmid=@all status --output=json
+cv4pve-autosnap --host=pve.domain.com --api-token=backup@pve!token=uuid  --vmid=@all status --output=json
 ```
 
 </details>
 
-### 🏷️ Advanced Targeting Examples
+### Advanced Targeting Examples
 
 <details>
-<summary><strong>🎯 Production Environment Patterns</strong></summary>
+<summary><strong>Production Environment Patterns</strong></summary>
 
 ```bash
 # Backup all production VMs tagged as 'critical'
-cv4pve-autosnap --host=cluster.company.com --api-token=backup@pve!prod=uuid \
-                --vmid=@tag-critical snap --label=critical-daily --keep=14
+cv4pve-autosnap --host=cluster.company.com --api-token=backup@pve!prod=uuid --vmid=@tag-critical snap --label=critical-daily --keep=14
 
 # Backup entire customer pool except test VMs
-cv4pve-autosnap --host=pve.company.com --username=backup@pve --password=secret \
-                --vmid="@pool-customer1,-@tag-test" snap --label=customer-backup --keep=30
+cv4pve-autosnap --host=pve.company.com --username=backup@pve --password=secret --vmid="@pool-customer1,-@tag-test" snap --label=customer-backup --keep=30
 
 # Node-specific backup with range exclusion
-cv4pve-autosnap --host=pve-cluster.local --api-token=ops@pve!node1=uuid \
-                --vmid="@node-pve1,-200:299" snap --label=node1-backup --keep=7
+cv4pve-autosnap --host=pve-cluster.local --api-token=ops@pve!node1=uuid --vmid="@node-pve1,-200:299" snap --label=node1-backup --keep=7
 ```
 
 </details>
 
-### ⏰ Scheduling with Cron
+### Scheduling with Cron
 
 <details>
-<summary><strong>🕐 Cron Examples</strong></summary>
+<summary><strong>Cron Examples</strong></summary>
 
 ```bash
 # Edit crontab
@@ -452,13 +415,13 @@ crontab -e
 
 ---
 
-## 🔐 Security & Permissions
+## Security & Permissions
 
 <div align="center">
   <img src="https://img.shields.io/badge/SECURITY-PERMISSIONS-red?style=for-the-badge&logo=shield" alt="Security & Permissions">
 </div>
 
-### 🛡️ Required Permissions
+### Required Permissions
 
 | Permission | Purpose | Scope |
 |------------|---------|-------|
@@ -467,10 +430,10 @@ crontab -e
 | **Datastore.Audit** | Check storage capacity | Storage systems |
 | **Pool.Audit** | Access pool information | Resource pools |
 
-### 🎫 API Token Setup (Recommended)
+### API Token Setup (Recommended)
 
 <details>
-<summary><strong>🔧 Creating API Tokens</strong></summary>
+<summary><strong>Creating API Tokens</strong></summary>
 
 #### 1. Generate API Token and Configure Permissions
 ```bash
@@ -488,28 +451,28 @@ cv4pve-autosnap --host=pve.local --api-token=backup@pve!backup-token=uuid-from-c
 
 </details>
 
-### 🔒 Security Best Practices
+### Security Best Practices
 
 <table>
 <tr>
 <td width="50%">
 
-#### ✅ **Do's**
-- ✅ Use API tokens instead of passwords
-- ✅ Enable privilege separation for tokens
-- ✅ Store credentials in secure files with proper permissions
-- ✅ Use dedicated user accounts for automation
-- ✅ Enable SSL certificate validation in production
+#### **Do's**
+- Use API tokens instead of passwords
+- Enable privilege separation for tokens
+- Store credentials in secure files with proper permissions
+- Use dedicated user accounts for automation
+- Enable SSL certificate validation in production
 
 </td>
 <td width="50%">
 
-#### ❌ **Don'ts**
-- ❌ Use root credentials for automation
-- ❌ Store passwords in plain text scripts
-- ❌ Disable SSL validation without good reason
-- ❌ Grant excessive permissions
-- ❌ Share API tokens between different applications
+#### **Don'ts**
+- Use root credentials for automation
+- Store passwords in plain text scripts
+- Disable SSL validation without good reason
+- Grant excessive permissions
+- Share API tokens between different applications
 
 </td>
 </tr>
@@ -517,16 +480,16 @@ cv4pve-autosnap --host=pve.local --api-token=backup@pve!backup-token=uuid-from-c
 
 ---
 
-## 📊 Advanced Features
+## Advanced Features
 
 <div align="center">
   <img src="https://img.shields.io/badge/ADVANCED-FEATURES-purple?style=for-the-badge&logo=rocket" alt="Advanced Features">
 </div>
 
-### 🔧 Hook Scripts
+### Hook Scripts
 
 <details>
-<summary><strong>🎯 Pre/Post Snapshot Automation</strong></summary>
+<summary><strong>Pre/Post Snapshot Automation</strong></summary>
 
 Hook scripts receive environment variables for custom automation:
 
@@ -538,9 +501,20 @@ CV4PVE_AUTOSNAP_VMTYPE       # qemu or lxc
 CV4PVE_AUTOSNAP_LABEL        # Snapshot label
 CV4PVE_AUTOSNAP_KEEP         # Retention count
 CV4PVE_AUTOSNAP_SNAP_NAME    # Snapshot name
+CV4PVE_AUTOSNAP_VMSTATE      # Memory state included (1/0)
 CV4PVE_AUTOSNAP_DURATION     # Operation duration
-CV4PVE_AUTOSNAP_STATE        # Memory state included (1/0)
+CV4PVE_AUTOSNAP_STATE        # Operation status (1/0)
+CV4PVE_AUTOSNAP_DEBUG        # Debug mode enabled (1/0)
+CV4PVE_AUTOSNAP_DRY_RUN      # Dry run mode enabled (1/0)
 ```
+
+The repository includes example hook scripts in the [hooks/](../hooks/) directory for different platforms:
+- **Windows Batch**: [hook-template.bat](../hooks/hook-template.bat)
+- **Unix/Linux**: [hook-template.sh](../hooks/hook-template.sh)
+- **PowerShell**: [hook-template.ps1](../hooks/hook-template.ps1)
+- **Metrics**: [send-metrics.sh](../hooks/send-metrics.sh) (for sending metrics to monitoring systems)
+
+These scripts provide templates with all available environment variables and phase handling logic that you can customize for your automation needs.
 
 #### Example Hook Script
 ```bash
@@ -551,8 +525,7 @@ case $CV4PVE_AUTOSNAP_PHASE in
     "pre-snapshot")
         echo "$(date): Starting snapshot for VM $CV4PVE_AUTOSNAP_VMID"
         # Send notification to monitoring system
-        curl -X POST "https://monitoring.company.com/api/events" \
-             -d "{'type':'snapshot_start','vm':'$CV4PVE_AUTOSNAP_VMID'}"
+        curl -X POST "https://monitoring.company.com/api/events" -d "{'type':'snapshot_start','vm':'$CV4PVE_AUTOSNAP_VMID'}"
         ;;
     "post-snapshot")
         echo "$(date): Completed snapshot $CV4PVE_AUTOSNAP_SNAP_NAME"
@@ -564,25 +537,21 @@ esac
 
 #### Using Hook Scripts
 ```bash
-cv4pve-autosnap --host=pve.local --api-token=backup@pve!token=uuid \
-                --vmid=100 --script-hook=/usr/local/bin/cv4pve-hook.sh \
-                snap --label=daily --keep=7
+cv4pve-autosnap --host=pve.local --api-token=backup@pve!token=uuid --vmid=100 --script-hook=/usr/local/bin/cv4pve-hook.sh snap --label=daily --keep=7
 ```
 
 </details>
 
-### 📊 Storage Monitoring
+### Storage Monitoring
 
 <details>
-<summary><strong>💾 Intelligent Storage Management</strong></summary>
+<summary><strong>Intelligent Storage Management</strong></summary>
 
 cv4pve-autosnap automatically monitors storage usage:
 
 ```bash
 # Set custom storage threshold (default: 95%)
-cv4pve-autosnap --host=pve.local --api-token=backup@pve!token=uuid \
-                --max-perc-storage=85 \
-                --vmid=@all snap --label=daily --keep=7
+cv4pve-autosnap --host=pve.local --api-token=backup@pve!token=uuid --max-perc-storage=85 --vmid=@all snap --label=daily --keep=7
 ```
 
 #### Storage Check Output
@@ -598,10 +567,10 @@ cv4pve-autosnap --host=pve.local --api-token=backup@pve!token=uuid \
 
 </details>
 
-### 🕐 Custom Timestamp Formats
+### Custom Timestamp Formats
 
 <details>
-<summary><strong>⏰ Flexible Naming Patterns</strong></summary>
+<summary><strong>Flexible Naming Patterns</strong></summary>
 
 Customize snapshot naming with C# datetime format strings. The timestamp format follows the **[Microsoft .NET Custom Date and Time Format Strings](https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings)** specification.
 
@@ -668,10 +637,10 @@ cv4pve-autosnap --vmid=100 --timestamp-format="dd.MM.yyyy-HH.mm.ss" snap --label
 
 </details>
 
-### 📄 Configuration Files
+### Configuration Files
 
 <details>
-<summary><strong>📋 Parameter Files for Complex Setups</strong></summary>
+<summary><strong>Parameter Files for Complex Setups</strong></summary>
 
 Use parameter files for complex configurations:
 
@@ -696,7 +665,7 @@ cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=daily --keep=14 --stat
 # Development environment
 cv4pve-autosnap @/etc/cv4pve/dev.conf snap --label=dev-snapshot --keep=3
 
-# Staging environment  
+# Staging environment
 cv4pve-autosnap @/etc/cv4pve/staging.conf snap --label=staging --keep=5
 
 # Production environment
@@ -707,26 +676,26 @@ cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=production --keep=30
 
 ---
 
-## 🎯 Best Practices
+## Best Practices
 
 <div align="center">
   <img src="https://img.shields.io/badge/BEST-PRACTICES-gold?style=for-the-badge&logo=star" alt="Best Practices">
 </div>
 
-### 💡 Snapshot Strategy Guidelines
+### Snapshot Strategy Guidelines
 
 <table>
 <tr>
 <td width="50%">
 
-#### 🕐 **Retention Schedules**
+#### **Retention Schedules**
 - **Hourly**: Keep 24 snapshots (1 day)
-- **Daily**: Keep 7-14 snapshots (1-2 weeks)  
+- **Daily**: Keep 7-14 snapshots (1-2 weeks)
 - **Weekly**: Keep 4-8 snapshots (1-2 months)
 - **Monthly**: Keep 12 snapshots (1 year)
 - **Yearly**: Keep 3-5 snapshots (long-term)
 
-#### 🏷️ **Labeling Convention**
+#### **Labeling Convention**
 - Use descriptive labels (`daily`, `weekly`, `before-update`)
 - Include environment in label (`prod-daily`, `dev-weekly`)
 - Consider compliance requirements (`retention-7y`)
@@ -734,14 +703,14 @@ cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=production --keep=30
 </td>
 <td width="50%">
 
-#### 🎯 **Performance Optimization**
+#### **Performance Optimization**
 - **Schedule during low activity** periods
 - **Stagger snapshot times** across VMs
 - **Monitor storage growth** regularly
 - **Use memory state** sparingly (larger snapshots)
 - **Implement cleanup routines** for old snapshots
 
-#### 🛡️ **Reliability Measures**
+#### **Reliability Measures**
 - **Test restore procedures** regularly
 - **Monitor snapshot creation** for failures
 - **Implement alerting** for storage thresholds
@@ -754,26 +723,24 @@ cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=production --keep=30
 
 ---
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 <div align="center">
   <img src="https://img.shields.io/badge/TROUBLESHOOTING-HELP-red?style=for-the-badge&logo=tools" alt="Troubleshooting">
 </div>
 
-### ⚠️ Common Issues & Solutions
+### Common Issues & Solutions
 
 <details>
-<summary><strong>🔐 Authentication Problems</strong></summary>
+<summary><strong>Authentication Problems</strong></summary>
 
 #### Issue: "Authentication failed"
 ```bash
 # Check credentials
-cv4pve-autosnap --host=pve.local --username=root@pam --password=test \
-                --vmid=100 status
+cv4pve-autosnap --host=pve.local --username=root@pam --password=test --vmid=100 status
 
 # Verify API token format
-cv4pve-autosnap --host=pve.local --api-token=user@realm!tokenid=uuid \
-                --vmid=100 status
+cv4pve-autosnap --host=pve.local --api-token=user@realm!tokenid=uuid --vmid=100 status
 ```
 
 #### Solution: Verify permissions
@@ -786,7 +753,7 @@ pveum user permissions backup@pve
 </details>
 
 <details>
-<summary><strong>🔌 Connection Issues</strong></summary>
+<summary><strong>Connection Issues</strong></summary>
 
 #### Issue: "Connection timeout" or "Host unreachable"
 ```bash
@@ -795,9 +762,7 @@ ping pve.local
 telnet pve.local 8006
 
 # Check SSL certificate
-cv4pve-autosnap --host=pve.local --validate-certificate \
-                --username=root@pam --password=secret \
-                --vmid=100 status
+cv4pve-autosnap --host=pve.local --validate-certificate --username=root@pam --password=secret --vmid=100 status
 ```
 
 #### Solution: Network and certificate verification
@@ -806,89 +771,78 @@ cv4pve-autosnap --host=pve.local --validate-certificate \
 cv4pve-autosnap --host=192.168.1.100 ...
 
 # Disable SSL validation for testing (not recommended for production)
-cv4pve-autosnap --host=pve.local --username=root@pam --password=secret \
-                --vmid=100 status
+cv4pve-autosnap --host=pve.local --username=root@pam --password=secret --vmid=100 status
 ```
 
 </details>
 
 <details>
-<summary><strong>💾 Storage Issues</strong></summary>
+<summary><strong>Storage Issues</strong></summary>
 
 #### Issue: "Storage space insufficient"
 ```bash
 # Check storage status
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 status
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 status
 ```
 
 #### Solution: Adjust storage threshold
 ```bash
 # Lower storage threshold
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --max-perc-storage=80 \
-                --vmid=100 snap --label=daily --keep=3
+cv4pve-autosnap --host=pve.local --api-token=token --max-perc-storage=80 --vmid=100 snap --label=daily --keep=3
 ```
 
 </details>
 
 <details>
-<summary><strong>🎯 VM Selection Issues</strong></summary>
+<summary><strong>VM Selection Issues</strong></summary>
 
 #### Issue: "No VMs found matching criteria"
 ```bash
 # Debug VM selection
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=@tag-nonexistent status
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=@tag-nonexistent status
 ```
 
 #### Solution: Verify VM tags and pools
 ```bash
 # List all VMs to verify IDs/names
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=@all status
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=@all status
 
 # Check specific pool
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=@pool-production status
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=@pool-production status
 ```
 
 </details>
 
-### 🔍 Debug Mode
+### Debug Mode
 
 <details>
-<summary><strong>🐛 Enable Detailed Logging</strong></summary>
+<summary><strong>Enable Detailed Logging</strong></summary>
 
 ```bash
 # Enable debug output
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 --debug \
-                snap --label=debug-test --keep=1
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 --debug snap --label=debug-test --keep=1
 
 # Test run without making changes
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 --dry-run \
-                snap --label=test --keep=3
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 --dry-run snap --label=test --keep=3
 ```
 
 </details>
 
 ---
 
-## 📹 Resources
+## Resources
 
 <div align="center">
   <img src="https://img.shields.io/badge/RESOURCES-LEARN%20MORE-teal?style=for-the-badge&logo=video" alt="Resources">
 </div>
 
-### 🎥 Video Tutorials
+### Video Tutorials
 
 <table>
 <tr>
 <td align="center" width="50%">
 
-#### 📺 **Official Tutorial**
+#### **Official Tutorial**
 
 [![cv4pve-autosnap Tutorial](http://img.youtube.com/vi/kM5KhD9seT4/maxresdefault.jpg)](https://www.youtube.com/watch?v=kM5KhD9seT4)
 
@@ -897,7 +851,7 @@ cv4pve-autosnap --host=pve.local --api-token=token \
 </td>
 <td align="center" width="50%">
 
-#### 🌐 **Web GUI Version**
+#### **Web GUI Version**
 
 [![cv4pve-admin](https://raw.githubusercontent.com/Corsinvest/cv4pve-admin/main/src/Corsinvest.ProxmoxVE.Admin/wwwroot/doc/images/screenshot/modules/autosnap/modules-safe-autosnap.png)](https://github.com/Corsinvest/cv4pve-admin)
 
@@ -907,7 +861,7 @@ cv4pve-autosnap --host=pve.local --api-token=token \
 </tr>
 </table>
 
-### 📚 Documentation Links
+### Documentation Links
 
 | Resource | Description |
 |----------|-------------|
@@ -917,47 +871,46 @@ cv4pve-autosnap --host=pve.local --api-token=token \
 
 ---
 
-## 🎮 QEMU Guest Agent Integration
+## QEMU Guest Agent Integration
 
 <div align="center">
   <img src="https://img.shields.io/badge/QEMU-GUEST%20AGENT-blue?style=for-the-badge&logo=qemu" alt="QEMU Guest Agent">
 </div>
 
-### 🔧 Why QEMU Guest Agent Matters
+### Why QEMU Guest Agent Matters
 
-> **⚠️ Important:** Without QEMU Guest Agent, snapshots are like "pulling the power plug" on your VM. The agent ensures filesystem consistency during snapshot operations.
+> **Important:** Without QEMU Guest Agent, snapshots are like "pulling the power plug" on your VM. The agent ensures filesystem consistency during snapshot operations.
 
 <table>
 <tr>
 <td width="50%">
 
-#### ❌ **Without Guest Agent**
-- 💥 Inconsistent filesystem state
-- 🗂️ Potential data corruption
-- 📝 Half-written files
-- 🔄 Requires fsck on boot
-- ⚠️ Application data loss risk
+#### **Without Guest Agent**
+- Inconsistent filesystem state
+- Potential data corruption
+- Half-written files
+- Requires fsck on boot
+- Application data loss risk
 
 </td>
 <td width="50%">
 
-#### ✅ **With Guest Agent**
-- 💾 Filesystem sync before snapshot
-- 🛡️ I/O freeze during operation
-- 📊 Clean application state
-- 🚀 Reliable snapshot consistency
-- 🔒 Database-safe operations
+#### **With Guest Agent**
+- Filesystem sync before snapshot
+- I/O freeze during operation
+- Clean application state
+- Reliable snapshot consistency
+- Database-safe operations
 
 </td>
 </tr>
 </table>
 
-### 🔍 Guest Agent Verification
+### Guest Agent Verification
 
 ```bash
 # Check if guest agent is working
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 status
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 status
 
 # Look for agent warnings in output:
 # "VM 100 consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent"
@@ -965,16 +918,16 @@ cv4pve-autosnap --host=pve.local --api-token=token \
 
 ---
 
-## 📈 Command Reference
+## Command Reference
 
 <div align="center">
   <img src="https://img.shields.io/badge/COMMAND-REFERENCE-navy?style=for-the-badge&logo=terminal" alt="Command Reference">
 </div>
 
-### 🔧 Global Options
+### Global Options
 
 <details>
-<summary><strong>⚙️ Complete Parameter List</strong></summary>
+<summary><strong>Complete Parameter List</strong></summary>
 
 ```bash
 cv4pve-autosnap [global-options] [command] [command-options]
@@ -1014,10 +967,10 @@ cv4pve-autosnap [global-options] [command] [command-options]
 
 </details>
 
-### 📸 Snap Command
+### Snap Command
 
 <details>
-<summary><strong>🔄 Snapshot Creation Options</strong></summary>
+<summary><strong>Snapshot Creation Options</strong></summary>
 
 ```bash
 cv4pve-autosnap [global-options] snap [snap-options]
@@ -1026,33 +979,29 @@ cv4pve-autosnap [global-options] snap [snap-options]
 #### Snap-Specific Options
 | Parameter | Description | Required |
 |-----------|-------------|----------|
-| `--label` | Snapshot label/category | ✅ Yes |
-| `--keep` | Number of snapshots to retain | ✅ Yes |
-| `--state` | Include VM memory state | ❌ No |
-| `--script-hook` | Path to hook script | ❌ No |
+| `--label` | Snapshot label/category | Yes |
+| `--keep` | Number of snapshots to retain | Yes |
+| `--state` | Include VM memory state | No |
+| `--script-hook` | Path to hook script | No |
 
 #### Examples
 ```bash
 # Basic snapshot with retention
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 snap --label=daily --keep=7
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 snap --label=daily --keep=7
 
 # Snapshot with memory state
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 snap --label=backup --keep=3 --state
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 snap --label=backup --keep=3 --state
 
 # Snapshot with custom hook
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 snap --label=daily --keep=7 \
-                --script-hook=/opt/scripts/backup-hook.sh
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 snap --label=daily --keep=7 --script-hook=/opt/scripts/backup-hook.sh
 ```
 
 </details>
 
-### 🧹 Clean Command
+### Clean Command
 
 <details>
-<summary><strong>🗑️ Snapshot Cleanup Options</strong></summary>
+<summary><strong>Snapshot Cleanup Options</strong></summary>
 
 ```bash
 cv4pve-autosnap [global-options] clean [clean-options]
@@ -1067,24 +1016,21 @@ cv4pve-autosnap [global-options] clean [clean-options]
 #### Examples
 ```bash
 # Clean old daily snapshots (keep newest 7)
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 clean --label=daily --keep=7
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 clean --label=daily --keep=7
 
 # Remove all snapshots with specific label
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 clean --label=old-backup --keep=0
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 clean --label=old-backup --keep=0
 
 # Clean across multiple VMs
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=@pool-development clean --label=test --keep=0
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=@pool-development clean --label=test --keep=0
 ```
 
 </details>
 
-### 📊 Status Command
+### Status Command
 
 <details>
-<summary><strong>📋 Snapshot Status & Reporting</strong></summary>
+<summary><strong>Snapshot Status & Reporting</strong></summary>
 
 ```bash
 cv4pve-autosnap [global-options] status [status-options]
@@ -1093,16 +1039,13 @@ cv4pve-autosnap [global-options] status [status-options]
 #### Status Output Formats
 ```bash
 # Table format (default)
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 status
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 status
 
 # JSON format for automation
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 status --output=json
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 status --output=json
 
 # Pretty JSON for debugging
-cv4pve-autosnap --host=pve.local --api-token=token \
-                --vmid=100 status --output=jsonpretty
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 status --output=jsonpretty
 ```
 
 #### Example Output
@@ -1120,63 +1063,14 @@ cv4pve-autosnap --host=pve.local --api-token=token \
 
 ---
 
-## 📞 Support & Community
+## Support
 
-<div align="center">
-  <img src="https://img.shields.io/badge/SUPPORT-COMMUNITY-blue?style=for-the-badge&logo=community" alt="Support & Community">
-</div>
-
-### 🏢 Commercial Support
-
-<table>
-<tr>
-<td width="50%" align="center">
-
-#### 💼 **Enterprise Support**
-[![cv4pve-tools](https://img.shields.io/badge/cv4pve--tools-Commercial%20Support-blue?style=for-the-badge)](https://www.cv4pve-tools.com)
-
-Professional support and services
-
-</td>
-<td width="50%" align="center">
-
-#### 🌐 **Official Website**
-[![Corsinvest](https://img.shields.io/badge/Corsinvest-Official%20Site-green?style=for-the-badge)](https://www.corsinvest.it)
-
-Complete information and documentation
-
-</td>
-</tr>
-</table>
-
-### 🤝 Community Resources
-
-| Resource | Description |
-|----------|-------------|
-| **[GitHub Issues](https://github.com/Corsinvest/cv4pve-autosnap/issues)** | Bug reports and feature requests |
-| **[GitHub Discussions](https://github.com/Corsinvest/cv4pve-autosnap/discussions)** | Community Q&A and discussions |
-| **[Proxmox Forum](https://forum.proxmox.com/)** | General Proxmox VE community |
-
-### 🔄 Contributing
-
-We welcome contributions! Here's how you can help:
-
-- 🐛 **Report bugs** via GitHub Issues
-- 💡 **Suggest features** through GitHub Discussions  
-- 📖 **Improve documentation** with pull requests
-- 🧪 **Test releases** and provide feedback
-- 🌟 **Star the repository** to show support
-
----
-
-## 📄 License
-
-**Copyright © Corsinvest Srl**
-
-This software is part of the "cv4pve-tools" suite. For licensing details, please visit [LICENSE](LICENSE.md).
+Professional support and consulting available through [Corsinvest](https://www.corsinvest.it/cv4pve).
 
 ---
 
 <div align="center">
-  <sub>Part of <a href="https://www.cv4pve-tools.com">cv4pve-tools</a> suite | Made with ❤️ in Italy by <a href="https://www.corsinvest.it">Corsinvest</a></sub>
+  <sub>Part of <a href="https://www.corsinvest.it/cv4pve">cv4pve</a> suite | Made with ❤️ in Italy by <a href="https://www.corsinvest.it">Corsinvest</a></sub>
+  <br>
+  <sub>Copyright © Corsinvest Srl</sub>
 </div>
