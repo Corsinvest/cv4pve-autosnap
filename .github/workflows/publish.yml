@@ -29,6 +29,29 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
+    # Extract and validate version
+    - name: Extract and validate version
+      id: version
+      run: |
+        # Extract version from Directory.Build.props
+        PROJECT_VERSION=$(grep -oP '<Version>\K[^<]+' Directory.Build.props)
+        echo "Project version: $PROJECT_VERSION"
+
+        # Extract version from tag
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        echo "Tag version: $TAG_VERSION"
+
+        # Validate they match
+        if [ "$PROJECT_VERSION" != "$TAG_VERSION" ]; then
+          echo "❌ ERROR: Version mismatch!"
+          echo "   Directory.Build.props: $PROJECT_VERSION"
+          echo "   Git tag: v$TAG_VERSION"
+          exit 1
+        fi
+
+        echo "✅ Version validated: $PROJECT_VERSION"
+        echo "version=$PROJECT_VERSION" >> $GITHUB_OUTPUT
+
     # Build and archive for different platforms
     - name: Build and archive for each platform
       run: |
@@ -70,10 +93,15 @@ jobs:
         files: |
           ./cv4pve-autosnap*.zip
 
+    # Build library for all target frameworks before packing
+    - name: Build library for NuGet
+      run: |
+        dotnet build ./src/Corsinvest.ProxmoxVE.AutoSnap.Api/Corsinvest.ProxmoxVE.AutoSnap.Api.csproj -c Release
+
     # Pack NuGet package after creating the release
     - name: Pack NuGet
       run: |
-        dotnet pack -c Release --output ./nuget-packages
+        dotnet pack ./src/Corsinvest.ProxmoxVE.AutoSnap.Api/Corsinvest.ProxmoxVE.AutoSnap.Api.csproj -c Release --no-build --output ./nuget-packages
 
     # Publish NuGet package after creating the release
     - name: Publish NuGet
