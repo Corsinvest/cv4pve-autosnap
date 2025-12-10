@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <Version>1.17.0</Version>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Company>Corsinvest Srl</Company>
+    <Authors>Corsinvest Srl</Authors>
+    <Copyright>Corsinvest Srl</Copyright>
+  </PropertyGroup>
+</Project>

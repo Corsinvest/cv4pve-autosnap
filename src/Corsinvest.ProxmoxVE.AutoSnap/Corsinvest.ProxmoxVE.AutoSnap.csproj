@@ -1,26 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <Version>1.16.0</Version>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>cv4pve-autosnap</AssemblyName>
-    <Company>Corsinvest Srl</Company>
-    <Authors>Daniele Corsini</Authors>
-    <Copyright>Corsinvest Srl</Copyright>
     <Product>Corsinvest for Proxmox VE Auto Snapshot</Product>
     <AssemblyTitle>Corsinvest for Proxmox VE Auto Snapshot</AssemblyTitle>
     <Description>Corsinvest for Proxmox VE Auto Snapshot</Description>
     <InvariantGlobalization>true</InvariantGlobalization>
     <PredefinedCulturesOnly>false</PredefinedCulturesOnly>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Corsinvest/cv4pve-autosnap</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <ProjectReference
-      Include="..\..\..\cv4pve-api-dotnet\src\Corsinvest.ProxmoxVE.Api.Shell\Corsinvest.ProxmoxVE.Api.Shell.csproj"
-    /> -->
-    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Shell" Version="8.3.3" />
+    <PackageReference Include="Corsinvest.ProxmoxVE.Api.Console" />
 
     <ProjectReference Include="..\Corsinvest.ProxmoxVE.AutoSnap.Api\Corsinvest.ProxmoxVE.AutoSnap.Api.csproj" />
   </ItemGroup>

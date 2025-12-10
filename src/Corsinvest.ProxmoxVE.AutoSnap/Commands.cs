@@ -1,22 +1,22 @@
 ﻿/*
  * SPDX-License-Identifier: GPL-3.0-only
- * SPDX-FileCopyrightText: 2019 Copyright Corsinvest Srl
+ * SPDX-FileCopyrightText: Copyright Corsinvest Srl
  */
 
 using System.CommandLine;
 using Corsinvest.ProxmoxVE.Api.Shared.Utils;
-using Corsinvest.ProxmoxVE.Api.Shell.Helpers;
+using Corsinvest.ProxmoxVE.Api.Console.Helpers;
 using Corsinvest.ProxmoxVE.AutoSnap.Api;
 using Microsoft.Extensions.Logging;
 
 namespace Corsinvest.ProxmoxVE.AutoSnap;
 
 /// <summary>
-/// Shell command.
+/// Console command.
 /// </summary>
 public class Commands
 {
-    private string _scriptHook;
+    private string? _scriptHook;
     private readonly ILoggerFactory _loggerFactory;
     private readonly bool _dryRun;
     private readonly bool _debug;
@@ -31,17 +31,17 @@ public class Commands
         _loggerFactory = loggerFactory;
 
         var optVmIds = command.VmIdsOrNamesOption();
-        optVmIds.IsRequired = true;
+        optVmIds.Required = true;
 
         var optTimeout = command.TimeoutOption();
-        optTimeout.SetDefaultValue(30L);
+        optTimeout.DefaultValueFactory = (_) => 30L;
 
         var optTimestampFormat = command.AddOption<string>("--timestamp-format", $"Specify different timestamp format");
-        optTimestampFormat.SetDefaultValue(Application.DefaultTimestampFormat);
+        optTimestampFormat.DefaultValueFactory = (_) => Application.DefaultTimestampFormat;
 
         var optMaxPercentageStorage = command.AddOption<int>("--max-perc-storage", "Max percentage storage")
                                              .AddValidatorRange(1, 100);
-        optMaxPercentageStorage.SetDefaultValue(95);
+        optMaxPercentageStorage.DefaultValueFactory = (_) => 95;
 
         Snap(command, optVmIds, optTimeout, optTimestampFormat, optMaxPercentageStorage);
         Clean(command, optVmIds, optTimeout, optTimestampFormat);
@@ -55,20 +55,20 @@ public class Commands
         return app;
     }
 
-    private void App_PhaseEvent(object sender, PhaseEventArgs e)
+    private void App_PhaseEvent(object? sender, PhaseEventArgs e)
     {
-        if (!File.Exists(_scriptHook)) { return; }
+        if (_scriptHook == null || !File.Exists(_scriptHook)) { return; }
 
         var (stdOut, exitCode) = ShellHelper.Execute(_scriptHook,
-                                                             true,
-                                                             new Dictionary<string, string>(e.Environments)
-                                                             {
-                                                                { "CV4PVE_AUTOSNAP_DEBUG", _debug ? "1" : "0" },
-                                                                { "CV4PVE_AUTOSNAP_DRY_RUN", _dryRun ? "1" : "0" },
-                                                             },
-                                                             _out,
-                                                             _dryRun,
-                                                             _debug);
+                                                     true,
+                                                     new Dictionary<string, string>(e.Environments)
+                                                     {
+                                                        { "CV4PVE_AUTOSNAP_DEBUG", _debug ? "1" : "0" },
+                                                        { "CV4PVE_AUTOSNAP_DRY_RUN", _dryRun ? "1" : "0" },
+                                                     },
+                                                     _out,
+                                                     _dryRun,
+                                                     _debug);
 
         if (exitCode != 0) { _out.WriteLine($"Script return code: {exitCode}"); }
         if (!string.IsNullOrWhiteSpace(stdOut)) { _out.Write(stdOut); }
@@ -82,7 +82,7 @@ public class Commands
         var opt = command.AddOption<int>("--keep", "Specify the number which should will keep")
                          .AddValidatorRange(min, 100);
 
-        opt.IsRequired = true;
+        opt.Required = true;
         return opt;
     }
 
@@ -92,10 +92,12 @@ public class Commands
         var optLabel = OptionLabel(cmd);
         var optOutput = cmd.TableOutputOption();
 
-        cmd.SetHandler(async (vmIds, label, timestampFormat, output) =>
+        cmd.SetAction(async (parseResult) =>
         {
             var app = await CreateAppAsync(command);
-            var snapshots = await app.StatusAsync(vmIds, label, timestampFormat);
+            var snapshots = await app.StatusAsync(parseResult.GetValue(optVmIds)!,
+                                                  parseResult.GetValue(optLabel)!,
+                                                  parseResult.GetValue(optTimestampFormat)!);
             if (snapshots.Any())
             {
                 var rows = new List<object[]>();
@@ -106,15 +108,15 @@ public class Commands
                                                                    a.Date.ToString("yy/MM/dd HH:mm:ss"),
                                                                    a.Parent,
                                                                    a.Name,
-                                                                   (a.Description + "").Replace("\n", ""),
-                                                                   a.VmStatus ? "X" : "" }));
+                                                                   (a.Description + string.Empty).Replace("\n", string.Empty),
+                                                                   a.VmStatus ? "X" : string.Empty }));
                 }
 
                 _out.Write(TableGenerator.To(["NODE", "VM", "TIME", "PARENT", "NAME", "DESCRIPTION", "VM STATUS"],
                                              rows,
-                                             output));
+                                             parseResult.GetValue(optOutput)));
             }
-        }, optVmIds, optLabel, optTimestampFormat, optOutput);
+        });
     }
 
     private void Clean(RootCommand command,
@@ -124,20 +126,20 @@ public class Commands
     {
         var cmd = command.AddCommand("clean", "Remove auto snapshots");
         var optLabel = OptionLabel(cmd);
-        optLabel.IsRequired = true;
+        optLabel.Required = true;
 
         var optKeep = OptionKeep(cmd, 0);
         var optScript = cmd.ScriptFileOption();
 
-        cmd.SetHandler(async (ctx) =>
+        cmd.SetAction(async (parseResult) =>
         {
-            _scriptHook = ctx.ParseResult.GetValueForOption(optScript);
+            _scriptHook = parseResult.GetValue(optScript);
             var app = await CreateAppAsync(command);
-            ctx.ExitCode = await app.CleanAsync(ctx.ParseResult.GetValueForOption(optVmIds),
-                                                ctx.ParseResult.GetValueForOption(optLabel),
-                                                ctx.ParseResult.GetValueForOption(optKeep),
-                                                ctx.ParseResult.GetValueForOption(optTimeout) * 1000,
-                                                ctx.ParseResult.GetValueForOption(optTimestampFormat)) ? 0 : 1;
+            return await app.CleanAsync(parseResult.GetValue(optVmIds)!,
+                                        parseResult.GetValue(optLabel)!,
+                                        parseResult.GetValue(optKeep),
+                                        parseResult.GetValue(optTimeout) * 1000,
+                                        parseResult.GetValue(optTimestampFormat)!) ? 0 : 1;
         });
     }
 
@@ -150,27 +152,27 @@ public class Commands
         var cmd = command.AddCommand("snap", "Will snap one time");
 
         var optLabel = OptionLabel(cmd);
-        optLabel.IsRequired = true;
+        optLabel.Required = true;
 
         var optKeep = OptionKeep(cmd);
         var optScript = cmd.ScriptFileOption();
         var optState = cmd.AddOption<bool>("--state", "Save the vmstate (Include RAM)");
         var optOnlyRunning = cmd.AddOption<bool>("--only-running", "Only VM/CT are running");
 
-        cmd.SetHandler(async (ctx) =>
+        cmd.SetAction(async (parseResult) =>
         {
-            _scriptHook = ctx.ParseResult.GetValueForOption(optScript);
+            _scriptHook = parseResult.GetValue(optScript);
             var app = await CreateAppAsync(command);
-            var snap = await app.SnapAsync(ctx.ParseResult.GetValueForOption(optVmIds),
-                                      ctx.ParseResult.GetValueForOption(optLabel),
-                                      ctx.ParseResult.GetValueForOption(optKeep),
-                                      ctx.ParseResult.GetValueForOption(optState),
-                                      ctx.ParseResult.GetValueForOption(optTimeout) * 1000,
-                                      ctx.ParseResult.GetValueForOption(optTimestampFormat),
-                                      ctx.ParseResult.GetValueForOption(optMaxPercentageStorage),
-                                      ctx.ParseResult.GetValueForOption(optOnlyRunning));
+            var snap = await app.SnapAsync(parseResult.GetValue(optVmIds)!,
+                                           parseResult.GetValue(optLabel)!,
+                                           parseResult.GetValue(optKeep),
+                                           parseResult.GetValue(optState),
+                                           parseResult.GetValue(optTimeout) * 1000,
+                                           parseResult.GetValue(optTimestampFormat)!,
+                                           parseResult.GetValue(optMaxPercentageStorage),
+                                           parseResult.GetValue(optOnlyRunning));
 
-            ctx.ExitCode = snap.Status ? 0 : 1;
+            return snap.Status ? 0 : 1;
         });
     }
 }
