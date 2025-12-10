@@ -74,11 +74,20 @@ jobs:
           IFS='|' read -r rid filename archive_cmd <<< "$platform"
 
           echo "Building for $rid..."
-          dotnet publish ./src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj -r $rid -c Release --self-contained true -o ./publish/$rid
+          dotnet publish ./src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj \
+            -r $rid \
+            -c Release \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:DebugType=embedded \
+            -p:DebugSymbols=true \
+            -o ./publish/$rid
 
           echo "Archiving $filename..."
           cd ./publish/$rid
-          $archive_cmd "../../$filename" .
+          # Archive only the main executable
+          exe_name=$([ "$rid" == win-* ] && echo "cv4pve-autosnap.exe" || echo "cv4pve-autosnap")
+          $archive_cmd "../../$filename" "$exe_name"
           cd ../..
         done
 
