@@ -105,9 +105,11 @@ jobs:
 
     # Publish NuGet package after creating the release
     - name: Publish NuGet
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY_CV4PVE }}
       run: |
         for package in ./nuget-packages/*.nupkg; do
-          dotnet nuget push $package --api-key ${{ secrets.NUGET_API_KEY_CV4PVE }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push $package --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
         done
 
   # Publish to WinGet (runs after the publish job completes)
