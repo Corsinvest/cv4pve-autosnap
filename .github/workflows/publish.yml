@@ -86,7 +86,11 @@ jobs:
           echo "Archiving $filename..."
           cd ./publish/$rid
           # Archive only the main executable
-          exe_name=$([ "$rid" == win-* ] && echo "cv4pve-autosnap.exe" || echo "cv4pve-autosnap")
+          if [[ "$rid" == win-* ]]; then
+            exe_name="cv4pve-autosnap.exe"
+          else
+            exe_name="cv4pve-autosnap"
+          fi
           $archive_cmd "../../$filename" "$exe_name"
           cd ../..
         done
