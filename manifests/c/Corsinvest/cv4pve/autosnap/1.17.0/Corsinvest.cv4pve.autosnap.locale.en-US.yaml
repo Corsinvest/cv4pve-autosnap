@@ -1,7 +1,8 @@
-# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+# Created using wingetcreate 1.10.3.0
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
 
 PackageIdentifier: Corsinvest.cv4pve.autosnap
-PackageVersion: <VERSION>  # e.g., 1.17.0
+PackageVersion: 1.17.0
 PackageLocale: en-US
 Publisher: Corsinvest Srl
 PublisherUrl: https://www.corsinvest.it
@@ -39,6 +40,6 @@ Tags:
 - snapshot
 - virtualization
 - vm
-ReleaseNotesUrl: https://github.com/Corsinvest/cv4pve-autosnap/releases/tag/v<VERSION>
+ReleaseNotesUrl: https://github.com/Corsinvest/cv4pve-autosnap/releases/tag/v1.17.0
 ManifestType: defaultLocale
-ManifestVersion: 1.6.0
+ManifestVersion: 1.10.0
