@@ -8,6 +8,9 @@ on:
 jobs:
   publish:
     uses: Corsinvest/.github/.github/workflows/cv4pve-cli-publish.yml@main
+    secrets:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
     with:
       project-name: cv4pve-autosnap
       project-path: src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj
