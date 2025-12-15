@@ -1,5 +1,3 @@
-<div align="center">
-
 # cv4pve-autosnap
 
 ```
@@ -16,8 +14,6 @@ Automatic Snapshot Tool for Proxmox VE (Made in Italy)
 [![Release](https://img.shields.io/github/release/Corsinvest/cv4pve-autosnap.svg?style=flat-square)](https://github.com/Corsinvest/cv4pve-autosnap/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Corsinvest/cv4pve-autosnap/total.svg?style=flat-square&logo=download)](https://github.com/Corsinvest/cv4pve-autosnap/releases)
 [![NuGet](https://img.shields.io/nuget/v/Corsinvest.ProxmoxVE.AutoSnap.Api.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api/)
-
-</div>
 
 ---
 
@@ -38,32 +34,9 @@ unzip cv4pve-autosnap-linux-x64.zip
 
 ---
 
-## Table of Contents
-
-<details>
-<summary><strong>Click to expand navigation</strong></summary>
-
-- [Features](#-features)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Usage Examples](#-usage-examples)
-- [Security & Permissions](#-security--permissions)
-- [Advanced Features](#-advanced-features)
-- [Best Practices](#-best-practices)
-- [Troubleshooting](#-troubleshooting)
-- [Resources](#-resources)
-
-</details>
-
----
-
 ## Features
 
 ### Core Capabilities
-
-<table>
-<tr>
-<td width="50%">
 
 #### **Performance & Reliability**
 - **Native C#** implementation
@@ -79,9 +52,6 @@ unzip cv4pve-autosnap-linux-x64.zip
 - **Tag-based** selections (`@tag-production`)
 - **Node-specific** operations (`@node-pve1`)
 
-</td>
-<td width="50%">
-
 #### **Advanced Management**
 - **Intelligent retention** with configurable keep policies
 - **Multiple schedules** using labels (daily, weekly, monthly)
@@ -96,17 +66,9 @@ unzip cv4pve-autosnap-linux-x64.zip
 - **Error resilience** (no stop on error)
 - **Comprehensive logging** and status reporting
 
-</td>
-</tr>
-</table>
-
 ---
 
 ## Installation
-
-<div align="center">
-  <img src="https://img.shields.io/badge/INSTALLATION-GUIDE-green?style=for-the-badge&logo=download" alt="Installation Guide">
-</div>
 
 ### Linux Installation
 
@@ -160,15 +122,7 @@ sudo mv cv4pve-autosnap /usr/local/bin/
 
 ## Configuration
 
-<div align="center">
-  <img src="https://img.shields.io/badge/CONFIGURATION-SETUP-blue?style=for-the-badge&logo=settings" alt="Configuration Setup">
-</div>
-
 ### Authentication Methods
-
-<table>
-<tr>
-<td width="50%">
 
 #### **Username/Password**
 ```bash
@@ -180,9 +134,6 @@ cv4pve-autosnap --host=192.168.1.100 --username=backup@pve --password=your_passw
 cv4pve-autosnap --host=192.168.1.100 --api-token=backup@pve!token1=uuid-here [commands]
 ```
 
-</td>
-<td width="50%">
-
 #### **Password from File**
 ```bash
 # Use interactive password prompt that stores to file
@@ -191,10 +142,6 @@ cv4pve-autosnap --host=192.168.1.100 --username=backup@pve --password=file:/etc/
 # First run: prompts for password and saves to file
 # Subsequent runs: reads password from file automatically
 ```
-
-</td>
-</tr>
-</table>
 
 ### VM/CT Selection Patterns
 
@@ -318,10 +265,6 @@ The `--vmid` parameter supports powerful pattern matching based on the `GetVmsAs
 
 ## Usage Examples
 
-<div align="center">
-  <img src="https://img.shields.io/badge/USAGE-EXAMPLES-orange?style=for-the-badge&logo=terminal" alt="Usage Examples">
-</div>
-
 ### Basic Snapshot Operations
 
 <details>
@@ -417,10 +360,6 @@ crontab -e
 
 ## Security & Permissions
 
-<div align="center">
-  <img src="https://img.shields.io/badge/SECURITY-PERMISSIONS-red?style=for-the-badge&logo=shield" alt="Security & Permissions">
-</div>
-
 ### Required Permissions
 
 | Permission | Purpose | Scope |
@@ -451,40 +390,9 @@ cv4pve-autosnap --host=pve.local --api-token=backup@pve!backup-token=uuid-from-c
 
 </details>
 
-### Security Best Practices
-
-<table>
-<tr>
-<td width="50%">
-
-#### **Do's**
-- Use API tokens instead of passwords
-- Enable privilege separation for tokens
-- Store credentials in secure files with proper permissions
-- Use dedicated user accounts for automation
-- Enable SSL certificate validation in production
-
-</td>
-<td width="50%">
-
-#### **Don'ts**
-- Use root credentials for automation
-- Store passwords in plain text scripts
-- Disable SSL validation without good reason
-- Grant excessive permissions
-- Share API tokens between different applications
-
-</td>
-</tr>
-</table>
-
 ---
 
 ## Advanced Features
-
-<div align="center">
-  <img src="https://img.shields.io/badge/ADVANCED-FEATURES-purple?style=for-the-badge&logo=rocket" alt="Advanced Features">
-</div>
 
 ### Hook Scripts
 
@@ -678,15 +586,7 @@ cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=production --keep=30
 
 ## Best Practices
 
-<div align="center">
-  <img src="https://img.shields.io/badge/BEST-PRACTICES-gold?style=for-the-badge&logo=star" alt="Best Practices">
-</div>
-
 ### Snapshot Strategy Guidelines
-
-<table>
-<tr>
-<td width="50%">
 
 #### **Retention Schedules**
 - **Hourly**: Keep 24 snapshots (1 day)
@@ -699,9 +599,6 @@ cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=production --keep=30
 - Use descriptive labels (`daily`, `weekly`, `before-update`)
 - Include environment in label (`prod-daily`, `dev-weekly`)
 - Consider compliance requirements (`retention-7y`)
-
-</td>
-<td width="50%">
 
 #### **Performance Optimization**
 - **Schedule during low activity** periods
@@ -717,17 +614,9 @@ cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=production --keep=30
 - **Document recovery procedures**
 - **Verify QEMU agent** installation
 
-</td>
-</tr>
-</table>
-
 ---
 
 ## Troubleshooting
-
-<div align="center">
-  <img src="https://img.shields.io/badge/TROUBLESHOOTING-HELP-red?style=for-the-badge&logo=tools" alt="Troubleshooting">
-</div>
 
 ### Common Issues & Solutions
 
@@ -832,34 +721,17 @@ cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 --dry-run snap --l
 
 ## Resources
 
-<div align="center">
-  <img src="https://img.shields.io/badge/RESOURCES-LEARN%20MORE-teal?style=for-the-badge&logo=video" alt="Resources">
-</div>
-
-### Video Tutorials
-
-<table>
-<tr>
-<td align="center" width="50%">
-
 #### **Official Tutorial**
 
 [![cv4pve-autosnap Tutorial](http://img.youtube.com/vi/kM5KhD9seT4/maxresdefault.jpg)](https://www.youtube.com/watch?v=kM5KhD9seT4)
 
 **Complete setup and usage guide**
 
-</td>
-<td align="center" width="50%">
-
 #### **Web GUI Version**
 
 [![cv4pve-admin](https://raw.githubusercontent.com/Corsinvest/cv4pve-admin/main/src/Corsinvest.ProxmoxVE.Admin/wwwroot/doc/images/screenshot/modules/autosnap/modules-safe-autosnap.png)](https://github.com/Corsinvest/cv4pve-admin)
 
 **Web interface for cv4pve-autosnap**
-
-</td>
-</tr>
-</table>
 
 ### Documentation Links
 
@@ -873,17 +745,9 @@ cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 --dry-run snap --l
 
 ## QEMU Guest Agent Integration
 
-<div align="center">
-  <img src="https://img.shields.io/badge/QEMU-GUEST%20AGENT-blue?style=for-the-badge&logo=qemu" alt="QEMU Guest Agent">
-</div>
-
 ### Why QEMU Guest Agent Matters
 
 > **Important:** Without QEMU Guest Agent, snapshots are like "pulling the power plug" on your VM. The agent ensures filesystem consistency during snapshot operations.
-
-<table>
-<tr>
-<td width="50%">
 
 #### **Without Guest Agent**
 - Inconsistent filesystem state
@@ -892,19 +756,12 @@ cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 --dry-run snap --l
 - Requires fsck on boot
 - Application data loss risk
 
-</td>
-<td width="50%">
-
 #### **With Guest Agent**
 - Filesystem sync before snapshot
 - I/O freeze during operation
 - Clean application state
 - Reliable snapshot consistency
 - Database-safe operations
-
-</td>
-</tr>
-</table>
 
 ### Guest Agent Verification
 
@@ -919,10 +776,6 @@ cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 status
 ---
 
 ## Command Reference
-
-<div align="center">
-  <img src="https://img.shields.io/badge/COMMAND-REFERENCE-navy?style=for-the-badge&logo=terminal" alt="Command Reference">
-</div>
 
 ### Global Options
 
@@ -1069,8 +922,6 @@ Professional support and consulting available through [Corsinvest](https://www.c
 
 ---
 
-<div align="center">
-  <sub>Part of <a href="https://www.corsinvest.it/cv4pve">cv4pve</a> suite | Made with ❤️ in Italy by <a href="https://www.corsinvest.it">Corsinvest</a></sub>
-  <br>
-  <sub>Copyright © Corsinvest Srl</sub>
-</div>
+Part of [cv4pve](https://www.corsinvest.it/cv4pve) suite | Made with ❤️ in Italy by [Corsinvest](https://www.corsinvest.it)
+
+Copyright © Corsinvest Srl
