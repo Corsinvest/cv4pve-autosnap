@@ -39,9 +39,9 @@ public record PhaseEventArgs(HookPhase Phase,
         => new Dictionary<string, string>
             {
                 {"CV4PVE_AUTOSNAP_PHASE", Application.PhaseEnumToStr(Phase)},
-                {"CV4PVE_AUTOSNAP_VMID", Vm.VmId + string.Empty },
-                {"CV4PVE_AUTOSNAP_VMNAME", Vm.Name },
-                {"CV4PVE_AUTOSNAP_VMTYPE", Vm.Type + string.Empty },
+                {"CV4PVE_AUTOSNAP_VMID", Vm?.VmId + string.Empty },
+                {"CV4PVE_AUTOSNAP_VMNAME", Vm?.Name ?? string.Empty },
+                {"CV4PVE_AUTOSNAP_VMTYPE", Vm?.Type + string.Empty },
                 {"CV4PVE_AUTOSNAP_LABEL", Label },
                 {"CV4PVE_AUTOSNAP_KEEP", Keep + string.Empty },
                 {"CV4PVE_AUTOSNAP_SNAP_NAME", SnapName },
