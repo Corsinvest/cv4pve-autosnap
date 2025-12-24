@@ -353,12 +353,17 @@ Max % Storage :   {maxPercentageStorage}%");
 
             if (checkStorage && vmConfig.Disks.Any())
             {
-                //verify storage
-                var validStorage = false;
+                //verify storage - check only Proxmox managed storages, ignore bind mounts
+                var validStorage = true;
                 foreach (var item in vmConfig.Disks)
                 {
-                    storagesCheck.TryGetValue($"{vm.Node}/{item.Storage}", out validStorage);
-                    if (!validStorage) { break; }
+                    // Check only if storage exists in storagesCheck (Proxmox managed storage)
+                    // If not found (e.g., bind mount directory), ignore it
+                    if (storagesCheck.TryGetValue($"{vm.Node}/{item.Storage}", out var isValid) && !isValid)
+                    {
+                        validStorage = false;
+                        break;
+                    }
                 }
 
                 if (!validStorage)
