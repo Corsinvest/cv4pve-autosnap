@@ -93,6 +93,15 @@ sudo mv cv4pve-autosnap /usr/local/bin/
 
 ### Windows Installation
 
+#### Option 1: Winget (Recommended)
+
+```powershell
+# Install using Windows Package Manager
+winget install Corsinvest.cv4pve-autosnap
+```
+
+#### Option 2: Manual Installation
+
 ```powershell
 # Check available releases at: https://github.com/Corsinvest/cv4pve-autosnap/releases
 # Download specific version (replace VERSION with actual version)
