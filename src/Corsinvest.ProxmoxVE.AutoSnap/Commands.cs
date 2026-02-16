@@ -55,9 +55,9 @@ public class Commands
         return app;
     }
 
-    private void App_PhaseEvent(object? sender, PhaseEventArgs e)
+    private Task App_PhaseEvent(PhaseEventArgs e)
     {
-        if (_scriptHook == null || !File.Exists(_scriptHook)) { return; }
+        if (_scriptHook == null || !File.Exists(_scriptHook)) { return Task.CompletedTask; }
 
         var (stdOut, exitCode) = ShellHelper.Execute(_scriptHook,
                                                      true,
@@ -72,6 +72,8 @@ public class Commands
 
         if (exitCode != 0) { _out.WriteLine($"Script return code: {exitCode}"); }
         if (!string.IsNullOrWhiteSpace(stdOut)) { _out.Write(stdOut); }
+
+        return Task.CompletedTask;
     }
 
     private static Option<string> OptionLabel(Command command)

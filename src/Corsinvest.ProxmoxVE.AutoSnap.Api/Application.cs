@@ -86,7 +86,7 @@ public class Application
     /// <summary>
     /// Event phase.
     /// </summary>
-    public event EventHandler<PhaseEventArgs>? PhaseEvent;
+    public event Func<PhaseEventArgs, Task>? PhaseEvent;
 
     /// <summary>
     /// Phases
@@ -120,29 +120,25 @@ public class Application
     /// <returns></returns>
     public static string PhaseEnumToStr(HookPhase phase) => Phases.SingleOrDefault(a => a.Value == phase).Key;
 
-    private void CallPhaseEvent(HookPhase phase,
-                                IClusterResourceVm vm,
-                                string label,
-                                int keep,
-                                string snapName,
-                                bool vmState,
-                                double duration,
-                                bool status)
+    private async Task CallPhaseEventAsync(HookPhase phase,
+                                           IClusterResourceVm vm,
+                                           string label,
+                                           int keep,
+                                           string snapName,
+                                           bool vmState,
+                                           double duration,
+                                           bool status)
     {
         _logger.LogDebug("Phase: {phase}", PhaseEnumToStr(phase));
 
-        try
+        if (PhaseEvent is null) { return; }
+
+        var args = new PhaseEventArgs(phase, vm, label, keep, snapName, vmState, duration, status);
+        foreach (var handler in PhaseEvent.GetInvocationList().Cast<Func<PhaseEventArgs, Task>>())
         {
-            PhaseEvent?.Invoke(this, new PhaseEventArgs(phase,
-                                                        vm,
-                                                        label,
-                                                        keep,
-                                                        snapName,
-                                                        vmState,
-                                                        duration,
-                                                        status));
+            try { await handler(args); }
+            catch (Exception ex) { _logger.LogError(ex, ex.Message); }
         }
-        catch (Exception ex) { _logger.LogError(ex, ex.Message); }
     }
 
     private async Task<IEnumerable<IClusterResourceVm>> GetVmsAsync(string vmIdsOrNames)
@@ -224,7 +220,7 @@ Max % Storage :   {maxPercentageStorage}%");
         };
         ret.Start();
 
-        CallPhaseEvent(HookPhase.SnapJobStart, null!, label, keep, null!, state, 0, true);
+        await CallPhaseEventAsync(HookPhase.SnapJobStart, null!, label, keep, null!, state, 0, true);
 
         var storagesCheck = new Dictionary<string, bool>();
         var storagesPrint = new List<object[]>();
@@ -375,7 +371,7 @@ Max % Storage :   {maxPercentageStorage}%");
             }
 
             //create snapshot
-            CallPhaseEvent(HookPhase.SnapCreatePre, vm, label, keep, snapName, state, 0, true);
+            await CallPhaseEventAsync(HookPhase.SnapCreatePre, vm, label, keep, snapName, state, 0, true);
 
             _out.WriteLine($"Create snapshot: {snapName}");
 
@@ -405,7 +401,7 @@ Max % Storage :   {maxPercentageStorage}%");
             if (inError)
             {
                 resultSnapVm.Stop();
-                CallPhaseEvent(HookPhase.SnapCreateAbort, vm, label, keep, snapName, state, resultSnapVm.Elapsed.TotalSeconds, false);
+                await CallPhaseEventAsync(HookPhase.SnapCreateAbort, vm, label, keep, snapName, state, resultSnapVm.Elapsed.TotalSeconds, false);
                 continue;
             }
 
@@ -419,14 +415,14 @@ Max % Storage :   {maxPercentageStorage}%");
             resultSnapVm.Stop();
             resultSnapVm.Status = true;
 
-            CallPhaseEvent(HookPhase.SnapCreatePost, vm, label, keep, snapName, state, resultSnapVm.Elapsed.TotalSeconds, resultSnapVm.Status);
+            await CallPhaseEventAsync(HookPhase.SnapCreatePost, vm, label, keep, snapName, state, resultSnapVm.Elapsed.TotalSeconds, resultSnapVm.Status);
 
             _out.WriteLine($"VM execution {resultSnapVm.Elapsed}");
         }
 
         ret.Stop();
 
-        CallPhaseEvent(HookPhase.SnapJobEnd, null!, label, keep, null!, state, ret.Elapsed.TotalSeconds, ret.Status);
+        await CallPhaseEventAsync(HookPhase.SnapJobEnd, null!, label, keep, null!, state, ret.Elapsed.TotalSeconds, ret.Status);
 
         _out.WriteLine($"Total execution {ret.Elapsed}");
 
@@ -459,7 +455,7 @@ Timestamp format: {timestampFormat}");
         watch.Start();
 
         var ret = true;
-        CallPhaseEvent(HookPhase.CleanJobStart, null!, label, keep, null!, false, 0, false);
+        await CallPhaseEventAsync(HookPhase.CleanJobStart, null!, label, keep, null!, false, 0, false);
 
         foreach (var vm in await GetVmsAsync(vmIdsOrNames))
         {
@@ -475,7 +471,7 @@ Timestamp format: {timestampFormat}");
         }
 
         watch.Stop();
-        CallPhaseEvent(HookPhase.CleanJobEnd, null!, label, keep, null!, false, watch.Elapsed.TotalSeconds, true);
+        await CallPhaseEventAsync(HookPhase.CleanJobEnd, null!, label, keep, null!, false, watch.Elapsed.TotalSeconds, true);
 
         return ret;
     }
@@ -517,7 +513,7 @@ Timestamp format: {timestampFormat}");
             var watch = new Stopwatch();
             watch.Start();
 
-            CallPhaseEvent(HookPhase.SnapRemovePre, vm, label, keep, snapshot.Name, false, 0, false);
+            await CallPhaseEventAsync(HookPhase.SnapRemovePre, vm, label, keep, snapshot.Name, false, 0, false);
 
             _out.WriteLine($"Remove snapshot: {snapshot.Name}");
 
@@ -547,7 +543,7 @@ Timestamp format: {timestampFormat}");
             {
                 _logger.LogWarning($"Snap remove: problem in remove ");
 
-                CallPhaseEvent(HookPhase.SnapRemoveAbort,
+                await CallPhaseEventAsync(HookPhase.SnapRemoveAbort,
                                vm,
                                label,
                                keep,
@@ -558,7 +554,7 @@ Timestamp format: {timestampFormat}");
                 return false;
             }
 
-            CallPhaseEvent(HookPhase.SnapRemovePost,
+            await CallPhaseEventAsync(HookPhase.SnapRemovePost,
                            vm,
                            label,
                            keep,
