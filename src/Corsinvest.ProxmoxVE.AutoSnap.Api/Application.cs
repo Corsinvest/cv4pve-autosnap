@@ -375,7 +375,7 @@ Max % Storage :   {maxPercentageStorage}%");
 
             _out.WriteLine($"Create snapshot: {snapName}");
 
-            var inError = true;
+            var inError = false;
             if (!_dryRun)
             {
                 try
@@ -393,6 +393,7 @@ Max % Storage :   {maxPercentageStorage}%");
                 }
                 catch (Exception ex)
                 {
+                    inError = true;
                     _logger.LogError(ex, ex.Message);
                     _out.WriteLine(ex.Message);
                 }

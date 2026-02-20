@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Corsinvest.ProxmoxVE.Api.Extension" Version="9.1.0" />
-    <PackageVersion Include="Corsinvest.ProxmoxVE.Api.Console" Version="9.1.0" />
+    <PackageVersion Include="Corsinvest.ProxmoxVE.Api.Extension" Version="9.1.4" />
+    <PackageVersion Include="Corsinvest.ProxmoxVE.Api.Console" Version="9.1.4" />
   </ItemGroup>
 </Project>
