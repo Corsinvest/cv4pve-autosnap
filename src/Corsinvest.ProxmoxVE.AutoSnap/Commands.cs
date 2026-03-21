@@ -37,7 +37,7 @@ public class Commands
         optTimeout.DefaultValueFactory = (_) => 30L;
 
         var optTimestampFormat = command.AddOption<string>("--timestamp-format", $"Specify different timestamp format");
-        optTimestampFormat.DefaultValueFactory = (_) => Application.DefaultTimestampFormat;
+        optTimestampFormat.DefaultValueFactory = (_) => AutoSnapEngine.DefaultTimestampFormat;
 
         var optMaxPercentageStorage = command.AddOption<int>("--max-perc-storage", "Max percentage storage")
                                              .AddValidatorRange(1, 100);
@@ -48,9 +48,9 @@ public class Commands
         Status(command, optVmIds, optTimestampFormat);
     }
 
-    private async Task<Application> CreateAppAsync(RootCommand command)
+    private async Task<AutoSnapEngine> CreateAppAsync(RootCommand command)
     {
-        var app = new Application(await command.ClientTryLoginAsync(_loggerFactory), _loggerFactory, _out, _dryRun);
+        var app = new AutoSnapEngine(await command.ClientTryLoginAsync(_loggerFactory), _loggerFactory, _out, _dryRun);
         app.PhaseEvent += App_PhaseEvent;
         return app;
     }
@@ -63,8 +63,8 @@ public class Commands
                                                      true,
                                                      new Dictionary<string, string>(e.Environments)
                                                      {
-                                                        { "CV4PVE_AUTOSNAP_DEBUG", _debug ? "1" : "0" },
-                                                        { "CV4PVE_AUTOSNAP_DRY_RUN", _dryRun ? "1" : "0" },
+                                                        ["CV4PVE_AUTOSNAP_DEBUG"] = _debug ? "1" : "0",
+                                                        ["CV4PVE_AUTOSNAP_DRY_RUN"] = _dryRun ? "1" : "0",
                                                      },
                                                      _out,
                                                      _dryRun,

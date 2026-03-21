@@ -17,11 +17,18 @@ using Microsoft.Extensions.Logging;
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api;
 
 /// <summary>
-/// Command autosnap.
+/// AutoSnap engine.
 /// </summary>
-public class Application
+/// <remarks>
+/// Constructor command
+/// </remarks>
+/// <param name="client"></param>
+/// <param name="loggerFactory"></param>
+/// <param name="out"></param>
+/// <param name="dryRun"></param>
+public class AutoSnapEngine(PveClient client, ILoggerFactory loggerFactory, TextWriter @out, bool dryRun)
 {
-    private readonly ILogger<Application> _logger;
+    private readonly ILogger<AutoSnapEngine> _logger = loggerFactory.CreateLogger<AutoSnapEngine>();
 
     /// <summary>
     /// Permissions request
@@ -45,25 +52,6 @@ public class Application
     /// Old application name
     /// </summary>
     private static readonly string OldName = "eve4pve-autosnap";
-
-    private readonly PveClient _client;
-    private readonly bool _dryRun;
-    private readonly TextWriter _out;
-
-    /// <summary>
-    /// Constructor command
-    /// </summary>
-    /// <param name="client"></param>
-    /// <param name="loggerFactory"></param>
-    /// <param name="out"></param>
-    /// <param name="dryRun"></param>
-    public Application(PveClient client, ILoggerFactory loggerFactory, TextWriter @out, bool dryRun)
-    {
-        _client = client;
-        _dryRun = dryRun;
-        _out = @out;
-        _logger = loggerFactory.CreateLogger<Application>();
-    }
 
     private static string GetTimestampFormat(string timestampFormat)
         => string.IsNullOrWhiteSpace(timestampFormat)
@@ -92,18 +80,18 @@ public class Application
     /// Phases
     /// </summary>
     /// <value></value>
-    public static Dictionary<string, HookPhase> Phases { get; } = new()
+    public static IReadOnlyDictionary<string, HookPhase> Phases { get; } = new Dictionary<string, HookPhase>
     {
-        { "clean-job-start", HookPhase.CleanJobStart },
-        { "clean-job-end", HookPhase.CleanJobEnd },
-        { "snap-job-start", HookPhase.SnapJobStart },
-        { "snap-job-end", HookPhase.SnapJobEnd },
-        { "snap-create-pre", HookPhase.SnapCreatePre },
-        { "snap-create-post", HookPhase.SnapCreatePost },
-        { "snap-create-abort", HookPhase.SnapCreateAbort },
-        { "snap-remove-pre", HookPhase.SnapRemovePre },
-        { "snap-remove-post", HookPhase.SnapRemovePost },
-        { "snap-remove-abort", HookPhase.SnapRemoveAbort }
+        ["clean-job-start"] = HookPhase.CleanJobStart,
+        ["clean-job-end"] = HookPhase.CleanJobEnd,
+        ["snap-job-start"] = HookPhase.SnapJobStart,
+        ["snap-job-end"] = HookPhase.SnapJobEnd,
+        ["snap-create-pre"] = HookPhase.SnapCreatePre,
+        ["snap-create-post"] = HookPhase.SnapCreatePost,
+        ["snap-create-abort"] = HookPhase.SnapCreateAbort,
+        ["snap-remove-pre"] = HookPhase.SnapRemovePre,
+        ["snap-remove-post"] = HookPhase.SnapRemovePost,
+        ["snap-remove-abort"] = HookPhase.SnapRemoveAbort,
     };
 
     /// <summary>
@@ -120,20 +108,12 @@ public class Application
     /// <returns></returns>
     public static string PhaseEnumToStr(HookPhase phase) => Phases.SingleOrDefault(a => a.Value == phase).Key;
 
-    private async Task CallPhaseEventAsync(HookPhase phase,
-                                           IClusterResourceVm vm,
-                                           string label,
-                                           int keep,
-                                           string snapName,
-                                           bool vmState,
-                                           double duration,
-                                           bool status)
+    private async Task CallPhaseEventAsync(PhaseEventArgs args)
     {
-        _logger.LogDebug("Phase: {phase}", PhaseEnumToStr(phase));
+        _logger.LogDebug("Phase: {phase}", PhaseEnumToStr(args.Phase));
 
         if (PhaseEvent is null) { return; }
 
-        var args = new PhaseEventArgs(phase, vm, label, keep, snapName, vmState, duration, status);
         foreach (var handler in PhaseEvent.GetInvocationList().Cast<Func<PhaseEventArgs, Task>>())
         {
             try { await handler(args); }
@@ -142,7 +122,7 @@ public class Application
     }
 
     private async Task<IEnumerable<IClusterResourceVm>> GetVmsAsync(string vmIdsOrNames)
-        => (await _client.GetVmsAsync(vmIdsOrNames)).Where(a => !a.IsUnknown);
+        => (await client.GetVmsAsync(vmIdsOrNames)).Where(a => !a.IsUnknown);
 
     /// <summary>
     /// Status auto snapshot.
@@ -158,7 +138,7 @@ public class Application
 
         foreach (var vm in await GetVmsAsync(vmIdsOrNames))
         {
-            var snapshots = FilterApp(await SnapshotHelper.GetSnapshotsAsync(_client, vm.Node, vm.VmType, vm.VmId));
+            var snapshots = FilterApp(await SnapshotHelper.GetSnapshotsAsync(client, vm.Node, vm.VmType, vm.VmId));
             if (!string.IsNullOrWhiteSpace(label)) { snapshots = FilterLabel(snapshots, label, timestampFormat); }
             ret.Add(vm, snapshots);
         }
@@ -199,10 +179,10 @@ public class Application
                                             bool onlyRuns)
     {
         timestampFormat = GetTimestampFormat(timestampFormat);
-        var pveFullVersion = (await _client.Version.Version()).ToData().version as string;
+        var pveFullVersion = (await client.Version.Version()).ToData().version as string;
         var pveVersion = double.Parse(pveFullVersion!.Split(".")[0]);
 
-        _out.WriteLine($@"ACTION Snap
+        @out.WriteLine($@"ACTION Snap
 PVE Version:      {pveFullVersion}
 VMs:              {vmIdsOrNames}
 Label:            {label}
@@ -220,7 +200,7 @@ Max % Storage :   {maxPercentageStorage}%");
         };
         ret.Start();
 
-        await CallPhaseEventAsync(HookPhase.SnapJobStart, null!, label, keep, null!, state, 0, true);
+        await CallPhaseEventAsync(new(HookPhase.SnapJobStart, null, label, keep, null, state, 0, true));
 
         var storagesCheck = new Dictionary<string, bool>();
         var storagesPrint = new List<object[]>();
@@ -228,8 +208,8 @@ Max % Storage :   {maxPercentageStorage}%");
         var vms = await GetVmsAsync(vmIdsOrNames);
         if (!vms.Any())
         {
-            _out.WriteLine($"----- VMs with '{vmIdsOrNames}' NOT FOUND -----");
-            _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'VM.Audit' -----");
+            @out.WriteLine($"----- VMs with '{vmIdsOrNames}' NOT FOUND -----");
+            @out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'VM.Audit' -----");
         }
 
         var nodes = vms.Select(a => a.Node).Distinct().ToList();
@@ -240,7 +220,7 @@ Max % Storage :   {maxPercentageStorage}%");
         {
             var contentAllowed = new[] { "images", "rootdir" };
 
-            var storages = (await _client.GetStoragesAsync())
+            var storages = (await client.GetStoragesAsync())
                                 .Where(a => !a.IsUnknown && nodes.Contains(a.Node))
                                 .ToList();
 
@@ -250,7 +230,7 @@ Max % Storage :   {maxPercentageStorage}%");
                 //found in nodes/storages
                 foreach (var node in nodes)
                 {
-                    var nodeStorages = await _client.Nodes[node].Storage.GetAsync(string.Join(",", contentAllowed));
+                    var nodeStorages = await client.Nodes[node].Storage.GetAsync(string.Join(",", contentAllowed));
 
                     foreach (var storage in storages.Where(a => a.Node == node))
                     {
@@ -267,7 +247,7 @@ Max % Storage :   {maxPercentageStorage}%");
                                .ThenBy(a => a.Storage)
                                .ToList();
 
-            if (storages.Count == 0) { _out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'Datastore.Audit' -----"); }
+            if (storages.Count == 0) { @out.WriteLine($"----- POSSIBLE PROBLEM PERMISSION 'Datastore.Audit' -----"); }
 
             //check storage capacity
             foreach (var storage in storages)
@@ -301,36 +281,36 @@ Max % Storage :   {maxPercentageStorage}%");
                     return ret.ToString();
                 }
 
-                _out.WriteLine(FormatLine(["Storage", "Type", "Valid", "Used % ", "Disk Size", "Disk Usage"]));
-                foreach (var item in storagesPrint) { _out.WriteLine(FormatLine(item)); }
+                @out.WriteLine(FormatLine(["Storage", "Type", "Valid", "Used % ", "Disk Size", "Disk Usage"]));
+                foreach (var item in storagesPrint) { @out.WriteLine(FormatLine(item)); }
             }
         }
         else
         {
-            _out.WriteLine($"The Proxmox VE version {pveFullVersion} does not verify the storage % usage!");
+            @out.WriteLine($"The Proxmox VE version {pveFullVersion} does not verify the storage % usage!");
         }
 
         foreach (var vm in vms)
         {
-            _out.WriteLine($"----- VM {vm.VmId} {vm.Type} {vm.Status} -----");
+            @out.WriteLine($"----- VM {vm.VmId} {vm.Type} {vm.Status} -----");
 
             if (!vm.IsRunning && onlyRuns)
             {
-                _out.WriteLine("Skip VM '--only-running' parameter used!");
+                @out.WriteLine("Skip VM '--only-running' parameter used!");
                 continue;
             }
 
             //exclude template
             if (vm.IsTemplate)
             {
-                _out.WriteLine("Skip VM is template");
+                @out.WriteLine("Skip VM is template");
                 continue;
             }
 
             VmConfig vmConfig = vm.VmType switch
             {
-                VmType.Qemu => await _client.Nodes[vm.Node].Qemu[vm.VmId].Config.GetAsync(),
-                VmType.Lxc => await _client.Nodes[vm.Node].Lxc[vm.VmId].Config.GetAsync(),
+                VmType.Qemu => await client.Nodes[vm.Node].Qemu[vm.VmId].Config.GetAsync(),
+                VmType.Lxc => await client.Nodes[vm.Node].Lxc[vm.VmId].Config.GetAsync(),
                 _ => throw new InvalidEnumArgumentException(),
             };
 
@@ -344,7 +324,7 @@ Max % Storage :   {maxPercentageStorage}%");
             //check agent enabled
             if (vm.VmType == VmType.Qemu && !((VmConfigQemu)vmConfig).AgentEnabled)
             {
-                _out.WriteLine($"VM {vm.VmId} consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent");
+                @out.WriteLine($"VM {vm.VmId} consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent");
             }
 
             if (checkStorage && vmConfig.Disks.Any())
@@ -364,23 +344,23 @@ Max % Storage :   {maxPercentageStorage}%");
 
                 if (!validStorage)
                 {
-                    _out.WriteLine($"Skip VM problem storage space out of {maxPercentageStorage}%");
+                    @out.WriteLine($"Skip VM problem storage space out of {maxPercentageStorage}%");
                     resultSnapVm.Stop();
                     continue;
                 }
             }
 
             //create snapshot
-            await CallPhaseEventAsync(HookPhase.SnapCreatePre, vm, label, keep, snapName, state, 0, true);
+            await CallPhaseEventAsync(new(HookPhase.SnapCreatePre, vm, label, keep, snapName, state, 0, true));
 
-            _out.WriteLine($"Create snapshot: {snapName}");
+            @out.WriteLine($"Create snapshot: {snapName}");
 
             var inError = false;
-            if (!_dryRun)
+            if (!dryRun)
             {
                 try
                 {
-                    var result = await SnapshotHelper.CreateSnapshotAsync(_client,
+                    var result = await SnapshotHelper.CreateSnapshotAsync(client,
                                                                           vm.Node,
                                                                           vm.VmType,
                                                                           vm.VmId,
@@ -395,14 +375,14 @@ Max % Storage :   {maxPercentageStorage}%");
                 {
                     inError = true;
                     _logger.LogError(ex, ex.Message);
-                    _out.WriteLine(ex.Message);
+                    @out.WriteLine(ex.Message);
                 }
             }
 
             if (inError)
             {
                 resultSnapVm.Stop();
-                await CallPhaseEventAsync(HookPhase.SnapCreateAbort, vm, label, keep, snapName, state, resultSnapVm.Elapsed.TotalSeconds, false);
+                await CallPhaseEventAsync(new(HookPhase.SnapCreateAbort, vm, label, keep, snapName, state, resultSnapVm.Elapsed.TotalSeconds, false));
                 continue;
             }
 
@@ -416,16 +396,16 @@ Max % Storage :   {maxPercentageStorage}%");
             resultSnapVm.Stop();
             resultSnapVm.Status = true;
 
-            await CallPhaseEventAsync(HookPhase.SnapCreatePost, vm, label, keep, snapName, state, resultSnapVm.Elapsed.TotalSeconds, resultSnapVm.Status);
+            await CallPhaseEventAsync(new(HookPhase.SnapCreatePost, vm, label, keep, snapName, state, resultSnapVm.Elapsed.TotalSeconds, resultSnapVm.Status));
 
-            _out.WriteLine($"VM execution {resultSnapVm.Elapsed}");
+            @out.WriteLine($"VM execution {resultSnapVm.Elapsed}");
         }
 
         ret.Stop();
 
-        await CallPhaseEventAsync(HookPhase.SnapJobEnd, null!, label, keep, null!, state, ret.Elapsed.TotalSeconds, ret.Status);
+        await CallPhaseEventAsync(new(HookPhase.SnapJobEnd, null, label, keep, null, state, ret.Elapsed.TotalSeconds, ret.Status));
 
-        _out.WriteLine($"Total execution {ret.Elapsed}");
+        @out.WriteLine($"Total execution {ret.Elapsed}");
 
         _logger.LogDebug($"Snap Exit: {ret.Status}");
 
@@ -445,7 +425,7 @@ Max % Storage :   {maxPercentageStorage}%");
     {
         timestampFormat = GetTimestampFormat(timestampFormat);
 
-        _out.WriteLine($@"ACTION Clean
+        @out.WriteLine($@"ACTION Clean
 VMs:              {vmIdsOrNames}
 Label:            {label}
 Keep:             {keep}
@@ -456,23 +436,23 @@ Timestamp format: {timestampFormat}");
         watch.Start();
 
         var ret = true;
-        await CallPhaseEventAsync(HookPhase.CleanJobStart, null!, label, keep, null!, false, 0, false);
+        await CallPhaseEventAsync(new(HookPhase.CleanJobStart, null, label, keep, null, false, 0, false));
 
         foreach (var vm in await GetVmsAsync(vmIdsOrNames))
         {
             //exclude template
             if (vm.IsTemplate)
             {
-                _out.WriteLine("Skip VM is template");
+                @out.WriteLine("Skip VM is template");
                 continue;
             }
 
-            _out.WriteLine($"----- VM {vm.VmId} {vm.Type} -----");
+            @out.WriteLine($"----- VM {vm.VmId} {vm.Type} -----");
             if (!await SnapshotsRemoveAsync(vm, label, keep, timeout, timestampFormat)) { ret = false; }
         }
 
         watch.Stop();
-        await CallPhaseEventAsync(HookPhase.CleanJobEnd, null!, label, keep, null!, false, watch.Elapsed.TotalSeconds, true);
+        await CallPhaseEventAsync(new(HookPhase.CleanJobEnd, null, label, keep, null, false, watch.Elapsed.TotalSeconds, ret));
 
         return ret;
     }
@@ -480,20 +460,20 @@ Timestamp format: {timestampFormat}");
     private async Task<bool> CheckResultAsync(Result result)
     {
         var inError = result.InError();
-        if (inError) { _out.WriteLine(result.GetError()); }
+        if (inError) { @out.WriteLine(result.GetError()); }
 
         //check error in task
-        if (await _client.TaskIsRunningAsync(result.ToData<string>()))
+        if (await client.TaskIsRunningAsync(result.ToData<string>()))
         {
-            _out.WriteLine($"Error task in run... increase the timeout!");
+            @out.WriteLine($"Error task in run... increase the timeout!");
             inError = true;
         }
         else
         {
-            var taskStatus = await _client.GetExitStatusTaskAsync(result.ToData<string>());
+            var taskStatus = await client.GetExitStatusTaskAsync(result.ToData<string>());
             if (taskStatus != "OK")
             {
-                _out.WriteLine($"Error in task: {taskStatus}");
+                @out.WriteLine($"Error in task: {taskStatus}");
                 inError = true;
             }
         }
@@ -507,23 +487,22 @@ Timestamp format: {timestampFormat}");
                                                   long timeout,
                                                   string timestampFormat)
     {
-        foreach (var snapshot in FilterLabel(await SnapshotHelper.GetSnapshotsAsync(_client, vm.Node, vm.VmType, vm.VmId),
+        foreach (var snapshot in FilterLabel(await SnapshotHelper.GetSnapshotsAsync(client, vm.Node, vm.VmType, vm.VmId),
                                              label,
-                                             timestampFormat).Reverse().Skip(keep).Reverse())
+                                             timestampFormat).OrderByDescending(a => a.Name).Skip(keep).OrderBy(a => a.Name))
         {
-            var watch = new Stopwatch();
-            watch.Start();
+            var watch = Stopwatch.StartNew();
 
-            await CallPhaseEventAsync(HookPhase.SnapRemovePre, vm, label, keep, snapshot.Name, false, 0, false);
+            await CallPhaseEventAsync(new(HookPhase.SnapRemovePre, vm, label, keep, snapshot.Name, false, 0, false));
 
-            _out.WriteLine($"Remove snapshot: {snapshot.Name}");
+            @out.WriteLine($"Remove snapshot: {snapshot.Name}");
 
             var inError = false;
-            if (!_dryRun)
+            if (!dryRun)
             {
                 try
                 {
-                    var result = await SnapshotHelper.RemoveSnapshotAsync(_client,
+                    var result = await SnapshotHelper.RemoveSnapshotAsync(client,
                                                                           vm.Node,
                                                                           vm.VmType,
                                                                           vm.VmId,
@@ -534,35 +513,22 @@ Timestamp format: {timestampFormat}");
                 }
                 catch (Exception ex)
                 {
+                    inError = true;
                     _logger.LogError(ex, ex.Message);
-                    _out.WriteLine(ex.Message);
+                    @out.WriteLine(ex.Message);
                 }
             }
 
             watch.Stop();
             if (inError)
             {
-                _logger.LogWarning($"Snap remove: problem in remove ");
+                _logger.LogWarning("Snap remove: problem in remove");
 
-                await CallPhaseEventAsync(HookPhase.SnapRemoveAbort,
-                               vm,
-                               label,
-                               keep,
-                               snapshot.Name,
-                               false,
-                               watch.Elapsed.TotalSeconds,
-                               false);
+                await CallPhaseEventAsync(new(HookPhase.SnapRemoveAbort, vm, label, keep, snapshot.Name, false, watch.Elapsed.TotalSeconds, false));
                 return false;
             }
 
-            await CallPhaseEventAsync(HookPhase.SnapRemovePost,
-                           vm,
-                           label,
-                           keep,
-                           snapshot.Name,
-                           false,
-                           watch.Elapsed.TotalSeconds,
-                           true);
+            await CallPhaseEventAsync(new(HookPhase.SnapRemovePost, vm, label, keep, snapshot.Name, false, watch.Elapsed.TotalSeconds, true));
         }
 
         return true;
