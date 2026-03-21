@@ -37,16 +37,16 @@ public record PhaseEventArgs(HookPhase Phase,
     /// <value></value>
     public IReadOnlyDictionary<string, string> Environments
         => new Dictionary<string, string>
-            {
-                ["CV4PVE_AUTOSNAP_PHASE"] = AutoSnapEngine.PhaseEnumToStr(Phase),
-                ["CV4PVE_AUTOSNAP_VMID"] = Vm?.VmId + string.Empty,
-                ["CV4PVE_AUTOSNAP_VMNAME"] = Vm?.Name ?? string.Empty,
-                ["CV4PVE_AUTOSNAP_VMTYPE"] = Vm?.Type + string.Empty,
-                ["CV4PVE_AUTOSNAP_LABEL"] = Label,
-                ["CV4PVE_AUTOSNAP_KEEP"] = Keep + string.Empty,
-                ["CV4PVE_AUTOSNAP_SNAP_NAME"] = SnapName ?? string.Empty,
-                ["CV4PVE_AUTOSNAP_VMSTATE"] = VmState ? "1" : "0",
-                ["CV4PVE_AUTOSNAP_DURATION"] = (Duration + string.Empty).Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, "."),
-                ["CV4PVE_AUTOSNAP_STATE"] = Status ? "1" : "0",
-            };
+        {
+            ["CV4PVE_AUTOSNAP_PHASE"] = AutoSnapEngine.PhaseEnumToStr(Phase),
+            ["CV4PVE_AUTOSNAP_VMID"] = Vm?.VmId + string.Empty,
+            ["CV4PVE_AUTOSNAP_VMNAME"] = Vm?.Name ?? string.Empty,
+            ["CV4PVE_AUTOSNAP_VMTYPE"] = Vm?.Type + string.Empty,
+            ["CV4PVE_AUTOSNAP_LABEL"] = Label,
+            ["CV4PVE_AUTOSNAP_KEEP"] = Keep + string.Empty,
+            ["CV4PVE_AUTOSNAP_SNAP_NAME"] = SnapName ?? string.Empty,
+            ["CV4PVE_AUTOSNAP_VMSTATE"] = VmState ? "1" : "0",
+            ["CV4PVE_AUTOSNAP_DURATION"] = (Duration + string.Empty).Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, "."),
+            ["CV4PVE_AUTOSNAP_STATE"] = Status ? "1" : "0",
+        };
 }

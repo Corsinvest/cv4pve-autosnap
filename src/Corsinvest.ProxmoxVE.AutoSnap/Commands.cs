@@ -63,8 +63,8 @@ public class Commands
                                                      true,
                                                      new Dictionary<string, string>(e.Environments)
                                                      {
-                                                        ["CV4PVE_AUTOSNAP_DEBUG"] = _debug ? "1" : "0",
-                                                        ["CV4PVE_AUTOSNAP_DRY_RUN"] = _dryRun ? "1" : "0",
+                                                         ["CV4PVE_AUTOSNAP_DEBUG"] = _debug ? "1" : "0",
+                                                         ["CV4PVE_AUTOSNAP_DRY_RUN"] = _dryRun ? "1" : "0",
                                                      },
                                                      _out,
                                                      _dryRun,
