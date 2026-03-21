@@ -16,3 +16,4 @@ jobs:
       project-path: src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj
       nuget-project-path: src/Corsinvest.ProxmoxVE.AutoSnap.Api/Corsinvest.ProxmoxVE.AutoSnap.Api.csproj
       winget-id: Corsinvest.cv4pve.autosnap
+      use-changelog: true
