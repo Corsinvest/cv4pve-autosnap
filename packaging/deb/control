@@ -1,7 +1,0 @@
-Package: cv4pve-autosnap
-Version: SKIP
-Architecture: SKIP
-Maintainer: Corsinvest Srl <corsinvest@corsinvest.it>
-Homepage: https://github.com/Corsinvest/cv4pve-autosnap
-Description: Automatic snapshot tool for Proxmox VE
- Schedule and manage VM/LXC snapshots automatically.
