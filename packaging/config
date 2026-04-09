@@ -1,3 +1,4 @@
+type=cli
 description=Automatic snapshot tool for Proxmox VE — schedule and manage VM/LXC snapshots with retention policies
 long-description=Schedule and manage VM/LXC snapshots automatically.
 license=GPL-3.0-only
