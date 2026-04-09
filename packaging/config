@@ -1,0 +1,7 @@
+description=Automatic snapshot tool for Proxmox VE — schedule and manage VM/LXC snapshots with retention policies
+long-description=Schedule and manage VM/LXC snapshots automatically.
+license=GPL-3.0-only
+winget-id=Corsinvest.cv4pve.autosnap
+pkg-identifier=it.corsinvest.cv4pve-autosnap
+nuget-project-path=src/Corsinvest.ProxmoxVE.AutoSnap.Api/Corsinvest.ProxmoxVE.AutoSnap.Api.csproj
+homebrew-formula-class=Cv4pveAutosnap

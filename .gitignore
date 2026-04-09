@@ -355,3 +355,6 @@ MigrationBackup/
 
 artifacts_exe/
 dotnet-releaser.toml
+
+.claude
+.vscode

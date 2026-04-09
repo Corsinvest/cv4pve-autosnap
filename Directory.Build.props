@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

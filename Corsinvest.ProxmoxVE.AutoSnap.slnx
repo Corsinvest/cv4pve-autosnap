@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/Corsinvest.ProxmoxVE.AutoSnap.Api/Corsinvest.ProxmoxVE.AutoSnap.Api.csproj" />
+    <Project Path="src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj" />
+  </Folder>
+</Solution>
