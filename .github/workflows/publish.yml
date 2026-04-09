@@ -7,13 +7,13 @@ on:
 
 jobs:
   publish:
-    uses: Corsinvest/.github/.github/workflows/cv4pve-cli-publish.yml@main
+    uses: Corsinvest/.github/.github/workflows/cv4pve-tools-publish.yml@main
     secrets:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+      AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+
     with:
       project-name: cv4pve-autosnap
       project-path: src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj
-      nuget-project-path: src/Corsinvest.ProxmoxVE.AutoSnap.Api/Corsinvest.ProxmoxVE.AutoSnap.Api.csproj
-      winget-id: Corsinvest.cv4pve.autosnap
-      use-changelog: true

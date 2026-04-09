@@ -1,0 +1,4 @@
+formula-class=Cv4pveAutosnap
+description=Automatic snapshot tool for Proxmox VE VMs and containers with retention policies
+tap=Corsinvest/homebrew-tap
+license=GPL-3.0

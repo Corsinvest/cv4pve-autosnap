@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-04-09
+
+### Added
+- Documentation for snapshot consistency with QEMU Guest Agent (`docs/snapshot-consistency.md`)
+- AUR installation support (Arch Linux)
+
+### Changed
+- Update README: AUR badge, Arch Linux / Debian / RHEL / macOS Homebrew installation, hook templates reference, QEMU Guest Agent feature note
+- Update NuGet packages to 9.1.11
+
 ## [2.0.0] - 2026-03-21
 
 ### Breaking Changes (NuGet API)
