@@ -54,13 +54,14 @@ All binaries on the [Releases page](https://github.com/Corsinvest/cv4pve-autosna
 - **API-based** — no root or SSH access required
 - **Cluster-aware** — works across all nodes automatically
 - **High availability** — multiple host support for automatic failover
-- **Flexible targeting** — select VMs by ID, name, pool, tag, node or pattern
+- **Flexible targeting** — select VMs by ID, name, pool, tag, node or pattern ([see VM/CT Selection](#vmct-selection))
 - **Retention policies** — configurable keep count per label
-- **Multiple schedules** — use labels (hourly, daily, weekly, monthly)
+- **Multiple schedules** — use labels (hourly, daily, weekly, monthly) ([see Scheduling](#scheduling-with-cron))
 - **Memory state** — optional RAM state preservation with `--state`
-- **Hook scripts** — custom automation before/after each phase
+- **Hook scripts** — custom automation before/after each phase ([see Hook Scripts](#hook-scripts))
 - **Storage monitoring** — skip snapshot if storage above threshold
 - **QEMU Guest Agent** — warns if not enabled on a VM; recommended for consistent snapshots ([setup guide](docs/snapshot-consistency.md))
+- **Parallel execution** — snapshot multiple VMs concurrently with `--max-parallel` ([see Performance](#performance))
 - **API token** support (Proxmox VE 6.2+)
 - **Dry-run** mode — test without making changes
 
@@ -97,9 +98,32 @@ cv4pve-autosnap --host=pve.local --api-token=user@realm!token=uuid --vmid=100 st
 # Dry-run (no changes)
 cv4pve-autosnap --host=pve.local --api-token=user@realm!token=uuid --vmid=100 --dry-run snap --label=daily --keep=7
 
+# Parallel snapshots (up to 5 VMs at once)
+cv4pve-autosnap --host=pve.local --api-token=user@realm!token=uuid --vmid=@all snap --label=daily --keep=7 --max-parallel 5
+
 # Parameter file (recommended for complex setups)
 cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=daily --keep=14
 ```
+
+---
+
+## Performance
+
+By default snapshots are processed **sequentially** (`--max-parallel 1`). On large clusters with VMs spread across multiple nodes or using ZFS/Ceph storage, parallel execution significantly reduces total run time.
+
+```bash
+# Run up to 5 snapshots in parallel
+cv4pve-autosnap --host=pve.local --api-token=token --vmid=@all snap --label=daily --keep=7 --max-parallel 5
+```
+
+| Setting | Effect | Default |
+|---------|--------|---------|
+| `--max-parallel 1` | Sequential — one VM at a time | default |
+| `--max-parallel N` | Up to N VMs snapshotted concurrently | — |
+
+> **Tip:** values between 3 and 10 are a reasonable range. ZFS and Ceph handle parallel snapshots very well.
+>
+> **Warning:** if multiple VMs share the same storage backend, parallel snapshots compete for the same I/O — this can slow down or destabilize the storage. On shared or slow storage (NFS, iSCSI, LVM) keep `--max-parallel` low (2–3) or leave it at the default of 1. On distributed storage (Ceph/RBD) or per-VM storage (ZFS datasets) higher values are safe.
 
 ---
 

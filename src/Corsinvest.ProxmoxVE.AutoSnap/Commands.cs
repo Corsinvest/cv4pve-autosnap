@@ -36,14 +36,18 @@ public class Commands
         var optTimeout = command.TimeoutOption();
         optTimeout.DefaultValueFactory = (_) => 30L;
 
-        var optTimestampFormat = command.AddOption<string>("--timestamp-format", $"Specify different timestamp format");
+        var optTimestampFormat = command.AddOption<string>("--timestamp-format", "Specify different timestamp format");
         optTimestampFormat.DefaultValueFactory = (_) => AutoSnapEngine.DefaultTimestampFormat;
 
         var optMaxPercentageStorage = command.AddOption<int>("--max-perc-storage", "Max percentage storage")
                                              .AddValidatorRange(1, 100);
         optMaxPercentageStorage.DefaultValueFactory = (_) => 95;
 
-        Snap(command, optVmIds, optTimeout, optTimestampFormat, optMaxPercentageStorage);
+        var optMaxParallel = command.AddOption<int>("--max-parallel", "Max number of parallel snapshots")
+                                    .AddValidatorRange(1, 50);
+        optMaxParallel.DefaultValueFactory = (_) => 1;
+
+        Snap(command, optVmIds, optTimeout, optTimestampFormat, optMaxPercentageStorage, optMaxParallel);
         Clean(command, optVmIds, optTimeout, optTimestampFormat);
         Status(command, optVmIds, optTimestampFormat);
     }
@@ -110,8 +114,8 @@ public class Commands
                                                                    a.Date.ToString("yy/MM/dd HH:mm:ss"),
                                                                    a.Parent,
                                                                    a.Name,
-                                                                   (a.Description + string.Empty).Replace("\n", string.Empty),
-                                                                   a.VmStatus ? "X" : string.Empty }));
+                                                                   (a.Description + "").Replace("\n", ""),
+                                                                   a.VmStatus ? "X" : "" }));
                 }
 
                 _out.Write(TableGenerator.To(["NODE", "VM", "TIME", "PARENT", "NAME", "DESCRIPTION", "VM STATUS"],
@@ -149,7 +153,8 @@ public class Commands
                       Option<string> optVmIds,
                       Option<long> optTimeout,
                       Option<string> optTimestampFormat,
-                      Option<int> optMaxPercentageStorage)
+                      Option<int> optMaxPercentageStorage,
+                      Option<int> optMaxParallel)
     {
         var cmd = command.AddCommand("snap", "Will snap one time");
 
@@ -172,7 +177,8 @@ public class Commands
                                            parseResult.GetValue(optTimeout) * 1000,
                                            parseResult.GetValue(optTimestampFormat)!,
                                            parseResult.GetValue(optMaxPercentageStorage),
-                                           parseResult.GetValue(optOnlyRunning));
+                                           parseResult.GetValue(optOnlyRunning),
+                                           parseResult.GetValue(optMaxParallel));
 
             return snap.Status ? 0 : 1;
         });

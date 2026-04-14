@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-04-14
+
+### Added
+- `--max-parallel` option for `snap` command — snapshot multiple VMs at the same time to significantly reduce total run time on large clusters (default: 1, sequential); output remains grouped per VM even when running in parallel
+
 ## [2.0.1] - 2026-04-09
 
 ### Added
