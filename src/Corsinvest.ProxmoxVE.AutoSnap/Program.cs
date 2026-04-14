@@ -5,10 +5,9 @@
 
 using Corsinvest.ProxmoxVE.Api.Console.Helpers;
 using Corsinvest.ProxmoxVE.AutoSnap;
-using Corsinvest.ProxmoxVE.AutoSnap.Api;
 using Microsoft.Extensions.Logging;
 
-var app = ConsoleHelper.CreateApp(AutoSnapEngine.Name, "Automatic snapshot VM/CT with retention");
+var app = ConsoleHelper.CreateApp("Automatic snapshot VM/CT with retention");
 var loggerFactory = ConsoleHelper.CreateLoggerFactory<Program>(app.GetLogLevelFromDebug());
 
 _ = new Commands(app, loggerFactory);

@@ -13,20 +13,15 @@ public class ResultSnap : ResultBaseSnap
     /// <summary>
     /// Vms
     /// </summary>
-    public List<ResultSnapVm> Vms { get; } = new List<ResultSnapVm>();
+    public List<ResultSnapVm> Vms { get; } = [];
 
     /// <summary>
     /// Status
     /// </summary>
-    /// <value></value>
-    public override bool Status
-    {
-        get => !Vms.Any(a => !a.Status);
-        internal set { }
-    }
+    public override bool Status => Vms.All(a => a.Status);
 
     /// <summary>
     /// Name of the snapshot
     /// </summary>
-    public string SnapName { get; internal set; } = default!;
+    public string SnapName { get; internal set; } = "";
 }
