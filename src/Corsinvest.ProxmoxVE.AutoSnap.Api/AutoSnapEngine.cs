@@ -220,9 +220,6 @@ Max % Storage :   {maxPercentageStorage}%");
             {
                 vmOut.WriteLine($"----- VM {vm.VmId} {vm.Type} {vm.Status} -----");
 
-                var resultSnapVm = new ResultSnapVm { VmId = vm.VmId };
-                lock (ret.Vms) { ret.Vms.Add(resultSnapVm); }
-
                 if (!vm.IsRunning && onlyRuns)
                 {
                     vmOut.WriteLine("Skip VM '--only-running' parameter used!");
@@ -237,6 +234,8 @@ Max % Storage :   {maxPercentageStorage}%");
                 }
 
                 var vmConfig = await client.GetVmConfigAsync(vm.Node, vm.VmType, vm.VmId);
+                var resultSnapVm = new ResultSnapVm { VmId = vm.VmId };
+                lock (ret.Vms) { ret.Vms.Add(resultSnapVm); }
                 resultSnapVm.Start();
 
                 //check agent enabled

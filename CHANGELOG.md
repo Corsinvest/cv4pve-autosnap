@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-04-20
+
+### Fixed
+- `snap` command no longer returns exit code 1 when the target set includes template VMs or skipped VMs via `--only-running` ([#119](https://github.com/Corsinvest/cv4pve-autosnap/issues/119))
+
+### Changed
+- Updated NuGet packages to 9.1.15
+
 ## [2.1.0] - 2026-04-14
 
 ### Added
