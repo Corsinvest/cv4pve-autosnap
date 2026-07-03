@@ -77,7 +77,9 @@ All binaries on the [Releases page](https://github.com/Corsinvest/cv4pve-autosna
 | **VM.Audit**        | Read VM/CT configuration and status | Virtual machines |
 | **VM.Snapshot**     | Create and delete snapshots        | Virtual machines |
 | **Datastore.Audit** | Check storage capacity             | Storage systems  |
-| **Pool.Allocate**   | Access pool information            | Resource pools   |
+| **Pool.Audit** *(PVE 9+)* / **Pool.Allocate** *(PVE 8 and earlier)* | Read pool membership (needed for `--vmid=@pool-*`) | Resource pools |
+
+> **Pool selection (`--vmid=@pool-*`)** resolves the pool via `GET /pools`. On **Proxmox VE 9+** that endpoint requires the read-only **`Pool.Audit`** privilege; on **PVE 8 and earlier** it accepted **`Pool.Allocate`**. If pool targeting returns *"VMs NOT FOUND"* on PVE 9, grant `Pool.Audit` to the token/role. See the [Proxmox VE User Management docs](https://pve.proxmox.com/wiki/User_Management).
 
 </details>
 

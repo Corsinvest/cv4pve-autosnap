@@ -40,7 +40,7 @@ public partial class AutoSnapEngine(PveClient client, ILoggerFactory loggerFacto
     /// Permissions request
     /// </summary>
     /// <value></value>
-    public IEnumerable<string> Permissions { get; } = ["VM.Audit", "VM.Snapshot", "Datastore.Audit", "Pool.Allocate"];
+    public IEnumerable<string> Permissions { get; } = ["VM.Audit", "VM.Snapshot", "Datastore.Audit", "Pool.Audit"];
 
     private const string Prefix = "auto";
 
@@ -204,6 +204,12 @@ Max % Storage :   {maxPercentageStorage}%");
         {
             @out.WriteLine($"----- VMs with '{vmIdsOrNames}' NOT FOUND -----");
             @out.WriteLine("----- POSSIBLE PROBLEM PERMISSION 'VM.Audit' -----");
+
+            //pool selection needs Pool.Audit to read GET /pools (Pool.Allocate on PVE 8 and earlier)
+            if (vmIdsOrNames.Contains("@pool-"))
+            {
+                @out.WriteLine("----- POSSIBLE PROBLEM PERMISSION 'Pool.Audit' (PVE 9+) / 'Pool.Allocate' (PVE 8 and earlier) -----");
+            }
         }
 
         var nodes = vms.Select(a => a.Node).Distinct().ToList();
