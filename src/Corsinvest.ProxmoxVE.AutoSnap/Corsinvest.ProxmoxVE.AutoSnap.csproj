@@ -5,11 +5,11 @@
     <AssemblyName>cv4pve-autosnap</AssemblyName>
     <Product>Corsinvest for Proxmox VE Auto Snapshot</Product>
     <AssemblyTitle>Corsinvest for Proxmox VE Auto Snapshot</AssemblyTitle>
-    <Description>Corsinvest for Proxmox VE Auto Snapshot</Description>
+    <Description>Automatic snapshot tool for Proxmox VE — schedule and manage VM/LXC snapshots with retention policies</Description>
+    <ApplicationIcon>..\..\icon.ico</ApplicationIcon>
+    <IsPackable>false</IsPackable>
     <InvariantGlobalization>true</InvariantGlobalization>
     <PredefinedCulturesOnly>false</PredefinedCulturesOnly>
-    <RepositoryUrl>https://github.com/Corsinvest/cv4pve-autosnap</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
