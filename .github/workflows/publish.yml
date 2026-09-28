@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     uses: Corsinvest/.github/.github/workflows/cv4pve-tools-publish.yml@main
