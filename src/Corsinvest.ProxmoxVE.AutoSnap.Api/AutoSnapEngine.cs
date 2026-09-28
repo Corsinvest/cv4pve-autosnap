@@ -1,9 +1,8 @@
-﻿/*
+/*
  * SPDX-License-Identifier: GPL-3.0-only
  * SPDX-FileCopyrightText: Copyright Corsinvest Srl
  */
 
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using Corsinvest.ProxmoxVE.Api;
@@ -13,7 +12,6 @@ using Corsinvest.ProxmoxVE.Api.Shared.Models.Cluster;
 using Corsinvest.ProxmoxVE.Api.Shared.Models.Vm;
 using Corsinvest.ProxmoxVE.Api.Shared.Utils;
 using Microsoft.Extensions.Logging;
-
 
 namespace Corsinvest.ProxmoxVE.AutoSnap.Api;
 
@@ -327,7 +325,6 @@ Max % Storage :   {maxPercentageStorage}%");
         });
 
         await Task.WhenAll(tasks);
-
 
         ret.Stop();
 

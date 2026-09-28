@@ -2,22 +2,19 @@
 	<PropertyGroup>
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<OutputType>Library</OutputType>
-
-		<PackageProjectUrl>https://github.com/Corsinvest/cv4pve-autosnap</PackageProjectUrl>
-		<PackageIcon>icon.png</PackageIcon>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>ProxmoxVE;Api,Client;Rest;Corsinvest;AutoSnap</PackageTags>
-		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
-		<PackageOutputPath>..\..\..\.nupkgs\</PackageOutputPath>
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/Corsinvest/cv4pve-autosnap</RepositoryUrl>
+		<Product>Corsinvest for Proxmox VE Auto Snapshot Api</Product>
+		<AssemblyTitle>Corsinvest for Proxmox VE Auto Snapshot Api</AssemblyTitle>
+		<Description>Auto Snapshot API library for Proxmox VE: scheduled VM/LXC snapshots with retention</Description>
+		<PackageTags>ProxmoxVE;Api;Client;Rest;Corsinvest;AutoSnap</PackageTags>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<!-- Include symbol files (*.pdb) in the built .nupkg -->
-		<AllowedOutputExtensionsInPackageBuildOutputFolder>
-			$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 
+		<!-- Local test feed: every build drops the package in ProxmoxVE\.nupkgs -->
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageOutputPath>..\..\..\.nupkgs\</PackageOutputPath>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+		<!-- Symbols: PDB inside the .nupkg (local debugging) and .snupkg for nuget.org -->
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
