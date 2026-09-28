@@ -1,11 +1,11 @@
-﻿/*
+/*
  * SPDX-License-Identifier: GPL-3.0-only
  * SPDX-FileCopyrightText: Copyright Corsinvest Srl
  */
 
 using System.CommandLine;
-using Corsinvest.ProxmoxVE.Api.Shared.Utils;
 using Corsinvest.ProxmoxVE.Api.Console.Helpers;
+using Corsinvest.ProxmoxVE.Api.Shared.Utils;
 using Corsinvest.ProxmoxVE.AutoSnap.Api;
 using Microsoft.Extensions.Logging;
 
