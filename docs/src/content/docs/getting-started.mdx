@@ -4,7 +4,6 @@ description: Install cv4pve-autosnap, connect it to a Proxmox VE cluster and tak
 ---
 
 import CliInstall from '@corsinvest/cv4pve-docs-theme/components/CliInstall.astro';
-import CliConnection from '@corsinvest/cv4pve-docs-theme/components/CliConnection.astro';
 
 cv4pve-autosnap runs **outside the cluster** — on your workstation, a management VM or a scheduled job —
 and talks only to the Proxmox VE REST API on port 8006. Nothing is installed on the nodes.
@@ -17,15 +16,17 @@ The API library behind the tool is also on NuGet, as
 [Corsinvest.ProxmoxVE.AutoSnap.Api](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api/),
 for .NET applications that want to take snapshots with the same rules.
 
-## Connect to the cluster
+## First run
 
-Create a dedicated user and API token first — see [Permissions](/cv4pve-autosnap/permissions/). Then:
+Create a dedicated user and API token first — see [Permissions](/cv4pve-autosnap/permissions/). Then point
+the tool at any node:
 
 ```bash
-cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=UUID' --vmid=100 status
+cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=<uuid>' --vmid=100 status
 ```
 
-<CliConnection user="autosnap@pve" />
+Several nodes, username and password, certificates and response files for scheduled runs: see
+[Connection](/cv4pve-autosnap/connection/).
 
 ## Order of the options
 

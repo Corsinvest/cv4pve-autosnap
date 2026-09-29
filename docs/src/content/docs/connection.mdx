@@ -1,0 +1,30 @@
+---
+title: Connection
+description: How cv4pve-autosnap connects to a Proxmox VE cluster, and how to keep the options in a response file for scheduled runs.
+---
+
+import CliConnection from '@corsinvest/cv4pve-docs-theme/components/CliConnection.astro';
+import CliResponseFiles from '@corsinvest/cv4pve-docs-theme/components/CliResponseFiles.astro';
+
+cv4pve-autosnap talks to the Proxmox VE REST API of any node of the cluster. Create the user and API token
+first — see [Permissions](/cv4pve-autosnap/permissions/).
+
+## Options
+
+<CliConnection user="autosnap@pve" />
+
+## Response files
+
+A job run by cron or Task Scheduler repeats the same connection every time: keep it in a file.
+
+<CliResponseFiles
+  tool="cv4pve-autosnap"
+  user="autosnap@pve"
+  token="snap"
+  extra={['# Guests to snapshot, see Choosing guests', '--vmid=@tag-snapshot']}
+  run="snap --label=daily --keep=7"
+/>
+
+`--vmid` goes before `snap`, so it can live in the same file as the connection. An option can be given
+only once: with `--vmid` in the file, do not repeat it on the command line — see
+[Scheduling](/cv4pve-autosnap/scheduling/#before-an-upgrade).

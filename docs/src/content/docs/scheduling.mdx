@@ -16,7 +16,7 @@ in a file, one per line, readable only by the account that runs the job:
 
 ```bash title="/etc/cv4pve/autosnap.conf"
 --host=pve1.local,pve2.local
---api-token=autosnap@pve!snap=SECRET
+--api-token=autosnap@pve!snap=<uuid>
 --vmid=@tag-snapshot
 ```
 
@@ -30,7 +30,8 @@ and pass it with `@`, followed by the command:
 cv4pve-autosnap @/etc/cv4pve/autosnap.conf snap --label=daily --keep=7
 ```
 
-In a file the value needs no quotes. Global options such as `--max-parallel` can go in the file too.
+In a file the value needs no quotes. Global options such as `--max-parallel` can go in the file too. The
+rules of the file are in [Response files](/cv4pve-autosnap/connection/#response-files).
 
 ## Schedules
 
