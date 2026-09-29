@@ -48,14 +48,14 @@ Part of the real output on a test cluster: a job runs every two hours with the l
     { label: 'VM STATUS' },
   ]}
   rows={[
-    ['pve01', '105', '26/09/28 05:00:02', 'before-upgrade', 'auto2hourly260928070002', 'cv4pve-autosnap', ''],
-    ['pve01', '105', '26/09/28 07:00:04', 'auto2hourly260928070002', 'auto2hourly260928090004', 'cv4pve-autosnap', ''],
-    ['pve01', '105', '26/09/28 09:00:07', 'auto2hourly260928090004', 'auto2hourly260928110007', 'cv4pve-autosnap', ''],
-    ['pve01', '1000', '26/09/28 05:00:03', 'no-parent', 'auto2hourly260928070002', 'cv4pve-autosnap', ''],
-    ['pve01', '1000', '26/09/28 07:00:06', 'auto2hourly260928070002', 'auto2hourly260928090004', 'cv4pve-autosnap', ''],
-    ['pve02', '203', '26/09/28 05:00:57', 'no-parent', 'auto2hourly260928070002', 'cv4pve-autosnap', ''],
+    ['pve01', '105', '26/09/28 07:00:02', 'before-upgrade', 'auto2hourly260928070002', 'cv4pve-autosnap', ''],
+    ['pve01', '105', '26/09/28 09:00:04', 'auto2hourly260928070002', 'auto2hourly260928090004', 'cv4pve-autosnap', ''],
+    ['pve01', '105', '26/09/28 11:00:07', 'auto2hourly260928090004', 'auto2hourly260928110007', 'cv4pve-autosnap', ''],
+    ['pve01', '1000', '26/09/28 07:00:03', 'no-parent', 'auto2hourly260928070002', 'cv4pve-autosnap', ''],
+    ['pve01', '1000', '26/09/28 09:00:06', 'auto2hourly260928070002', 'auto2hourly260928090004', 'cv4pve-autosnap', ''],
+    ['pve02', '203', '26/09/28 07:00:57', 'no-parent', 'auto2hourly260928070002', 'cv4pve-autosnap', ''],
   ]}
-  note="The name is <code>auto</code> + label + timestamp, in the local time of the machine that runs the tool; <code>TIME</code> is in UTC. <code>VM STATUS</code> is <code>X</code> when the snapshot includes the RAM (<code>--state</code>)."
+  note="The name is <code>auto</code> + label + timestamp; both the timestamp and <code>TIME</code> are in the local time of the machine that runs the tool. <code>VM STATUS</code> is <code>X</code> when the snapshot includes the RAM (<code>--state</code>)."
 />
 
 ## Why

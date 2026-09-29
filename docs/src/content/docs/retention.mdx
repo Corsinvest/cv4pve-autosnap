@@ -30,7 +30,8 @@ autodaily260929020000
 - The timestamp is the **local time of the machine running the tool**, taken once per run: every guest of
   the same run gets the same name.
 - Proxmox VE accepts snapshot names of up to 40 characters. With the default timestamp that leaves 24
-  characters for the label. Use letters, digits, `-` and `_`.
+  characters for the label. Use letters, digits, `-` and `_`. A label that breaks these rules stops the
+  tool at start with `ERROR:`, before any snapshot.
 - The description of the snapshot is set to `cv4pve-autosnap`.
 
 ## The timestamp format
@@ -42,7 +43,8 @@ two digits each for year, month, day, hour, minute and second: `260929020000` is
 
 The tool uses the format twice: to **write** the name of a new snapshot, and to **read back** the names
 of the existing ones — it cuts from the end of the name as many characters as the format string has, and
-what is left must be `auto` + the label. That is why the format has rules:
+what is left must be `auto` + the label. That is why the format has rules, and the tool checks them at start — a format that breaks one stops it
+with `ERROR:` before any snapshot is taken or removed:
 
 | Rule | Why | Wrong | Right |
 |---|---|---|---|
@@ -135,7 +137,7 @@ cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all status --label=daily
 | Column | Content |
 |---|---|
 | `NODE`, `VM` | Where the guest is |
-| `TIME` | When Proxmox VE took the snapshot, in **UTC** |
+| `TIME` | When Proxmox VE took the snapshot, in the local time of the machine running the tool |
 | `PARENT` | The snapshot before it; `no-parent` for the first |
 | `NAME` | Name of the snapshot |
 | `DESCRIPTION` | Always `cv4pve-autosnap` |

@@ -16,9 +16,14 @@ public class ResultSnap : ResultBaseSnap
     public List<ResultSnapVm> Vms { get; } = [];
 
     /// <summary>
-    /// Status
+    /// The selection found at least one VM/CT
     /// </summary>
-    public override bool Status => Vms.All(a => a.Status);
+    public bool VmsFound { get; internal set; } = true;
+
+    /// <summary>
+    /// Status: false when no VM/CT was found or one failed; skipped templates and stopped VM/CT do not count
+    /// </summary>
+    public override bool Status => VmsFound && Vms.All(a => a.Status);
 
     /// <summary>
     /// Name of the snapshot

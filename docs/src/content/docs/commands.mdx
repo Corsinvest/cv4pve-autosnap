@@ -20,7 +20,7 @@ and after each command (`cv4pve-autosnap snap --help`).
 | Option | Default | What it does |
 |---|---|---|
 | `--vmid` | *(required)* | Guests to work on — see [Choosing guests](/cv4pve-autosnap/guests/) |
-| `--timeout` | `30` | Seconds to wait for each snapshot or removal task. See below |
+| `--timeout` | `30` | Seconds to wait for each snapshot or removal task (1–86400). See below |
 | `--timestamp-format` | `yyMMddHHmmss` | Timestamp in the snapshot names. It has rules, and must stay the same for a label — see [The timestamp format](/cv4pve-autosnap/retention/#the-timestamp-format) |
 | `--max-perc-storage` | `95` | `snap` only: skip a guest when a storage holding its disks is used above this percentage (1–100) |
 | `--max-parallel` | `1` | `snap` only: how many guests get their snapshot at the same time (1–50) |
@@ -61,9 +61,11 @@ Takes one snapshot of each selected guest, then removes the oldest ones of the s
 Before the first guest, `snap` reads the usage of the storages that can hold disks (content `images` or
 `rootdir`) on the nodes of the selected guests and prints them. A guest with a disk on a storage above
 `--max-perc-storage` is skipped (`Ko` in the table) and counts as failed. Storages the account cannot see
-are not checked. A storage that reports a size or usage of zero — for example one that is not active — counts as over the threshold. Proxmox VE versions before 6 get no storage check.
+are not checked. A storage that reports no size — not active, or not readable — cannot be checked: it shows `n/a` and does not block the snapshot. Proxmox VE versions before 6 get no storage check.
 
-Templates are always skipped. A VM without the QEMU guest agent enabled gets a warning, and its snapshot.
+Templates, guests with a bind mount or a device, and guests on an offline node are skipped — see
+[Guests that are skipped](/cv4pve-autosnap/guests/#guests-that-are-skipped). A VM without the QEMU guest
+agent enabled gets a warning, and its snapshot.
 
 ## clean
 
@@ -90,12 +92,9 @@ Lists the snapshots of the tool on the selected guests — see
 | Code | `snap` | `clean` |
 |---|---|---|
 | `0` | Every guest that was not skipped got its snapshot and its old snapshots removed | Every removal succeeded |
-| `1` | A snapshot or a removal failed, or a guest was skipped for storage space | A removal failed |
+| `1` | No guest selected, a snapshot or a removal failed, or a guest was skipped for storage space or an offline node | No guest selected, a removal failed, or a guest is on an offline node |
 
-Templates and guests skipped by `--only-running` do not change the exit code. `status` exits with `0`.
-Any error that stops the tool — connection, login, a wrong option — prints `ERROR: …` and exits with `1`.
-
-:::caution
-When `--vmid` selects no guest, `snap` prints `VMs with '…' NOT FOUND` but exits with `0`. If you
-monitor the exit code only, check the output too.
-:::
+Templates, guests skipped by `--only-running` and guests Proxmox VE cannot snapshot do not change the exit code. `status` exits with `0`.
+Any error that stops the tool — connection, login, a wrong option, a label or
+[timestamp format](/cv4pve-autosnap/retention/#the-timestamp-format) Proxmox VE would not accept — prints
+`ERROR: …` and exits with `1`.

@@ -10,13 +10,18 @@ import CliTroubleshooting from '@corsinvest/cv4pve-docs-theme/components/CliTrou
 | Message | What it means | What to do |
 |---|---|---|
 | `----- VMs with '…' NOT FOUND -----` | No guest matches `--vmid`, or the account cannot see them | Check the [selection](/cv4pve-autosnap/guests/#check-the-selection) with a dry run; check `VM.Audit` (and `Pool.Audit` for `@pool-…`) in [Permissions](/cv4pve-autosnap/permissions/) |
-| `POSSIBLE PROBLEM PERMISSION 'Datastore.Audit'` | No storage with guest disks was readable, so the storage check is skipped | Grant `Datastore.Audit` on `/storage`. It also appears after `NOT FOUND`, when there is no node to check |
+| `POSSIBLE PROBLEM PERMISSION 'Datastore.Audit'` | No storage with guest disks was readable, so the storage check is skipped | Grant `Datastore.Audit` on `/storage` |
 | `Skip VM problem storage space out of 95%` | A disk of the guest is on a storage used above `--max-perc-storage` | Free space, or raise the threshold. The storage table at the top of the output shows `Ko` next to it |
 | `VM 100 consider enabling QEMU agent …` | The QEMU guest agent is off in the VM options | Only a warning: the snapshot is taken. See [Snapshot consistency](/cv4pve-autosnap/consistency/) |
 | `Skip VM is template` | Templates cannot have snapshots | Nothing: templates are always skipped |
+| `Skip VM Proxmox VE cannot snapshot it, bind mount or device: mp0` | A mount point or disk is a host path or a device, which Proxmox VE cannot snapshot | Nothing, or move the data to a volume on a storage with snapshots. The run does not fail |
+| `Skip VM status unknown: node offline or not reachable` | The node of the guest does not answer | Bring the node back; the run exits with `1` |
 | `Skip VM '--only-running' parameter used!` | The guest is stopped and `--only-running` is set | Nothing |
 | `Error task in run... increase the timeout!` | The snapshot or removal task was still running after `--timeout` seconds | Raise `--timeout`. Proxmox VE keeps running the task, so the snapshot may appear — or be removed — anyway; the other old snapshots of that guest are left for the next run |
 | `Error in task: …` | Proxmox VE ran the task and it failed; the text is its exit status | Look at the task log in the web UI (the guest's *Task History*) |
+| `ERROR: Snapshot name '…' is not valid` / `… characters long` | The label has characters Proxmox VE refuses, or the name would be longer than 40 characters | Use letters, digits, `-` and `_`; shorten the label or the [timestamp format](/cv4pve-autosnap/retention/#the-timestamp-format) |
+| `ERROR: Timestamp format '…'` | The format writes timestamps of variable length, or does not sort in time order | See [The timestamp format](/cv4pve-autosnap/retention/#the-timestamp-format) |
+| `Script return code: N` | The hook script exited with `N` | Check the script: the snapshot went on anyway |
 | `Unrecognized command or argument '…'` | An option is in the wrong place | Global options go before the command — see [Commands](/cv4pve-autosnap/commands/) |
 
 A guest that fails does not stop the run: the others still get their snapshots, and the exit code is

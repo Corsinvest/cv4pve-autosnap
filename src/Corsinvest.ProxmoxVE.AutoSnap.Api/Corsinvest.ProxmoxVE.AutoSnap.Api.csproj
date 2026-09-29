@@ -25,6 +25,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="Corsinvest.ProxmoxVE.AutoSnap.Api.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Corsinvest.ProxmoxVE.Api.Extension" />
 	</ItemGroup>
 </Project>
