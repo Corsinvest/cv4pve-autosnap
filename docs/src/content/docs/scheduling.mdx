@@ -1,0 +1,89 @@
+---
+title: Scheduling
+description: Run cv4pve-autosnap every hour, day or week with cron on Linux or the Task Scheduler on Windows.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+cv4pve-autosnap takes one snapshot per guest each time it runs and has no scheduler of its own: the
+schedule is the one of your system. Run it from a machine outside the cluster that is always on — a
+management VM, a server of the monitoring — so the snapshots do not depend on a single node.
+
+## Put the connection in a parameter file
+
+The token should not be visible in the crontab or in the list of processes. Write the connection options
+in a file, one per line, readable only by the account that runs the job:
+
+```bash title="/etc/cv4pve/autosnap.conf"
+--host=pve1.local,pve2.local
+--api-token=autosnap@pve!snap=SECRET
+--vmid=@tag-snapshot
+```
+
+```bash
+chmod 600 /etc/cv4pve/autosnap.conf
+```
+
+and pass it with `@`, followed by the command:
+
+```bash
+cv4pve-autosnap @/etc/cv4pve/autosnap.conf snap --label=daily --keep=7
+```
+
+In a file the value needs no quotes. Global options such as `--max-parallel` can go in the file too.
+
+## Schedules
+
+<Tabs>
+  <TabItem label="Linux (cron)">
+
+```bash title="/etc/cron.d/cv4pve-autosnap"
+# every 2 hours, keep one day
+0 */2 * * *  cv4pve  /usr/local/bin/cv4pve-autosnap @/etc/cv4pve/autosnap.conf snap --label=2hourly --keep=12 >> /var/log/cv4pve-autosnap.log 2>&1
+# every night at 01:30, keep one week
+30 1 * * *   cv4pve  /usr/local/bin/cv4pve-autosnap @/etc/cv4pve/autosnap.conf snap --label=daily --keep=7 >> /var/log/cv4pve-autosnap.log 2>&1
+# Sunday at 03:15, keep one month
+15 3 * * 0   cv4pve  /usr/local/bin/cv4pve-autosnap @/etc/cv4pve/autosnap.conf snap --label=weekly --keep=4 >> /var/log/cv4pve-autosnap.log 2>&1
+```
+
+Files in `/etc/cron.d` take the user as sixth field; here a dedicated `cv4pve` account that can read
+the parameter file.
+
+  </TabItem>
+  <TabItem label="Windows (Task Scheduler)">
+
+```powershell
+schtasks /Create /TN "cv4pve-autosnap daily" /SC DAILY /ST 01:30 /RU SYSTEM `
+  /TR "C:\cv4pve\cv4pve-autosnap.exe @C:\cv4pve\autosnap.conf snap --label=daily --keep=7"
+```
+
+Protect `C:\cv4pve\autosnap.conf` so that only the account of the task can read it. To keep the output,
+run the command through `cmd /c "… >> C:\cv4pve\autosnap.log 2>&1"`.
+
+  </TabItem>
+</Tabs>
+
+## Keep the schedules apart
+
+Proxmox VE locks a guest while it takes one of its snapshots: a second snapshot of the same guest at the
+same moment fails. Start the jobs of different labels at different minutes — in the example the daily job
+runs at 01:30 and the weekly at 03:15, never on the hour of the 2-hourly job — and leave each job the
+time to finish before the next one.
+
+## Before an upgrade
+
+The same command works by hand, right before a risky change, with a label of its own:
+
+```bash
+cv4pve-autosnap @/etc/cv4pve/connection.conf --vmid=1010 snap --label=preupgrade --keep=3
+```
+
+An option can be given only once: if the parameter file already holds `--vmid`, a second one on the
+command line stops the tool with `Option '--vmid' expects a single argument but 2 were provided`. Keep a
+file with only the connection (`--host`, `--api-token`) for runs like this one.
+
+## Watch the result
+
+The exit code is `1` when a guest did not get its snapshot or its old ones were not removed: let your
+scheduler or monitoring alert on it. For more than the exit code — a message to a chat, metrics to
+Prometheus — use a [hook script](/cv4pve-autosnap/hooks/).

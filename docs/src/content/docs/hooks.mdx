@@ -1,0 +1,116 @@
+---
+title: Hook scripts
+description: Run your own script at every phase of a snapshot job — before and after each snapshot and removal — with the details in environment variables.
+---
+
+A hook script lets you act around the snapshots without wrapping the tool: notify a chat when a snapshot
+fails, push the duration to your monitoring, pause a service before its snapshot. cv4pve-autosnap calls
+the script at each phase of `snap` and `clean` and tells it what is happening through environment
+variables.
+
+```bash
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all snap --label=daily --keep=7 --script=/opt/cv4pve/hook.sh
+```
+
+`--script` is an option of `snap` and `clean`, so it goes after the command. The file must exist, or the
+tool stops before connecting.
+
+## Phases
+
+The script is called once per phase, with the phase in `CV4PVE_AUTOSNAP_PHASE`.
+
+| Phase | When |
+|---|---|
+| `snap-job-start` | `snap` starts, before any guest |
+| `snap-create-pre` | Before the snapshot of a guest |
+| `snap-create-post` | The snapshot of a guest was created **and** its old snapshots were removed |
+| `snap-create-abort` | The snapshot of a guest failed |
+| `snap-remove-pre` | Before an old snapshot is removed |
+| `snap-remove-post` | An old snapshot was removed |
+| `snap-remove-abort` | The removal of an old snapshot failed |
+| `snap-job-end` | `snap` has finished with every guest |
+| `clean-job-start` | `clean` starts |
+| `clean-job-end` | `clean` has finished |
+
+For one guest, `snap` calls them in this order:
+
+```
+snap-create-pre
+   snap-remove-pre → snap-remove-post        once for each old snapshot to remove
+snap-create-post
+```
+
+If the snapshot fails, `snap-create-abort` replaces the rest. If a removal fails, `snap-remove-abort` is
+the last phase of that guest: there is no `snap-create-post`. Skipped guests — templates, stopped with
+`--only-running`, on a full storage — get no phase at all. `clean` calls the `snap-remove-*` phases for
+each snapshot it removes, between `clean-job-start` and `clean-job-end`.
+
+## Variables
+
+| Variable | Content |
+|---|---|
+| `CV4PVE_AUTOSNAP_PHASE` | The phase, from the table above |
+| `CV4PVE_AUTOSNAP_VMID` | ID of the guest. Empty in the `*-job-*` phases |
+| `CV4PVE_AUTOSNAP_VMNAME` | Name of the guest. Empty in the `*-job-*` phases |
+| `CV4PVE_AUTOSNAP_VMTYPE` | `qemu` or `lxc`. Empty in the `*-job-*` phases |
+| `CV4PVE_AUTOSNAP_LABEL` | `--label` |
+| `CV4PVE_AUTOSNAP_KEEP` | `--keep` |
+| `CV4PVE_AUTOSNAP_SNAP_NAME` | The snapshot being created or removed. Empty in the `*-job-*` phases |
+| `CV4PVE_AUTOSNAP_VMSTATE` | `1` when the snapshot includes the RAM (`--state`), else `0`. Always `0` in the removal and `clean` phases |
+| `CV4PVE_AUTOSNAP_DURATION` | Seconds taken, with a `.` as decimal separator: of the guest in `snap-create-post`/`-abort`, of the removal in `snap-remove-post`/`-abort`, of the whole job in `*-job-end`. `0` in the other phases |
+| `CV4PVE_AUTOSNAP_STATE` | `1` for success, `0` for failure. In `snap-job-end` and `clean-job-end`, `1` only if every guest succeeded |
+| `CV4PVE_AUTOSNAP_DEBUG` | `1` with `--debug` |
+| `CV4PVE_AUTOSNAP_DRY_RUN` | Meant to be `1` with `--dry-run`; since a dry run does not run the script, a script always reads `0` |
+
+:::note
+`CV4PVE_AUTOSNAP_STATE` is the result of the phase; `CV4PVE_AUTOSNAP_VMSTATE` tells whether the RAM is
+included. The pre phases carry `STATE=1` in `snap`, `0` in removals: read the result only in the post,
+abort and job-end phases.
+:::
+
+## How the script is run
+
+- **Linux and macOS**: through `/bin/bash -c`, so the file must be executable (`chmod +x`); its first line
+  (`#!/bin/bash`, `#!/usr/bin/python3`, …) chooses the interpreter. Avoid spaces in its path: the path is
+  not quoted for bash.
+- **Windows**: the file is started directly: a `.bat`, `.cmd` or `.exe`. A PowerShell script needs a
+  `.bat` that calls it — see `wrapper-powershell.bat` below.
+- It runs on the machine of cv4pve-autosnap, not on the nodes or in the guests.
+- The tool waits for the script to finish, then prints what it wrote to its standard output.
+- **The exit code of the script is ignored**: a hook cannot stop a snapshot or a removal. Use it to react,
+  not to decide.
+- With `--dry-run` the script is **not** run. Add `--debug` to see, for each phase, the variables it
+  would receive and the command.
+- With `--max-parallel` above 1, the scripts of different guests can run at the same time.
+
+## Ready-made scripts
+
+The [hooks](https://github.com/Corsinvest/cv4pve-autosnap/tree/master/hooks) folder of the repository has:
+
+| File | What it is |
+|---|---|
+| [`template.sh`](https://github.com/Corsinvest/cv4pve-autosnap/blob/master/hooks/template.sh) | Bash skeleton: prints every variable and has an empty branch for each phase |
+| [`template.ps1`](https://github.com/Corsinvest/cv4pve-autosnap/blob/master/hooks/template.ps1) | The same in PowerShell |
+| [`template.bat`](https://github.com/Corsinvest/cv4pve-autosnap/blob/master/hooks/template.bat) | The same as a Windows batch file |
+| [`wrapper-powershell.bat`](https://github.com/Corsinvest/cv4pve-autosnap/blob/master/hooks/wrapper-powershell.bat) | Runs `template.ps1` from the same folder: pass this file to `--script` |
+| [`send-metrics.sh`](https://github.com/Corsinvest/cv4pve-autosnap/blob/master/hooks/send-metrics.sh) | Sends metrics at `snap-create-post` and `clean-job-end` to a Prometheus Pushgateway, InfluxDB, Grafana Loki or any JSON endpoint |
+
+`send-metrics.sh` is configured with environment variables: `METRICS_ENDPOINT` (default
+`http://localhost:9091/metrics/job/cv4pve-autosnap`), `METRICS_TYPE` (`prometheus`, `influxdb`, `json`,
+`grafana` or `loki`) and, for basic authentication, `METRICS_USERNAME` and `METRICS_PASSWORD`. It needs
+`curl` or `wget`.
+
+## Example: alert on failure
+
+```bash title="/opt/cv4pve/hook.sh"
+#!/bin/bash
+case "$CV4PVE_AUTOSNAP_PHASE" in
+    snap-create-abort|snap-remove-abort)
+        # replace with your notification: mail, chat webhook, monitoring
+        logger -t cv4pve-autosnap "FAILED $CV4PVE_AUTOSNAP_PHASE on $CV4PVE_AUTOSNAP_VMID ($CV4PVE_AUTOSNAP_VMNAME): $CV4PVE_AUTOSNAP_SNAP_NAME"
+        ;;
+esac
+```
+
+In [cv4pve-admin](https://corsinvest.github.io/cv4pve-admin/modules/autosnap-webhook/) the same phases
+can call HTTP webhooks, configured from the web interface.

@@ -1,0 +1,51 @@
+---
+title: Permissions
+description: The Proxmox VE user, API token and the four privileges cv4pve-autosnap needs — and why VM.Snapshot is more than it seems.
+---
+
+cv4pve-autosnap works through the API, so it can snapshot exactly the guests its account is allowed to
+see. Use a dedicated user with an API token rather than `root@pam`.
+
+## User and token
+
+Create a [user](https://pve.proxmox.com/pve-docs/chapter-pveum.html#pveum_users) or an [API token](https://pve.proxmox.com/pve-docs/chapter-pveum.html#pveum_tokens) and [assign it](https://pve.proxmox.com/pve-docs/chapter-pveum.html#pveum_permission_management) the privileges below, on `/`.
+
+:::caution[Tokens with privilege separation]
+A token with privilege separation (the default in the web UI) does **not** inherit the user's
+permissions: grant the role to the token too, or cv4pve-autosnap finds no guests and prints
+`VMs with '…' NOT FOUND`.
+:::
+
+## Privileges
+
+| Privilege | On | Used for | Without it |
+|---|---|---|---|
+| `VM.Audit` | `/vms` | Listing the guests, reading their configuration and snapshots | The guest is not selected: `VMs with '…' NOT FOUND` |
+| `VM.Snapshot` | `/vms` | Creating and removing snapshots | The task fails: `snap` and `clean` exit with `1` |
+| `Datastore.Audit` | `/storage` | Storage usage for `--max-perc-storage` | The storage check is skipped and snapshots are taken anyway, with `POSSIBLE PROBLEM PERMISSION 'Datastore.Audit'` |
+| `Pool.Audit` | `/pool` | Resolving `--vmid=@pool-…` | The pool selects no guests: `VMs with '…' NOT FOUND` |
+
+`Pool.Audit` is needed only to select guests by pool. On Proxmox VE 8 and earlier the pool list required
+`Pool.Allocate` instead ([#122](https://github.com/Corsinvest/cv4pve-autosnap/issues/122)). Snapshots with
+the RAM (`--state`) need no other privilege.
+
+To limit the tool to some guests, grant `VM.Audit` and `VM.Snapshot` on those guests or on a pool
+(`/pool/<name>`) instead of `/vms`.
+
+:::caution[VM.Snapshot also allows rollback]
+Proxmox VE lets `VM.Snapshot` roll a guest back to any of its snapshots, not only create and remove them.
+cv4pve-autosnap never rolls back, but whoever holds its token can: protect the token like the password of
+an administrator.
+:::
+
+## How missing privileges are reported
+
+Proxmox VE answers a request the caller is only partly entitled to by *filtering the response*, not
+by failing it. `/cluster/resources` drops the guests and storages you cannot audit, and the pool list
+drops the pools. Both return `200 OK`, so a filtered result looks exactly like an empty one — a guest
+missing `VM.Audit` simply is not selected.
+
+That is why cv4pve-autosnap cannot tell a wrong `--vmid` from a missing privilege: when nothing is found
+it prints `VMs with '…' NOT FOUND` followed by the privileges that may be missing. With
+`VM.Snapshot` missing, instead, the request fails outright and the error of Proxmox VE is printed for that
+guest. See [Troubleshooting](/cv4pve-autosnap/troubleshooting/).
