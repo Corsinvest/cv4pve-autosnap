@@ -1,0 +1,145 @@
+---
+title: Labels and retention
+description: How cv4pve-autosnap names its snapshots, recognises them, keeps the last ones of each label and removes the rest.
+---
+
+## Labels
+
+A label is the name of a schedule: `hourly`, `daily`, `weekly`, `before-upgrade` — any name you choose.
+Every snapshot belongs to one label, and each label keeps its own number of snapshots per guest:
+
+```bash
+cv4pve-autosnap … --vmid=@all snap --label=hourly --keep=24   # every hour, one day back
+cv4pve-autosnap … --vmid=@all snap --label=daily  --keep=7    # every night, one week back
+cv4pve-autosnap … --vmid=@all snap --label=weekly --keep=4    # every Sunday, one month back
+```
+
+A `snap --label=daily` never removes an `hourly` snapshot: the labels are counted separately.
+
+## Snapshot names
+
+A snapshot is named `auto` + label + timestamp:
+
+```
+autodaily260929020000
+│   │    └── 26-09-29 02:00:00, in the format of --timestamp-format (default yyMMddHHmmss)
+│   └─────── label
+└─────────── prefix of every snapshot of the tool
+```
+
+- The timestamp is the **local time of the machine running the tool**, taken once per run: every guest of
+  the same run gets the same name.
+- Proxmox VE accepts snapshot names of up to 40 characters. With the default timestamp that leaves 24
+  characters for the label. Use letters, digits, `-` and `_`.
+- The description of the snapshot is set to `cv4pve-autosnap`.
+
+## The timestamp format
+
+`--timestamp-format` sets how the timestamp is written in the name. The default, `yyMMddHHmmss`, gives
+two digits each for year, month, day, hour, minute and second: `260929020000` is 29 September 2026 at
+02:00:00. It is a global option, so it goes before the command, and it is written as a
+[.NET custom date format](https://learn.microsoft.com/dotnet/standard/base-types/custom-date-and-time-format-strings).
+
+The tool uses the format twice: to **write** the name of a new snapshot, and to **read back** the names
+of the existing ones — it cuts from the end of the name as many characters as the format string has, and
+what is left must be `auto` + the label. That is why the format has rules:
+
+| Rule | Why | Wrong | Right |
+|---|---|---|---|
+| Largest unit first: year, month, day, hour, minute, second | Retention sorts the names alphabetically to find the oldest | `ddMMyyHHmm` | `yyMMddHHmm` |
+| Fixed-width specifiers only: `yyyy`, `yy`, `MM`, `dd`, `HH`, `mm`, `ss` | The written timestamp must be as long as the format string | `yyMMddH` (the hour is written `9` or `10`) | `yyMMddHH` |
+| Separators only `-` or `_`, without quotes | Proxmox VE accepts only letters, digits, `-` and `_` in the name; quoted text is shorter once written | `yyMMdd HH:mm`, `yyMMdd'T'HHmm` | `yyMMdd-HHmm`, `yyyyMMdd_HHmm` |
+| `HH`, not `hh` | `hh` is the 12-hour clock: 01 PM sorts before 11 AM | `yyMMddhhmm` | `yyMMddHHmm` |
+| Precise enough for the schedule | Two snapshots of a guest with the same name: the second fails | `yyMMdd` with an hourly job | `yyMMddHH` or finer |
+
+A shorter format leaves more characters for the label: `yyMMddHHmm` (10 characters) allows labels up to
+26 characters.
+
+```bash
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=1000 --timestamp-format=yyyyMMdd-HHmm snap --label=daily --keep=7
+# Create snapshot: autodaily20260929-0200
+```
+
+:::caution[Choose it once]
+Pass the same `--timestamp-format` to `snap`, `clean` and `status` of a label, and do not change it
+later: snapshots written with another format have names of another length, so the tool no longer
+recognises them — it does not count them for `--keep` and never removes them. After a change, remove the
+old ones from the web UI.
+:::
+
+The time is local: when the clocks go back at the end of daylight saving time, an hour repeats, and a
+snapshot taken in the repeated hour can sort before one taken earlier. Keep frequent schedules out
+of that hour, or accept that one retention round may remove the newer snapshot of the two.
+
+## How a snapshot is recognised
+
+cv4pve-autosnap counts and removes only the snapshots that match **both**:
+
+- the description is exactly `cv4pve-autosnap`;
+- the name is `auto` + the label + as many characters as the [timestamp format](#the-timestamp-format).
+
+Everything else is left alone: snapshots taken by hand, by other tools, or by cv4pve-autosnap with
+another label. This has two consequences:
+
+- If you edit the description of one of its snapshots in the web UI, the tool no longer sees it and will
+  never remove it.
+- If you change `--timestamp-format`, snapshots taken with the old format are no longer counted — see
+  [The timestamp format](#the-timestamp-format).
+
+## How retention works
+
+After the snapshot of a guest is created, the tool lists the snapshots of that guest with the same label,
+sorts them **by name**, keeps the last `--keep` — the new one included — and removes the others, oldest
+first. It then moves to the next guest.
+
+- Retention is **per guest and per label**: `--keep=7` means seven snapshots of each guest.
+- It happens only after a successful snapshot. If the snapshot fails, or the guest is skipped, its old
+  snapshots stay — the tool never leaves a guest with fewer snapshots because of a failed run.
+- The snapshots are sorted by name, so the [timestamp format](#the-timestamp-format) must sort in time
+  order, as the default does.
+- A removal is sent with `force`: if Proxmox VE cannot delete a disk snapshot, the snapshot is still
+  removed from the guest configuration.
+
+`--keep` goes from 1 to 100 for `snap`.
+
+## The `clean` command
+
+`clean` applies the retention without taking a new snapshot:
+
+```bash
+# keep only the last 3 "hourly" snapshots of every guest
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all clean --label=hourly --keep=3
+```
+
+Use it after lowering `--keep` of a schedule, or to clean up guests that left the selection.
+
+### Removing all snapshots of a label
+
+`clean` accepts `--keep=0`, which removes every snapshot of that label from the selected guests:
+
+```bash
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all clean --label=hourly --keep=0
+```
+
+Run it with [`--dry-run`](/cv4pve-autosnap/getting-started/#try-it-first) first to see the list.
+
+## The `status` command
+
+`status` lists the snapshots of the tool on the selected guests, sorted by guest and time. With `--label`
+it shows only that label; without it, every label.
+
+```bash
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all status --label=daily
+```
+
+| Column | Content |
+|---|---|
+| `NODE`, `VM` | Where the guest is |
+| `TIME` | When Proxmox VE took the snapshot, in **UTC** |
+| `PARENT` | The snapshot before it; `no-parent` for the first |
+| `NAME` | Name of the snapshot |
+| `DESCRIPTION` | Always `cv4pve-autosnap` |
+| `VM STATUS` | `X` when the snapshot includes the RAM (`--state`) |
+
+`--output` prints the same table as `Text` (default), `Html`, `Markdown`, `Json` or `JsonPretty`, for
+scripts and reports.

@@ -1,0 +1,20 @@
+name: Docs
+
+on:
+  push:
+    branches: [ "master" ]
+    paths: [ "docs/**", ".github/workflows/docs.yml" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  docs:
+    uses: Corsinvest/.github/.github/workflows/cv4pve-tools-docs.yml@main

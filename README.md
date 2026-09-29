@@ -1,4 +1,4 @@
-# cv4pve-autosnap
+# <img src="icon.png" alt="" height="36" align="top"> cv4pve-autosnap
 
 ```
      ______                _                      __
@@ -17,227 +17,99 @@ Automatic Snapshot Tool for Proxmox VE (Made in Italy)
 [![WinGet](https://img.shields.io/winget/v/Corsinvest.cv4pve.autosnap?style=flat-square&logo=windows)](https://winstall.app/apps/Corsinvest.cv4pve.autosnap)
 [![AUR](https://img.shields.io/aur/version/cv4pve-autosnap?style=flat-square&logo=archlinux)](https://aur.archlinux.org/packages/cv4pve-autosnap)
 
-> **Automatic snapshot management for Proxmox VE** — create, retain and clean snapshots of VM/CT with a single command.
+> **Automatic snapshots of Proxmox VE VMs and containers, with retention** — one command takes a snapshot of the guests you choose and removes the oldest ones, so every label keeps exactly the number you set.
+>
+> **[Documentation](https://corsinvest.github.io/cv4pve-autosnap/)**
+>
+> Prefer a web interface with schedules, run history and webhooks? cv4pve-autosnap also runs inside [cv4pve-admin](https://github.com/Corsinvest/cv4pve-admin), as its [AutoSnap](https://corsinvest.github.io/cv4pve-admin/modules/autosnap/) module.
 
 ---
 
-## Quick Start
+## Why
 
-```bash
-wget https://github.com/Corsinvest/cv4pve-autosnap/releases/download/VERSION/cv4pve-autosnap-linux-x64.zip
-unzip cv4pve-autosnap-linux-x64.zip
-./cv4pve-autosnap --host=YOUR_HOST --api-token=user@realm!token=uuid --vmid=100 snap --label=daily --keep=7
+A snapshot is the quickest way back after a broken upgrade or a bad change inside a guest. Proxmox VE takes one in a click — but only when someone remembers to click, and it never removes the old ones.
+
+cv4pve-autosnap takes the snapshot of every guest you select and removes the oldest ones of the same label: *every two hours, keep 10* stays at ten snapshots per guest. Run it from cron or the Task Scheduler, or right before an upgrade.
+
+It **runs outside the nodes and uses only the Proxmox VE API**: nothing to install on the cluster, no SSH, no root shell.
+
+> **A snapshot is not a backup.** It lives on the same storage as the disk: if the storage is lost, so are its snapshots. Keep your [Proxmox VE backups](https://pve.proxmox.com/wiki/Backup_and_Restore).
+
+---
+
+## What it looks like
+
 ```
-
----
-
-## Installation
-
-| Platform           | Command                                                                                                             |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| **Linux**          | `wget .../cv4pve-autosnap-linux-x64.zip && unzip cv4pve-autosnap-linux-x64.zip && chmod +x cv4pve-autosnap`        |
-| **Windows WinGet** | `winget install Corsinvest.cv4pve.autosnap`                                                                         |
-| **Windows manual** | Download `cv4pve-autosnap-win-x64.zip` from [Releases](https://github.com/Corsinvest/cv4pve-autosnap/releases)     |
-| **Arch Linux**     | `yay -S cv4pve-autosnap`                                                                                            |
-| **Debian/Ubuntu**  | `sudo dpkg -i cv4pve-autosnap-VERSION-ARCH.deb`                                                                     |
-| **RHEL/Fedora**    | `sudo rpm -i cv4pve-autosnap-VERSION-ARCH.rpm`                                                                      |
-| **macOS**          | Homebrew: `brew tap Corsinvest/homebrew-tap && brew install cv4pve-autosnap` ([tap repo](https://github.com/Corsinvest/homebrew-tap))<br/>Manual: `wget .../cv4pve-autosnap-osx-x64.zip && unzip cv4pve-autosnap-osx-x64.zip && chmod +x cv4pve-autosnap` |
-
-All binaries on the [Releases page](https://github.com/Corsinvest/cv4pve-autosnap/releases).
+$ cv4pve-autosnap --host=pve01 --api-token='autosnap@pve!snap=…' --vmid=@all status
++-------+------+-------------------+-------------------------+-------------------------+-----------------+-----------+
+| NODE  | VM   | TIME              | PARENT                  | NAME                    | DESCRIPTION     | VM STATUS |
++-------+------+-------------------+-------------------------+-------------------------+-----------------+-----------+
+| pve01 | 105  | 26/09/28 05:00:02 | before-upgrade          | auto2hourly260928070002 | cv4pve-autosnap |           |
+| pve01 | 105  | 26/09/28 07:00:04 | auto2hourly260928070002 | auto2hourly260928090004 | cv4pve-autosnap |           |
+| pve01 | 1000 | 26/09/28 05:00:03 | no-parent               | auto2hourly260928070002 | cv4pve-autosnap |           |
+| pve02 | 203  | 26/09/28 05:00:57 | no-parent               | auto2hourly260928070002 | cv4pve-autosnap |           |
++-------+------+-------------------+-------------------------+-------------------------+-----------------+-----------+
+```
 
 ---
 
 ## Features
 
-- **Self-contained binary** — no runtime to install, copy and run
-- **Cross-platform** — Windows, Linux, macOS
-- **API-based** — no root or SSH access required
-- **Cluster-aware** — works across all nodes automatically
-- **High availability** — multiple host support for automatic failover
-- **Flexible targeting** — select VMs by ID, name, pool, tag, node or pattern ([see VM/CT Selection](#vmct-selection))
-- **Retention policies** — configurable keep count per label
-- **Multiple schedules** — use labels (hourly, daily, weekly, monthly) ([see Scheduling](#scheduling-with-cron))
-- **Memory state** — optional RAM state preservation with `--state`
-- **Hook scripts** — custom automation before/after each phase ([see Hook Scripts](#hook-scripts))
-- **Storage monitoring** — skip snapshot if storage above threshold
-- **QEMU Guest Agent** — warns if not enabled on a VM; recommended for consistent snapshots ([setup guide](docs/snapshot-consistency.md))
-- **Parallel execution** — snapshot multiple VMs concurrently with `--max-parallel` ([see Performance](#performance))
-- **API token** support (Proxmox VE 6.2+)
-- **Dry-run** mode — test without making changes
+- **Retention per label** — `hourly`, `daily`, `weekly` or any name: each label keeps its own number of snapshots per guest.
+- **Choose the guests** — by ID, name, range, node, pool or tag, with exclusions; resolved at every run, so migrated guests keep their snapshots.
+- **Storage guard** — a guest is skipped when a storage holding its disks is used above 95% (or your threshold).
+- **Hook scripts** — your script runs at every phase, with guest, label and result in environment variables; ready-made templates and a metrics sender in [hooks/](hooks/).
+- **Consistent snapshots** — optional RAM state with `--state`; warns when a VM has the QEMU guest agent off.
+- **Parallel** — several guests at the same time with `--max-parallel`.
+- **Dry run** — `--dry-run` shows what would be created and removed.
+- **Keeps running with a node down** — give it more than one host and it uses the first that answers.
 
 ---
 
-<details>
-<summary><strong>Security &amp; Permissions</strong></summary>
-
-### Required Permissions
-
-| Permission          | Purpose                            | Scope            |
-| ------------------- | ---------------------------------- | ---------------- |
-| **VM.Audit**        | Read VM/CT configuration and status | Virtual machines |
-| **VM.Snapshot**     | Create and delete snapshots        | Virtual machines |
-| **Datastore.Audit** | Check storage capacity             | Storage systems  |
-| **Pool.Audit** *(PVE 9+)* / **Pool.Allocate** *(PVE 8 and earlier)* | Read pool membership (needed for `--vmid=@pool-*`) | Resource pools |
-
-> **Pool selection (`--vmid=@pool-*`)** resolves the pool via `GET /pools`. On **Proxmox VE 9+** that endpoint requires the read-only **`Pool.Audit`** privilege; on **PVE 8 and earlier** it accepted **`Pool.Allocate`**. If pool targeting returns *"VMs NOT FOUND"* on PVE 9, grant `Pool.Audit` to the token/role. See the [Proxmox VE User Management docs](https://pve.proxmox.com/wiki/User_Management).
-
-</details>
-
----
-
-## Usage
+## Quick start
 
 ```bash
-# Create snapshots with retention
-cv4pve-autosnap --host=pve.local --api-token=user@realm!token=uuid --vmid=100 snap --label=daily --keep=7
+# Windows
+winget install Corsinvest.cv4pve.autosnap
 
-# Clean old snapshots
-cv4pve-autosnap --host=pve.local --api-token=user@realm!token=uuid --vmid=100 clean --label=daily --keep=7
+# Linux (other platforms and packages: see the documentation)
+wget https://github.com/Corsinvest/cv4pve-autosnap/releases/latest/download/cv4pve-autosnap-linux-x64.zip
+unzip cv4pve-autosnap-linux-x64.zip && chmod +x cv4pve-autosnap
 
-# View snapshot status
-cv4pve-autosnap --host=pve.local --api-token=user@realm!token=uuid --vmid=100 status
-
-# Dry-run (no changes)
-cv4pve-autosnap --host=pve.local --api-token=user@realm!token=uuid --vmid=100 --dry-run snap --label=daily --keep=7
-
-# Parallel snapshots (up to 5 VMs at once)
-cv4pve-autosnap --host=pve.local --api-token=user@realm!token=uuid --vmid=@all snap --label=daily --keep=7 --max-parallel 5
-
-# Parameter file (recommended for complex setups)
-cv4pve-autosnap @/etc/cv4pve/production.conf snap --label=daily --keep=14
+# See what would happen, then take the snapshots
+./cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=UUID' --vmid=@all --dry-run snap --label=daily --keep=7
+./cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=UUID' --vmid=@all snap --label=daily --keep=7
 ```
+
+Global options (`--host`, `--vmid`, `--max-parallel`, …) go **before** the command, command options after it. The API token needs the four privileges listed in [Permissions](https://corsinvest.github.io/cv4pve-autosnap/permissions/).
 
 ---
 
-## Performance
+## Documentation
 
-By default snapshots are processed **sequentially** (`--max-parallel 1`). On large clusters with VMs spread across multiple nodes or using ZFS/Ceph storage, parallel execution significantly reduces total run time.
-
-```bash
-# Run up to 5 snapshots in parallel
-cv4pve-autosnap --host=pve.local --api-token=token --vmid=@all snap --label=daily --keep=7 --max-parallel 5
-```
-
-| Setting | Effect | Default |
-|---------|--------|---------|
-| `--max-parallel 1` | Sequential — one VM at a time | default |
-| `--max-parallel N` | Up to N VMs snapshotted concurrently | — |
-
-> **Tip:** values between 3 and 10 are a reasonable range. ZFS and Ceph handle parallel snapshots very well.
->
-> **Warning:** if multiple VMs share the same storage backend, parallel snapshots compete for the same I/O — this can slow down or destabilize the storage. On shared or slow storage (NFS, iSCSI, LVM) keep `--max-parallel` low (2–3) or leave it at the default of 1. On distributed storage (Ceph/RBD) or per-VM storage (ZFS datasets) higher values are safe.
+| | |
+|---|---|
+| [Getting started](https://corsinvest.github.io/cv4pve-autosnap/getting-started/) | Install, connect, first run |
+| [Permissions](https://corsinvest.github.io/cv4pve-autosnap/permissions/) | Creating the user and API token, required privileges |
+| [Choosing guests](https://corsinvest.github.io/cv4pve-autosnap/guests/) | IDs, names, pools, tags, nodes, exclusions |
+| [Labels and retention](https://corsinvest.github.io/cv4pve-autosnap/retention/) | Snapshot names, `--keep`, `clean`, `status` |
+| [Scheduling](https://corsinvest.github.io/cv4pve-autosnap/scheduling/) | cron, Task Scheduler, parameter files |
+| [Snapshot consistency](https://corsinvest.github.io/cv4pve-autosnap/consistency/) | `--state`, QEMU guest agent, fsfreeze hooks for databases |
+| [Hook scripts](https://corsinvest.github.io/cv4pve-autosnap/hooks/) | Phases, variables, ready-made scripts |
+| [Commands](https://corsinvest.github.io/cv4pve-autosnap/commands/) | Every option, defaults, exit codes |
+| [Troubleshooting](https://corsinvest.github.io/cv4pve-autosnap/troubleshooting/) | What the messages mean, debug output |
 
 ---
 
-## VM/CT Selection
+## Related tools
 
-The `--vmid` parameter supports powerful pattern matching:
-
-| Pattern              | Example                        | Description                      |
-| -------------------- | ------------------------------ | -------------------------------- |
-| Single ID            | `--vmid=100`                   | Specific VM/CT by ID             |
-| Single name          | `--vmid=web-server`            | Specific VM/CT by name           |
-| Multiple             | `--vmid=100,101,web-server`    | Comma-separated list             |
-| Range                | `--vmid=100:110`               | Range of IDs (inclusive)         |
-| Wildcard             | `--vmid=%web%`                 | Contains pattern                 |
-| All VMs              | `--vmid=@all`                  | All VMs in cluster               |
-| Pool                 | `--vmid=@pool-production`      | All VMs in specific pool         |
-| Tag                  | `--vmid=@tag-backup`           | All VMs with specific tag        |
-| Node                 | `--vmid=@node-pve1`            | All VMs on specific node         |
-| Exclusion            | `--vmid=@all,-100,-test-vm`    | Exclude specific VMs             |
-| Tag exclusion        | `--vmid=@all,-@tag-test`       | Exclude VMs with tag             |
-
----
-
-## Scheduling with Cron
-
-```bash
-# Daily snapshot at 2 AM (keep 7 days)
-0 2 * * * /usr/local/bin/cv4pve-autosnap --host=pve.local --api-token=backup@pve!daily=uuid --vmid=@tag-production snap --label=daily --keep=7
-
-# Weekly snapshot on Sunday at 3 AM (keep 4 weeks)
-0 3 * * 0 /usr/local/bin/cv4pve-autosnap --host=pve.local --api-token=backup@pve!weekly=uuid --vmid=@all snap --label=weekly --keep=4
-
-# Monthly cleanup on 1st at 4 AM
-0 4 1 * * /usr/local/bin/cv4pve-autosnap --host=pve.local --api-token=backup@pve!clean=uuid --vmid=@all clean --label=monthly --keep=12
-```
-
----
-
-## Hook Scripts
-
-Hook scripts receive environment variables for custom automation:
-
-```bash
-CV4PVE_AUTOSNAP_PHASE        # snap-create-pre, snap-create-post, snap-remove-pre, snap-remove-post, ...
-CV4PVE_AUTOSNAP_VMID         # VM/CT ID
-CV4PVE_AUTOSNAP_VMNAME       # VM/CT name
-CV4PVE_AUTOSNAP_VMTYPE       # qemu or lxc
-CV4PVE_AUTOSNAP_LABEL        # Snapshot label
-CV4PVE_AUTOSNAP_KEEP         # Retention count
-CV4PVE_AUTOSNAP_SNAP_NAME    # Snapshot name
-CV4PVE_AUTOSNAP_VMSTATE      # Memory state included (1/0)
-CV4PVE_AUTOSNAP_DURATION     # Operation duration in seconds
-CV4PVE_AUTOSNAP_STATE        # Operation status (1/0)
-CV4PVE_AUTOSNAP_DEBUG        # Debug mode (1/0)
-CV4PVE_AUTOSNAP_DRY_RUN      # Dry-run mode (1/0)
-```
-
-<details>
-<summary><strong>Available phases</strong></summary>
-
-| Phase                | Description                            |
-| -------------------- | -------------------------------------- |
-| `snap-job-start`     | Before the entire snap job starts      |
-| `snap-job-end`       | After the entire snap job ends         |
-| `snap-create-pre`    | Before creating a snapshot for a VM    |
-| `snap-create-post`   | After creating a snapshot for a VM     |
-| `snap-create-abort`  | When snapshot creation fails           |
-| `snap-remove-pre`    | Before removing an old snapshot        |
-| `snap-remove-post`   | After removing an old snapshot         |
-| `snap-remove-abort`  | When snapshot removal fails            |
-| `clean-job-start`    | Before the entire clean job starts     |
-| `clean-job-end`      | After the entire clean job ends        |
-
-</details>
-
-#### Example Hook Script
-
-```bash
-#!/bin/bash
-case $CV4PVE_AUTOSNAP_PHASE in
-    "snap-create-pre")
-        echo "Starting snapshot for VM $CV4PVE_AUTOSNAP_VMID"
-        ;;
-    "snap-create-post")
-        echo "Completed snapshot $CV4PVE_AUTOSNAP_SNAP_NAME"
-        ;;
-esac
-```
-
-#### Using Hook Scripts
-
-```bash
-cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 snap --label=daily --keep=7 --script-hook=/opt/scripts/hook.sh
-```
-
-Ready-to-use templates (Bash, PowerShell, Windows Batch) are available in the [hooks/](hooks/) folder.
-
-> For snapshot consistency with running databases (MySQL, PostgreSQL) and QEMU Guest Agent setup, see [docs/snapshot-consistency.md](docs/snapshot-consistency.md).
-
----
-
-## Resources
-
-[![cv4pve-autosnap Tutorial](http://img.youtube.com/vi/kM5KhD9seT4/maxresdefault.jpg)](https://www.youtube.com/watch?v=kM5KhD9seT4)
-
-**Web GUI version:** [cv4pve-admin](https://github.com/Corsinvest/cv4pve-admin)
+Use `cv4pve-autosnap` for recent restore points of the guests, [cv4pve-node-protect](https://github.com/Corsinvest/cv4pve-node-protect) to save the configuration of the nodes. The whole suite: [corsinvest.it/cv4pve](https://www.corsinvest.it/en/cv4pve/).
 
 ---
 
 ## Support
 
-Professional support and consulting available through [Corsinvest](https://www.corsinvest.it/cv4pve).
+Professional support and consulting available through [Corsinvest](https://www.corsinvest.it/en/cv4pve/).
 
 ---
 

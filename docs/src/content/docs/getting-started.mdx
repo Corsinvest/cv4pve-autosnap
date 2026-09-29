@@ -1,0 +1,98 @@
+---
+title: Getting started
+description: Install cv4pve-autosnap, connect it to a Proxmox VE cluster and take your first snapshots.
+---
+
+import CliInstall from '@corsinvest/cv4pve-docs-theme/components/CliInstall.astro';
+import CliConnection from '@corsinvest/cv4pve-docs-theme/components/CliConnection.astro';
+
+cv4pve-autosnap runs **outside the cluster** — on your workstation, a management VM or a scheduled job —
+and talks only to the Proxmox VE REST API on port 8006. Nothing is installed on the nodes.
+
+## Installation
+
+<CliInstall repo="cv4pve-autosnap" />
+
+The API library behind the tool is also on NuGet, as
+[Corsinvest.ProxmoxVE.AutoSnap.Api](https://www.nuget.org/packages/Corsinvest.ProxmoxVE.AutoSnap.Api/),
+for .NET applications that want to take snapshots with the same rules.
+
+## Connect to the cluster
+
+Create a dedicated user and API token first — see [Permissions](/cv4pve-autosnap/permissions/). Then:
+
+```bash
+cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=UUID' --vmid=100 status
+```
+
+<CliConnection user="autosnap@pve" />
+
+## Order of the options
+
+The connection options, `--vmid` and the other [global options](/cv4pve-autosnap/commands/#global-options)
+go **before** the command; the options of the command go **after** it:
+
+```bash
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all --max-parallel=2   snap --label=daily --keep=7
+#               └──────────── global options ──────────────────────────┘   └──── command options ────┘
+```
+
+An option in the wrong place stops the tool with `Unrecognized command or argument`.
+
+## Try it first
+
+`--dry-run` connects, selects the guests and checks the storages, then prints what it would do without
+creating or removing anything:
+
+```bash
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=1000 --dry-run snap --label=daily --keep=7
+```
+
+```
+ACTION Snap
+PVE Version:      8.4.21
+VMs:              1000
+Label:            daily
+Keep:             7
+State:            False
+Only running:     False
+Timeout:          30 sec.
+Timestamp format: yyMMddHHmmss
+Max % Storage :   95%
+                  Storage      Type     Valid   Used %    Disk Size  Disk Usage
+            pve01/datapool   zfspool        Ok        20     5.44 TB     1.09 TB
+           pve01/local-zfs   zfspool        Ok         0   357.11 GB     98.3 KB
+----- VM 1000 qemu running -----
+Create snapshot: autodaily260929091742
+VM execution 00:00:00.0349731
+Total execution 00:00:00.2065907
+```
+
+First the settings of the run, then the storages that hold guest disks on the nodes involved, with their
+usage, then one block per guest. Without `--dry-run` the same command creates the snapshot
+`autodaily260929091742` and, if VM 1000 already has seven `daily` snapshots, removes the oldest.
+
+:::note
+In a dry run the new snapshot is not created, so it is not counted: a real run removes one old
+snapshot more than the dry run shows when the guest already has `--keep` snapshots of that label.
+:::
+
+## Take snapshots
+
+```bash
+# every VM and container of the cluster, keep the last 7 "daily" snapshots of each
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all snap --label=daily --keep=7
+
+# what is there now
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all status --label=daily
+```
+
+The exit code is `0` when every guest got its snapshot and its old ones removed, `1` when one did not —
+see [Commands](/cv4pve-autosnap/commands/#exit-codes).
+
+## Next
+
+- [Choosing guests](/cv4pve-autosnap/guests/): IDs, names, pools, tags, nodes and exclusions.
+- [Labels and retention](/cv4pve-autosnap/retention/): how snapshots are named, counted and removed.
+- [Scheduling](/cv4pve-autosnap/scheduling/): run it every hour, day or week with cron or the Task Scheduler.
+- [Snapshot consistency](/cv4pve-autosnap/consistency/): the QEMU guest agent and databases.

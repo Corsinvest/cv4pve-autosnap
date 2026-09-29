@@ -1,0 +1,101 @@
+---
+title: Commands
+description: Every command and option of cv4pve-autosnap, with defaults and exit codes.
+---
+
+```
+cv4pve-autosnap [connection] --vmid=… [global options] <snap|clean|status> [command options]
+```
+
+Global options go **before** the command, command options **after** it. `--help` works on its own
+and after each command (`cv4pve-autosnap snap --help`).
+
+## Connection
+
+`--host`, `--api-token` or `--username`/`--password`, `--validate-certificate` and parameter files with
+`@`: see [Getting started](/cv4pve-autosnap/getting-started/#connect-to-the-cluster).
+
+## Global options
+
+| Option | Default | What it does |
+|---|---|---|
+| `--vmid` | *(required)* | Guests to work on — see [Choosing guests](/cv4pve-autosnap/guests/) |
+| `--timeout` | `30` | Seconds to wait for each snapshot or removal task. See below |
+| `--timestamp-format` | `yyMMddHHmmss` | Timestamp in the snapshot names. It has rules, and must stay the same for a label — see [The timestamp format](/cv4pve-autosnap/retention/#the-timestamp-format) |
+| `--max-perc-storage` | `95` | `snap` only: skip a guest when a storage holding its disks is used above this percentage (1–100) |
+| `--max-parallel` | `1` | `snap` only: how many guests get their snapshot at the same time (1–50) |
+| `--dry-run` | off | Print what would be done, without creating or removing anything and without running hook scripts. Accepted anywhere on the line |
+
+`--debug` and `--log-level` are described in [Troubleshooting](/cv4pve-autosnap/troubleshooting/#debug-output).
+
+### `--timeout`
+
+Each snapshot and each removal is a task on Proxmox VE. The tool waits for it up to `--timeout` seconds.
+If the task is still running then, the guest counts as failed (`Error task in run... increase the
+timeout!`) and its old snapshots are not removed in this run — but Proxmox VE goes on with the task, so
+the snapshot may appear anyway.
+
+The time a snapshot takes depends on the storage and, with `--state`, on the RAM of the VM, which is
+written to the storage. Raise the timeout for large VMs with `--state` or for slow storages.
+
+### `--max-parallel`
+
+By default the guests are processed one at a time. With a higher value the snapshots of several guests
+run together, and the run ends sooner on a cluster with many guests. The output stays grouped by guest.
+
+Snapshots on the same storage compete for its I/O: raise the value step by step and watch the storage,
+especially when many guests share it.
+
+## snap
+
+Takes one snapshot of each selected guest, then removes the oldest ones of the same label beyond `--keep`.
+
+| Option | Default | What it does |
+|---|---|---|
+| `--label` | *(required)* | Label of the snapshot — see [Labels and retention](/cv4pve-autosnap/retention/) |
+| `--keep` | *(required)* | Snapshots of this label to keep for each guest, the new one included (1–100) |
+| `--state` | off | Include the RAM of running VMs — see [Snapshot consistency](/cv4pve-autosnap/consistency/#with-the-ram---state). Ignored for containers |
+| `--only-running` | off | Skip guests that are not running |
+| `--script` | — | [Hook script](/cv4pve-autosnap/hooks/) to run at each phase |
+
+Before the first guest, `snap` reads the usage of the storages that can hold disks (content `images` or
+`rootdir`) on the nodes of the selected guests and prints them. A guest with a disk on a storage above
+`--max-perc-storage` is skipped (`Ko` in the table) and counts as failed. Storages the account cannot see
+are not checked. A storage that reports a size or usage of zero — for example one that is not active — counts as over the threshold. Proxmox VE versions before 6 get no storage check.
+
+Templates are always skipped. A VM without the QEMU guest agent enabled gets a warning, and its snapshot.
+
+## clean
+
+Removes the snapshots of a label beyond `--keep`, without taking a new one.
+
+| Option | Default | What it does |
+|---|---|---|
+| `--label` | *(required)* | Label to clean |
+| `--keep` | *(required)* | Snapshots to keep for each guest (0–100). `0` removes them all |
+| `--script` | — | [Hook script](/cv4pve-autosnap/hooks/) to run at each phase |
+
+## status
+
+Lists the snapshots of the tool on the selected guests — see
+[The `status` command](/cv4pve-autosnap/retention/#the-status-command). Changes nothing.
+
+| Option | Default | What it does |
+|---|---|---|
+| `--label` | all labels | Show only this label |
+| `--output`, `-o` | `Text` | `Text`, `Html`, `Markdown`, `Json` or `JsonPretty` |
+
+## Exit codes
+
+| Code | `snap` | `clean` |
+|---|---|---|
+| `0` | Every guest that was not skipped got its snapshot and its old snapshots removed | Every removal succeeded |
+| `1` | A snapshot or a removal failed, or a guest was skipped for storage space | A removal failed |
+
+Templates and guests skipped by `--only-running` do not change the exit code. `status` exits with `0`.
+Any error that stops the tool — connection, login, a wrong option — prints `ERROR: …` and exits with `1`.
+
+:::caution
+When `--vmid` selects no guest, `snap` prints `VMs with '…' NOT FOUND` but exits with `0`. If you
+monitor the exit code only, check the output too.
+:::

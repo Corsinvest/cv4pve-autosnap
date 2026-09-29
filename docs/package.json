@@ -1,0 +1,15 @@
+{
+  "name": "cv4pve-autosnap-docs",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "devDependencies": {
+    "@astrojs/starlight": "^0.42.4",
+    "@corsinvest/cv4pve-docs-theme": "github:Corsinvest/cv4pve-docs-theme#semver:^2.0.0",
+    "astro": "^7.3.5"
+  }
+}

@@ -1,0 +1,77 @@
+---
+title: Choosing guests
+description: Select the VMs and containers to snapshot with --vmid — by ID, name, range, node, pool or tag, with exclusions.
+---
+
+`--vmid` is required by every command and goes before it. It takes a comma-separated list, without
+spaces, of:
+
+| Pattern | Selects | Example |
+|---|---|---|
+| `@all` or `all` | Every VM and container of the cluster | `@all` |
+| ID | One guest | `100` |
+| Name | One guest, by exact name | `web-server` |
+| `start:end` | IDs in the range, both included | `100:110` |
+| `%text%` | Guests whose name contains the text | `%web%` |
+| `@node-name` | Guests on a node | `@node-pve1` |
+| `@all-name` or `all-name` | Guests on a node, same as `@node-` | `@all-pve1` |
+| `@pool-name` | Guests in a pool and its nested pools | `@pool-production` |
+| `@tag-name` | Guests with a tag | `@tag-snapshot` |
+| `-` + ID, name, `%text%`, `@node-`, `@tag-` | Excludes those guests | `@all,-100`, `@all,-@tag-test` |
+
+Names, nodes, pools and tags are compared without regard to case. A guest selected by two patterns is
+taken once.
+
+```
+@all,-@node-pve3             everything except the guests on pve3
+@tag-snapshot,-@tag-test     the guests tagged "snapshot", without those tagged "test"
+100:199,-150                 IDs 100 to 199, except 150
+```
+
+Exclusions are applied after everything else, whatever their place in the list.
+
+:::caution[Exclusions with pools and ranges]
+In the current version, two combinations do not select what they say — check them with a
+[dry run](#check-the-selection) before scheduling:
+
+- **Pools and exclusions do not mix.** `@all,-@pool-test` does not exclude the pool, `@pool-prod,-100`
+  does not exclude guest 100, and `@pool-prod,100` takes guest 100 twice when it is in the pool (the second
+  snapshot fails). Use `@pool-…` alone, or tag the guests instead.
+- **Do not exclude a range.** `-200:210` also *adds* every guest from the lowest ID up to 210 before
+  removing 200 to 210: `@tag-prod,-200:210` selects the guests with IDs below 200 too. List the IDs to
+  exclude one by one.
+:::
+
+## The selection is read at every run
+
+The list is resolved when the tool starts, from the current state of the cluster. A guest that was
+migrated to another node, added to the pool or given the tag is picked up by the next run, with no change
+to the command. Only `@node-…` ties the selection to a node.
+
+Tags work well for this: tag the guests that need snapshots in the web UI and schedule
+`--vmid=@tag-snapshot` once. To stop the snapshots of a guest, remove the tag — and run
+[`clean --keep=0`](/cv4pve-autosnap/retention/#removing-all-snapshots-of-a-label) on it if you want its
+old snapshots gone too.
+
+## Guests that are skipped
+
+- **Templates** are always skipped, by `snap` and by `clean`.
+- **Stopped guests** are skipped by `snap` only with `--only-running`. Without it a stopped guest gets its
+  snapshot like the others.
+- **Guests on a full storage** are skipped by `snap` — see
+  [`--max-perc-storage`](/cv4pve-autosnap/commands/#snap).
+- **Guests on a node that is offline** are left out of the selection: Proxmox VE reports their status as
+  unknown.
+
+## Check the selection
+
+A dry run prints one `----- VM … -----` line for each selected guest and changes nothing:
+
+```bash
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid='@tag-snapshot,-@tag-test' --dry-run snap --label=test --keep=1
+```
+
+`status` is not suited to this: it lists snapshots, so a selected guest without snapshots of the tool
+does not appear.
+
+Quote the value when it contains characters your shell treats specially.

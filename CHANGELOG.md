@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Documentation site: https://corsinvest.github.io/cv4pve-autosnap/ — replaces `docs/snapshot-consistency.md`
+
 ### Changed
+- README shortened, with links to the documentation
 - Updated Corsinvest.ProxmoxVE.Api.Extension and Api.Console to 9.2.3
 - Product icon (Lucide `camera`) and Windows executable icon
 - NuGet package description

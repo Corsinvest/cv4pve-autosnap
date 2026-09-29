@@ -1,0 +1,84 @@
+---
+title: Snapshot consistency
+description: What a snapshot of a running guest contains, and how the QEMU guest agent and fsfreeze hooks make it consistent.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+A snapshot of a running VM without help from inside the guest is like pulling the power cable: the
+disks hold what was written at that instant. Usually the filesystem recovers at the next boot, but
+writes in flight can be lost, and a database may need its own recovery — or lose the last transactions.
+
+There are two ways to do better.
+
+## With the RAM: `--state`
+
+`snap --state` saves the memory of a running VM together with the disks. A rollback brings the VM back
+**running**, at the moment of the snapshot, with its processes and their unwritten data: nothing to
+recover.
+
+The price is size and time: the whole RAM of the VM is written to the storage at every snapshot, and each
+snapshot keeps it. `--state` applies to VMs only; containers are snapshotted without it.
+
+## Without the RAM: the QEMU guest agent
+
+When the [QEMU guest agent](https://pve.proxmox.com/wiki/Qemu-guest-agent) is enabled and running in a
+VM, Proxmox VE by default asks it to **freeze the guest filesystems** (`guest-fsfreeze-freeze`) when it
+takes a snapshot **without RAM** of the running VM, and to thaw them right after: pending writes are
+flushed and nothing is half written. See
+[Filesystem Freeze & Thaw](https://pve.proxmox.com/pve-docs/chapter-qm.html#qm_qga_fsfreeze) in the
+Proxmox VE documentation — it also explains why a freeze can interfere with the VSS backups of some
+applications on Windows, such as SQL Server.
+
+cv4pve-autosnap checks the option on each VM and prints a warning when it is off:
+
+```
+VM 1010 consider enabling QEMU agent see https://pve.proxmox.com/wiki/Qemu-guest-agent
+```
+
+The snapshot is taken anyway.
+
+<Steps>
+
+1. Install the agent in the guest: `apt install qemu-guest-agent` (Debian, Ubuntu),
+   `dnf install qemu-guest-agent` (RHEL, Fedora), or the VirtIO guest tools on Windows.
+
+2. Enable it in the VM options: *VM → Options → QEMU Guest Agent → Enabled*. The change takes effect after
+   the VM is shut down and started again.
+
+3. Check that it answers: *VM → Summary* shows the IP addresses of the guest.
+
+</Steps>
+
+## Databases: fsfreeze hooks
+
+A frozen filesystem is consistent, but a database may still hold data in memory that it has not written.
+The agent can run scripts right before the freeze and right after the thaw, so a database can flush its
+data and pause its writes for the moment of the snapshot.
+
+The agent calls the hook script when it is started with `--fsfreeze-hook` (`-F`); without a path it uses
+`/etc/qemu/fsfreeze-hook`. QEMU provides a
+[hook script](https://gitlab.com/qemu-project/qemu/-/blob/master/scripts/qemu-guest-agent/fsfreeze-hook)
+that runs every executable in `/etc/qemu/fsfreeze-hook.d/` with the argument `freeze` or `thaw`, and a
+[sample for MySQL and MariaDB](https://gitlab.com/qemu-project/qemu/-/blob/master/scripts/qemu-guest-agent/fsfreeze-hook.d/mysql-flush.sh.sample)
+that flushes the tables and holds a read lock until the thaw. Check how the agent service of your
+distribution is started, so that the hook is enabled.
+
+A script for PostgreSQL can be as short as a checkpoint before the freeze:
+
+```sh title="/etc/qemu/fsfreeze-hook.d/20-postgresql"
+#!/bin/sh
+case "$1" in
+    freeze) su postgres -c 'psql -c "CHECKPOINT;"' >/dev/null 2>&1 ;;
+    thaw)   ;;
+esac
+```
+
+Test it by taking a snapshot and reading the log of the hook script.
+
+## Containers
+
+Containers have no guest agent: Proxmox VE takes the snapshot of their volumes at the storage level. For
+databases in containers, stop the writes around the snapshot with a
+[hook script](/cv4pve-autosnap/hooks/) of cv4pve-autosnap (`snap-create-pre` and `snap-create-post`),
+which runs on the machine of the tool — for example through SSH.
