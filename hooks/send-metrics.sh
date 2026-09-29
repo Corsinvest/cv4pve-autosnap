@@ -27,25 +27,25 @@
 # Examples:
 #   # Using as a script hook for Prometheus Pushgateway
 #   cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 \
-#                   --script-hook=/path/to/send-metrics.sh snap --label=daily --keep=7
+#                   snap --label=daily --keep=7 --script=/path/to/send-metrics.sh
 #
 #   # With custom endpoint and metrics type
 #   METRICS_ENDPOINT="http://prometheus.local:9091/metrics/job/cv4pve-autosnap" \
 #   METRICS_TYPE="prometheus" \
 #   cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 \
-#                   --script-hook=/path/to/send-metrics.sh snap --label=daily --keep=7
+#                   snap --label=daily --keep=7 --script=/path/to/send-metrics.sh
 #
 #   # For InfluxDB
 #   METRICS_ENDPOINT="http://influxdb.local:8086/write?db=proxmox" \
 #   METRICS_TYPE="influxdb" \
 #   cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 \
-#                   --script-hook=/path/to/send-metrics.sh snap --label=daily --keep=7
+#                   snap --label=daily --keep=7 --script=/path/to/send-metrics.sh
 #
 #   # For Grafana Loki
 #   METRICS_ENDPOINT="http://loki.local:3100/loki/api/v1/push" \
 #   METRICS_TYPE="loki" \
 #   cv4pve-autosnap --host=pve.local --api-token=token --vmid=100 \
-#                   --script-hook=/path/to/send-metrics.sh snap --label=daily --keep=7
+#                   snap --label=daily --keep=7 --script=/path/to/send-metrics.sh
 
 # Configuration - can be overridden by environment variables
 METRICS_ENDPOINT="${METRICS_ENDPOINT:-http://localhost:9091/metrics/job/cv4pve-autosnap}"

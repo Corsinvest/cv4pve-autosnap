@@ -33,7 +33,8 @@ public class Commands
         var optVmIds = command.VmIdsOrNamesOption();
         optVmIds.Required = true;
 
-        var optTimeout = command.TimeoutOption();
+        var optTimeout = command.TimeoutOption()
+                                .AddValidatorRange(1L, 86400L);
         optTimeout.DefaultValueFactory = (_) => 30L;
 
         var optTimestampFormat = command.AddOption<string>("--timestamp-format", "Specify different timestamp format");
@@ -63,6 +64,8 @@ public class Commands
     {
         if (_scriptHook == null || !File.Exists(_scriptHook)) { return Task.CompletedTask; }
 
+        //output of a VM/CT phase goes with the output of that VM/CT
+        var writer = e.Out ?? _out;
         var (stdOut, exitCode) = ShellHelper.Execute(_scriptHook,
                                                      true,
                                                      new Dictionary<string, string>(e.Environments)
@@ -70,12 +73,13 @@ public class Commands
                                                          ["CV4PVE_AUTOSNAP_DEBUG"] = _debug ? "1" : "0",
                                                          ["CV4PVE_AUTOSNAP_DRY_RUN"] = _dryRun ? "1" : "0",
                                                      },
-                                                     _out,
+                                                     writer,
                                                      _dryRun,
-                                                     _debug);
+                                                     _debug,
+                                                     true);
 
-        if (exitCode != 0) { _out.WriteLine($"Script return code: {exitCode}"); }
-        if (!string.IsNullOrWhiteSpace(stdOut)) { _out.Write(stdOut); }
+        if (!string.IsNullOrWhiteSpace(stdOut)) { writer.Write(stdOut); }
+        if (exitCode != 0) { writer.WriteLine($"Script return code: {exitCode}"); }
 
         return Task.CompletedTask;
     }
@@ -111,7 +115,8 @@ public class Commands
                 {
                     rows.AddRange(items.Select(a => new object[] { vm.Node,
                                                                    vm.VmId,
-                                                                   a.Date.ToString("yy/MM/dd HH:mm:ss"),
+                                                                   //local time, as the timestamp in the name
+                                                                   DateTimeOffset.FromUnixTimeSeconds(a.Time).LocalDateTime.ToString("yy/MM/dd HH:mm:ss"),
                                                                    a.Parent,
                                                                    a.Name,
                                                                    (a.Description + "").Replace("\n", ""),

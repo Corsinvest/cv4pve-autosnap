@@ -32,6 +32,12 @@ public record PhaseEventArgs(HookPhase Phase,
                             bool Status)
 {
     /// <summary>
+    /// Writer of the VM/CT the phase belongs to, so that what a handler prints stays with the output of that
+    /// VM/CT, also with parallel snapshots. Null for the job phases.
+    /// </summary>
+    public TextWriter? Out { get; init; }
+
+    /// <summary>
     /// Environments
     /// </summary>
     public IReadOnlyDictionary<string, string> Environments
@@ -45,7 +51,7 @@ public record PhaseEventArgs(HookPhase Phase,
             ["CV4PVE_AUTOSNAP_KEEP"] = Keep + "",
             ["CV4PVE_AUTOSNAP_SNAP_NAME"] = SnapName ?? "",
             ["CV4PVE_AUTOSNAP_VMSTATE"] = VmState ? "1" : "0",
-            ["CV4PVE_AUTOSNAP_DURATION"] = (Duration + "").Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator, "."),
+            ["CV4PVE_AUTOSNAP_DURATION"] = Duration.ToString(CultureInfo.InvariantCulture),
             ["CV4PVE_AUTOSNAP_STATE"] = Status ? "1" : "0",
         };
 }

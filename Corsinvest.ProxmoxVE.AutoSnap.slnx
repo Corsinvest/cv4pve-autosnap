@@ -8,4 +8,7 @@
     <Project Path="src/Corsinvest.ProxmoxVE.AutoSnap.Api/Corsinvest.ProxmoxVE.AutoSnap.Api.csproj" />
     <Project Path="src/Corsinvest.ProxmoxVE.AutoSnap/Corsinvest.ProxmoxVE.AutoSnap.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Corsinvest.ProxmoxVE.AutoSnap.Api.Tests/Corsinvest.ProxmoxVE.AutoSnap.Api.Tests.csproj" />
+  </Folder>
 </Solution>

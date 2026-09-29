@@ -60,8 +60,15 @@ old snapshots gone too.
   snapshot like the others.
 - **Guests on a full storage** are skipped by `snap` — see
   [`--max-perc-storage`](/cv4pve-autosnap/commands/#snap).
-- **Guests on a node that is offline** are left out of the selection: Proxmox VE reports their status as
-  unknown.
+- **Guests Proxmox VE cannot snapshot** are skipped by `snap`: a container with a bind mount
+  (`mp0: /srv/data,mp=/data`) or a device (`mp0: /dev/sdb1,…`), a VM with a physical disk
+  (`scsi1: /dev/disk/by-id/…`). Proxmox VE refuses their snapshot every time, also for mount points with
+  `backup=0`: the flag counts for backups, not for snapshots.
+- **Guests on a node that is offline** — Proxmox VE reports their status as unknown — are skipped by `snap`
+  and `clean`, and the run exits with `1`: they did not get what the schedule asked for.
+
+Templates, stopped guests with `--only-running` and guests Proxmox VE cannot snapshot do not change the
+exit code; guests on a full storage or an offline node do.
 
 ## Check the selection
 
