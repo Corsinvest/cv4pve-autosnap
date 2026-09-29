@@ -77,8 +77,8 @@ wget https://github.com/Corsinvest/cv4pve-autosnap/releases/latest/download/cv4p
 unzip cv4pve-autosnap-linux-x64.zip && chmod +x cv4pve-autosnap
 
 # See what would happen, then take the snapshots
-./cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=UUID' --vmid=@all --dry-run snap --label=daily --keep=7
-./cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=UUID' --vmid=@all snap --label=daily --keep=7
+./cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=<uuid>' --vmid=@all --dry-run snap --label=daily --keep=7
+./cv4pve-autosnap --host=pve1.local --api-token='autosnap@pve!snap=<uuid>' --vmid=@all snap --label=daily --keep=7
 ```
 
 Global options (`--host`, `--vmid`, `--max-parallel`, …) go **before** the command, command options after it. The API token needs the four privileges listed in [Permissions](https://corsinvest.github.io/cv4pve-autosnap/permissions/).
