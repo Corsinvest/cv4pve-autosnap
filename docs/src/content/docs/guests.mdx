@@ -1,6 +1,6 @@
 ---
 title: Choosing guests
-description: Select the VMs and containers to snapshot with --vmid — by ID, name, range, node, pool or tag, with exclusions.
+description: "Select the VMs and containers to snapshot with --vmid: by ID, name, range, node, pool or tag, with exclusions."
 ---
 
 `--vmid` is required by every command and goes before it. It takes a comma-separated list, without
@@ -13,11 +13,13 @@ spaces, of:
 | Name | One guest, by exact name | `web-server` |
 | `start:end` | IDs in the range, both included | `100:110` |
 | `%text%` | Guests whose name contains the text | `%web%` |
+| `text%` | Guests whose name starts with the text | `web%` |
+| `%text` | Guests whose name ends with the text | `%-prod` |
 | `@node-name` | Guests on a node | `@node-pve1` |
 | `@all-name` or `all-name` | Guests on a node, same as `@node-` | `@all-pve1` |
 | `@pool-name` | Guests in a pool and its nested pools | `@pool-production` |
 | `@tag-name` | Guests with a tag | `@tag-snapshot` |
-| `-` + ID, name, `%text%`, `@node-`, `@tag-` | Excludes those guests | `@all,-100`, `@all,-@tag-test` |
+| `-` + any of the above | Excludes those guests | `@all,-100`, `@all,-@pool-test`, `@all,-200:299` |
 
 Names, nodes, pools and tags are compared without regard to case. A guest selected by two patterns is
 taken once.
@@ -25,22 +27,11 @@ taken once.
 ```
 @all,-@node-pve3             everything except the guests on pve3
 @tag-snapshot,-@tag-test     the guests tagged "snapshot", without those tagged "test"
-100:199,-150                 IDs 100 to 199, except 150
+@pool-production,-100        the production pool, without guest 100
+100:199,-150:159             IDs 100 to 199, except 150 to 159
 ```
 
 Exclusions are applied after everything else, whatever their place in the list.
-
-:::caution[Exclusions with pools and ranges]
-In the current version, two combinations do not select what they say — check them with a
-[dry run](#check-the-selection) before scheduling:
-
-- **Pools and exclusions do not mix.** `@all,-@pool-test` does not exclude the pool, `@pool-prod,-100`
-  does not exclude guest 100, and `@pool-prod,100` takes guest 100 twice when it is in the pool (the second
-  snapshot fails). Use `@pool-…` alone, or tag the guests instead.
-- **Do not exclude a range.** `-200:210` also *adds* every guest from the lowest ID up to 210 before
-  removing 200 to 210: `@tag-prod,-200:210` selects the guests with IDs below 200 too. List the IDs to
-  exclude one by one.
-:::
 
 ## The selection is read at every run
 
@@ -49,7 +40,7 @@ migrated to another node, added to the pool or given the tag is picked up by the
 to the command. Only `@node-…` ties the selection to a node.
 
 Tags work well for this: tag the guests that need snapshots in the web UI and schedule
-`--vmid=@tag-snapshot` once. To stop the snapshots of a guest, remove the tag — and run
+`--vmid=@tag-snapshot` once. To stop the snapshots of a guest, remove the tag, and run
 [`clean --keep=0`](/cv4pve-autosnap/retention/#removing-all-snapshots-of-a-label) on it if you want its
 old snapshots gone too.
 
@@ -58,13 +49,13 @@ old snapshots gone too.
 - **Templates** are always skipped, by `snap` and by `clean`.
 - **Stopped guests** are skipped by `snap` only with `--only-running`. Without it a stopped guest gets its
   snapshot like the others.
-- **Guests on a full storage** are skipped by `snap` — see
+- **Guests on a full storage** are skipped by `snap`: see
   [`--max-perc-storage`](/cv4pve-autosnap/commands/#snap).
 - **Guests Proxmox VE cannot snapshot** are skipped by `snap`: a container with a bind mount
   (`mp0: /srv/data,mp=/data`) or a device (`mp0: /dev/sdb1,…`), a VM with a physical disk
   (`scsi1: /dev/disk/by-id/…`). Proxmox VE refuses their snapshot every time, also for mount points with
   `backup=0`: the flag counts for backups, not for snapshots.
-- **Guests on a node that is offline** — Proxmox VE reports their status as unknown — are skipped by `snap`
+- **Guests on a node that is offline** (Proxmox VE reports their status as unknown) are skipped by `snap`
   and `clean`, and the run exits with `1`: they did not get what the schedule asked for.
 
 Templates, stopped guests with `--only-running` and guests Proxmox VE cannot snapshot do not change the
@@ -75,7 +66,7 @@ exit code; guests on a full storage or an offline node do.
 A dry run prints one `----- VM … -----` line for each selected guest and changes nothing:
 
 ```bash
-cv4pve-autosnap --host=pve1 --api-token='…' --vmid='@tag-snapshot,-@tag-test' --dry-run snap --label=test --keep=1
+cv4pve-autosnap --host=pve1 --api-token='…' --vmid='@pool-production,-@tag-test' --dry-run snap --label=test --keep=1
 ```
 
 `status` is not suited to this: it lists snapshots, so a selected guest without snapshots of the tool

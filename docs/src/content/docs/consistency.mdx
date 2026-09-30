@@ -7,7 +7,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 A snapshot of a running VM without help from inside the guest is like pulling the power cable: the
 disks hold what was written at that instant. Usually the filesystem recovers at the next boot, but
-writes in flight can be lost, and a database may need its own recovery — or lose the last transactions.
+writes in flight can be lost, and a database may need its own recovery, or lose the last transactions.
 
 There are two ways to do better.
 
@@ -27,7 +27,7 @@ VM, Proxmox VE by default asks it to **freeze the guest filesystems** (`guest-fs
 takes a snapshot **without RAM** of the running VM, and to thaw them right after: pending writes are
 flushed and nothing is half written. See
 [Filesystem Freeze & Thaw](https://pve.proxmox.com/pve-docs/chapter-qm.html#qm_qga_fsfreeze) in the
-Proxmox VE documentation — it also explains why a freeze can interfere with the VSS backups of some
+Proxmox VE documentation. It also explains why a freeze can interfere with the VSS backups of some
 applications on Windows, such as SQL Server.
 
 cv4pve-autosnap checks the option on each VM and prints a warning when it is off:
@@ -81,4 +81,4 @@ Test it by taking a snapshot and reading the log of the hook script.
 Containers have no guest agent: Proxmox VE takes the snapshot of their volumes at the storage level. For
 databases in containers, stop the writes around the snapshot with a
 [hook script](/cv4pve-autosnap/hooks/) of cv4pve-autosnap (`snap-create-pre` and `snap-create-post`),
-which runs on the machine of the tool — for example through SSH.
+which runs on the machine of the tool, for example through SSH.

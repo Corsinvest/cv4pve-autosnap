@@ -5,7 +5,7 @@ description: How cv4pve-autosnap names its snapshots, recognises them, keeps the
 
 ## Labels
 
-A label is the name of a schedule: `hourly`, `daily`, `weekly`, `before-upgrade` — any name you choose.
+A label is the name of a schedule: `hourly`, `daily`, `weekly`, `before-upgrade`, any name you choose.
 Every snapshot belongs to one label, and each label keeps its own number of snapshots per guest:
 
 ```bash
@@ -42,8 +42,8 @@ two digits each for year, month, day, hour, minute and second: `260929020000` is
 [.NET custom date format](https://learn.microsoft.com/dotnet/standard/base-types/custom-date-and-time-format-strings).
 
 The tool uses the format twice: to **write** the name of a new snapshot, and to **read back** the names
-of the existing ones — it cuts from the end of the name as many characters as the format string has, and
-what is left must be `auto` + the label. That is why the format has rules, and the tool checks them at start — a format that breaks one stops it
+of the existing ones: it cuts from the end of the name as many characters as the format string has, and
+what is left must be `auto` + the label. That is why the format has rules, and the tool checks them at start. A format that breaks one stops it
 with `ERROR:` before any snapshot is taken or removed:
 
 | Rule | Why | Wrong | Right |
@@ -65,7 +65,7 @@ cv4pve-autosnap --host=pve1 --api-token='…' --vmid=1000 --timestamp-format=yyy
 :::caution[Choose it once]
 Pass the same `--timestamp-format` to `snap`, `clean` and `status` of a label, and do not change it
 later: snapshots written with another format have names of another length, so the tool no longer
-recognises them — it does not count them for `--keep` and never removes them. After a change, remove the
+recognises them: it does not count them for `--keep` and never removes them. After a change, remove the
 old ones from the web UI.
 :::
 
@@ -85,18 +85,18 @@ another label. This has two consequences:
 
 - If you edit the description of one of its snapshots in the web UI, the tool no longer sees it and will
   never remove it.
-- If you change `--timestamp-format`, snapshots taken with the old format are no longer counted — see
+- If you change `--timestamp-format`, snapshots taken with the old format are no longer counted: see
   [The timestamp format](#the-timestamp-format).
 
 ## How retention works
 
 After the snapshot of a guest is created, the tool lists the snapshots of that guest with the same label,
-sorts them **by name**, keeps the last `--keep` — the new one included — and removes the others, oldest
+sorts them **by name**, keeps the last `--keep` (the new one included) and removes the others, oldest
 first. It then moves to the next guest.
 
 - Retention is **per guest and per label**: `--keep=7` means seven snapshots of each guest.
 - It happens only after a successful snapshot. If the snapshot fails, or the guest is skipped, its old
-  snapshots stay — the tool never leaves a guest with fewer snapshots because of a failed run.
+  snapshots stay: the tool never leaves a guest with fewer snapshots because of a failed run.
 - The snapshots are sorted by name, so the [timestamp format](#the-timestamp-format) must sort in time
   order, as the default does.
 - A removal is sent with `force`: if Proxmox VE cannot delete a disk snapshot, the snapshot is still

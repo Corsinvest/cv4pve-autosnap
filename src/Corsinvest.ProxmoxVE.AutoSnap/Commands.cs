@@ -123,9 +123,9 @@ public class Commands
                                                                    a.VmStatus ? "X" : "" }));
                 }
 
-                _out.Write(TableGenerator.To(["NODE", "VM", "TIME", "PARENT", "NAME", "DESCRIPTION", "VM STATUS"],
-                                             rows,
-                                             parseResult.GetValue(optOutput)));
+                _out.Write(new TableGenerator("NODE", "VM", "TIME", "PARENT", "NAME", "DESCRIPTION", "VM STATUS")
+                               .AddRows(rows)
+                               .To(parseResult.GetValue(optOutput)));
             }
         });
     }

@@ -5,7 +5,7 @@ description: Install cv4pve-autosnap, connect it to a Proxmox VE cluster and tak
 
 import CliInstall from '@corsinvest/cv4pve-docs-theme/components/CliInstall.astro';
 
-cv4pve-autosnap runs **outside the cluster** — on your workstation, a management VM or a scheduled job —
+cv4pve-autosnap runs **outside the cluster** (on your workstation, a management VM or a scheduled job)
 and talks only to the Proxmox VE REST API on port 8006. Nothing is installed on the nodes.
 
 ## Installation
@@ -18,7 +18,7 @@ for .NET applications that want to take snapshots with the same rules.
 
 ## First run
 
-Create a dedicated user and API token first — see [Permissions](/cv4pve-autosnap/permissions/). Then point
+Create a dedicated user and API token first: see [Permissions](/cv4pve-autosnap/permissions/). Then point
 the tool at any node:
 
 ```bash
@@ -88,7 +88,7 @@ cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all snap --label=daily --k
 cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all status --label=daily
 ```
 
-The exit code is `0` when every guest got its snapshot and its old ones removed, `1` when one did not —
+The exit code is `0` when every guest got its snapshot and its old ones removed, `1` when one did not:
 see [Commands](/cv4pve-autosnap/commands/#exit-codes).
 
 ## Next

@@ -42,15 +42,17 @@ cv4pve-autosnap @<options-file> --vmid=<sel> snap --label=<label> --keep=<n>    
 cv4pve-autosnap @<options-file> --vmid=<sel> --dry-run clean --label=<label> --keep=<n>   # retention only
 ```
 
-`status` prints nothing when the selected guests have no snapshot of the tool. Its JSON is an array of rows with the keys `NODE`, `VM`,
+When the selected guests have no snapshot of the tool, `status` prints only the header of the table
+(`[]` with `--output Json`); when `--vmid` selects no guest it prints nothing. Its JSON is an array of rows
+with the keys `NODE`, `VM` (a number),
 `TIME` (local time, `yy/MM/dd HH:mm:ss`), `PARENT`, `NAME`, `DESCRIPTION` and `VM STATUS` (`X` when the
 snapshot holds the memory).
 
 ## Selection (`--vmid`)
 
 Comma-separated, no spaces: IDs or exact names (`100,web01`), ranges (`100:107`), `%text%` (name contains),
-`@node-<node>`, `@pool-<pool>`, `@tag-<tag>`, `@all`; `-` in front excludes (`@all,-105`, `@all,-@tag-test`).
-Do not mix pools with exclusions or other entries, and do not exclude a range: they select the wrong
-guests. Check a selection with `--dry-run`. See https://corsinvest.github.io/cv4pve-autosnap/guests/
+`text%` (starts with), `%text` (ends with), `@node-<node>`, `@pool-<pool>`, `@tag-<tag>`, `@all`; `-` in front
+of any of them excludes (`@all,-105`, `@all,-@tag-test`, `@pool-prod,-200:299`). Check a selection with
+`--dry-run`: it prints one `----- VM <id>` line per selected guest. See https://corsinvest.github.io/cv4pve-autosnap/guests/
 
 Documentation: https://corsinvest.github.io/cv4pve-autosnap/

@@ -6,8 +6,8 @@ description: Run cv4pve-autosnap every hour, day or week with cron on Linux or t
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 cv4pve-autosnap takes one snapshot per guest each time it runs and has no scheduler of its own: the
-schedule is the one of your system. Run it from a machine outside the cluster that is always on — a
-management VM, a server of the monitoring — so the snapshots do not depend on a single node.
+schedule is the one of your system. Run it from a machine outside the cluster that is always on (a
+management VM, a server of the monitoring), so the snapshots do not depend on a single node.
 
 ## Put the connection in a parameter file
 
@@ -67,8 +67,8 @@ run the command through `cmd /c "… >> C:\cv4pve\autosnap.log 2>&1"`.
 ## Keep the schedules apart
 
 Proxmox VE locks a guest while it takes one of its snapshots: a second snapshot of the same guest at the
-same moment fails. Start the jobs of different labels at different minutes — in the example the daily job
-runs at 01:30 and the weekly at 03:15, never on the hour of the 2-hourly job — and leave each job the
+same moment fails. Start the jobs of different labels at different minutes (in the example the daily job
+runs at 01:30 and the weekly at 03:15, never on the hour of the 2-hourly job) and leave each job the
 time to finish before the next one.
 
 ## Before an upgrade
@@ -86,5 +86,5 @@ file with only the connection (`--host`, `--api-token`) for runs like this one.
 ## Watch the result
 
 The exit code is `1` when a guest did not get its snapshot or its old ones were not removed: let your
-scheduler or monitoring alert on it. For more than the exit code — a message to a chat, metrics to
-Prometheus — use a [hook script](/cv4pve-autosnap/hooks/).
+scheduler or monitoring alert on it. For more than the exit code (a message to a chat, metrics to
+Prometheus) use a [hook script](/cv4pve-autosnap/hooks/).
