@@ -97,6 +97,7 @@ Global options (`--host`, `--vmid`, `--max-parallel`, …) go **before** the com
 | [Snapshot consistency](https://corsinvest.github.io/cv4pve-autosnap/consistency/) | `--state`, QEMU guest agent, fsfreeze hooks for databases |
 | [Hook scripts](https://corsinvest.github.io/cv4pve-autosnap/hooks/) | Phases, variables, ready-made scripts |
 | [Commands](https://corsinvest.github.io/cv4pve-autosnap/commands/) | Every option, defaults, exit codes |
+| [AI assistants](https://corsinvest.github.io/cv4pve-autosnap/ai-agents/) | Claude Code, Codex, the `cv4pve-autosnap` skill |
 | [Troubleshooting](https://corsinvest.github.io/cv4pve-autosnap/troubleshooting/) | What the messages mean, debug output |
 
 ---

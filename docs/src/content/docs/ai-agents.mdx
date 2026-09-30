@@ -1,0 +1,45 @@
+---
+title: AI assistants
+description: Let an AI assistant such as Claude Code or Codex list, take and clean snapshots with cv4pve-autosnap — the cv4pve-autosnap skill, a token limited to the guests concerned, and sandbox settings.
+---
+
+import AiSandbox from '@corsinvest/cv4pve-docs-theme/components/AiSandbox.astro';
+import AiSkill from '@corsinvest/cv4pve-docs-theme/components/AiSkill.astro';
+
+An AI assistant that can run shell commands can use cv4pve-autosnap to tell you which snapshots the tool
+has taken, and to take snapshots or apply a retention when you ask. Unlike cv4pve-report and cv4pve-diag,
+`snap` and `clean` **change the cluster**: they create and delete snapshots. The skill makes the
+assistant show you what would happen and wait for your agreement first.
+
+## The cv4pve-autosnap skill
+
+<AiSkill tool="cv4pve-autosnap">
+
+- connect only with the options file, passed with `@`, and never print it;
+- run `status` freely: it only reads;
+- before any `snap` or `clean`, show you the selection, the label and `--keep`, run the same command with
+  [`--dry-run`](/cv4pve-autosnap/getting-started/#try-it-first), tell you that the real run removes one old
+  snapshot more than the dry run shows, and run it only after you agree;
+- never run `clean --keep=0` or add `--state` unless you ask.
+
+</AiSkill>
+
+## Give it a token of its own
+
+The skill asks the assistant to wait for you, but it is an instruction, not a limit: an assistant can
+misread a request, and it can read the token from the options file and call the Proxmox VE API with it
+directly. The token is the real limit:
+
+- `VM.Snapshot` also allows rolling a guest back to any of its snapshots. Grant it, with `VM.Audit`, only
+  on the guests or the pool the assistant may snapshot (`/pool/<name>`), not on `/vms` — see
+  [Permissions](/cv4pve-autosnap/permissions/#privileges).
+- For questions only, `status` needs no more than `VM.Audit`: a token without `VM.Snapshot` lets the
+  assistant look but not change anything.
+
+Put the connection in an [options file](/cv4pve-autosnap/connection/#options-in-a-file) and tell the
+assistant its path: the token does not need to appear in the conversation or in the commands the assistant
+writes.
+
+## Sandboxes
+
+<AiSandbox tool="cv4pve-autosnap" />
