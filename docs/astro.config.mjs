@@ -33,7 +33,7 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Start here',
-          items: ['getting-started', 'permissions', 'connection', 'troubleshooting'],
+          items: ['getting-started', 'permissions', 'connection', 'ai-agents', 'troubleshooting'],
         },
         {
           label: 'Guide',
