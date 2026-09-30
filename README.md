@@ -17,7 +17,7 @@ Automatic Snapshot Tool for Proxmox VE (Made in Italy)
 [![WinGet](https://img.shields.io/winget/v/Corsinvest.cv4pve.autosnap?style=flat-square&logo=windows)](https://winstall.app/apps/Corsinvest.cv4pve.autosnap)
 [![AUR](https://img.shields.io/aur/version/cv4pve-autosnap?style=flat-square&logo=archlinux)](https://aur.archlinux.org/packages/cv4pve-autosnap)
 
-> **Automatic snapshots of Proxmox VE VMs and containers, with retention** — one command takes a snapshot of the guests you choose and removes the oldest ones, so every label keeps exactly the number you set.
+> **Automatic snapshots of Proxmox VE VMs and containers, with retention**: one command takes a snapshot of the guests you choose and removes the oldest ones, so every label keeps exactly the number you set.
 >
 > **[Documentation](https://corsinvest.github.io/cv4pve-autosnap/)**
 >
@@ -27,7 +27,7 @@ Automatic Snapshot Tool for Proxmox VE (Made in Italy)
 
 ## Why
 
-A snapshot is the quickest way back after a broken upgrade or a bad change inside a guest. Proxmox VE takes one in a click — but only when someone remembers to click, and it never removes the old ones.
+A snapshot is the quickest way back after a broken upgrade or a bad change inside a guest. Proxmox VE takes one in a click, but only when someone remembers to click, and it never removes the old ones.
 
 cv4pve-autosnap takes the snapshot of every guest you select and removes the oldest ones of the same label: *every two hours, keep 10* stays at ten snapshots per guest. Run it from cron or the Task Scheduler, or right before an upgrade.
 
@@ -42,12 +42,12 @@ It **runs outside the nodes and uses only the Proxmox VE API**: nothing to insta
 ```
 $ cv4pve-autosnap --host=pve01 --api-token='autosnap@pve!snap=…' --vmid=@all status
 +-------+------+-------------------+-------------------------+-------------------------+-----------------+-----------+
-| NODE  | VM   | TIME              | PARENT                  | NAME                    | DESCRIPTION     | VM STATUS |
+| NODE  |   VM | TIME              | PARENT                  | NAME                    | DESCRIPTION     | VM STATUS |
 +-------+------+-------------------+-------------------------+-------------------------+-----------------+-----------+
-| pve01 | 105  | 26/09/28 07:00:02 | before-upgrade          | auto2hourly260928070002 | cv4pve-autosnap |           |
-| pve01 | 105  | 26/09/28 09:00:04 | auto2hourly260928070002 | auto2hourly260928090004 | cv4pve-autosnap |           |
+| pve01 |  105 | 26/09/28 07:00:02 | before-upgrade          | auto2hourly260928070002 | cv4pve-autosnap |           |
+| pve01 |  105 | 26/09/28 09:00:04 | auto2hourly260928070002 | auto2hourly260928090004 | cv4pve-autosnap |           |
 | pve01 | 1000 | 26/09/28 07:00:03 | no-parent               | auto2hourly260928070002 | cv4pve-autosnap |           |
-| pve02 | 203  | 26/09/28 07:00:57 | no-parent               | auto2hourly260928070002 | cv4pve-autosnap |           |
+| pve02 |  203 | 26/09/28 07:00:57 | no-parent               | auto2hourly260928070002 | cv4pve-autosnap |           |
 +-------+------+-------------------+-------------------------+-------------------------+-----------------+-----------+
 ```
 
@@ -55,14 +55,14 @@ $ cv4pve-autosnap --host=pve01 --api-token='autosnap@pve!snap=…' --vmid=@all s
 
 ## Features
 
-- **Retention per label** — `hourly`, `daily`, `weekly` or any name: each label keeps its own number of snapshots per guest.
-- **Choose the guests** — by ID, name, range, node, pool or tag, with exclusions; resolved at every run, so migrated guests keep their snapshots.
-- **Storage guard** — a guest is skipped when a storage holding its disks is used above 95% (or your threshold).
-- **Hook scripts** — your script runs at every phase, with guest, label and result in environment variables; ready-made templates and a metrics sender in [hooks/](hooks/).
-- **Consistent snapshots** — optional RAM state with `--state`; warns when a VM has the QEMU guest agent off.
-- **Parallel** — several guests at the same time with `--max-parallel`.
-- **Dry run** — `--dry-run` shows what would be created and removed.
-- **Keeps running with a node down** — give it more than one host and it uses the first that answers.
+- **Retention per label**: `hourly`, `daily`, `weekly` or any name: each label keeps its own number of snapshots per guest.
+- **Choose the guests**: by ID, name, range, node, pool or tag, with exclusions; resolved at every run, so a migrated or newly tagged guest is picked up with no change.
+- **Storage guard**: a guest is skipped when a storage holding its disks is used above 95% (or your threshold).
+- **Hook scripts**: your script runs at every phase, with guest, label and result in environment variables; ready-made templates and a metrics sender in [hooks/](hooks/).
+- **Consistent snapshots**: optional RAM state with `--state`; warns when a VM has the QEMU guest agent off.
+- **Parallel**: several guests at the same time with `--max-parallel`.
+- **Dry run**: `--dry-run` shows what would be created and removed.
+- **Keeps running with a node down**: give it more than one host and it uses the first that answers.
 
 ---
 

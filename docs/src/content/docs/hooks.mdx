@@ -1,6 +1,6 @@
 ---
 title: Hook scripts
-description: Run your own script at every phase of a snapshot job — before and after each snapshot and removal — with the details in environment variables.
+description: Run your own script at every phase of a snapshot job (before and after each snapshot and removal), with the details in environment variables.
 ---
 
 A hook script lets you act around the snapshots without wrapping the tool: notify a chat when a snapshot
@@ -41,8 +41,8 @@ snap-create-post
 ```
 
 If the snapshot fails, `snap-create-abort` replaces the rest. If a removal fails, `snap-remove-abort` is
-the last phase of that guest: there is no `snap-create-post`. Skipped guests — templates, stopped with
-`--only-running`, on a full storage or an offline node, with a bind mount or a device — get no phase at all. `clean` calls the `snap-remove-*` phases for
+the last phase of that guest: there is no `snap-create-post`. Skipped guests (templates, stopped with
+`--only-running`, on a full storage or an offline node, with a bind mount or a device) get no phase at all. `clean` calls the `snap-remove-*` phases for
 each snapshot it removes, between `clean-job-start` and `clean-job-end`.
 
 ## Variables
@@ -74,9 +74,9 @@ abort and job-end phases.
   (`#!/bin/bash`, `#!/usr/bin/python3`, …) chooses the interpreter. Avoid spaces in its path: the path is
   not quoted for bash.
 - **Windows**: the file is started directly: a `.bat`, `.cmd` or `.exe`. A PowerShell script needs a
-  `.bat` that calls it — see `wrapper-powershell.bat` below.
+  `.bat` that calls it: see `wrapper-powershell.bat` below.
 - It runs on the machine of cv4pve-autosnap, not on the nodes or in the guests.
-- The tool waits for the script to finish, then prints what it wrote to its standard output — with the
+- The tool waits for the script to finish, then prints what it wrote to its standard output, with the
   output of the guest, also with `--max-parallel`.
 - An exit code other than `0` is printed as `Script return code: N`, but **a hook cannot stop a snapshot or
   a removal**, and the exit code of the tool does not change. Use it to react, not to decide.

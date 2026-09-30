@@ -17,19 +17,19 @@ import CliTroubleshooting from '@corsinvest/cv4pve-docs-theme/components/CliTrou
 | `Skip VM Proxmox VE cannot snapshot it, bind mount or device: mp0` | A mount point or disk is a host path or a device, which Proxmox VE cannot snapshot | Nothing, or move the data to a volume on a storage with snapshots. The run does not fail |
 | `Skip VM status unknown: node offline or not reachable` | The node of the guest does not answer | Bring the node back; the run exits with `1` |
 | `Skip VM '--only-running' parameter used!` | The guest is stopped and `--only-running` is set | Nothing |
-| `Error task in run... increase the timeout!` | The snapshot or removal task was still running after `--timeout` seconds | Raise `--timeout`. Proxmox VE keeps running the task, so the snapshot may appear — or be removed — anyway; the other old snapshots of that guest are left for the next run |
+| `Error task in run... increase the timeout!` | The snapshot or removal task was still running after `--timeout` seconds | Raise `--timeout`. Proxmox VE keeps running the task, so the snapshot may appear (or be removed) anyway; the other old snapshots of that guest are left for the next run |
 | `Error in task: …` | Proxmox VE ran the task and it failed; the text is its exit status | Look at the task log in the web UI (the guest's *Task History*) |
 | `ERROR: Snapshot name '…' is not valid` / `… characters long` | The label has characters Proxmox VE refuses, or the name would be longer than 40 characters | Use letters, digits, `-` and `_`; shorten the label or the [timestamp format](/cv4pve-autosnap/retention/#the-timestamp-format) |
 | `ERROR: Timestamp format '…'` | The format writes timestamps of variable length, or does not sort in time order | See [The timestamp format](/cv4pve-autosnap/retention/#the-timestamp-format) |
 | `Script return code: N` | The hook script exited with `N` | Check the script: the snapshot went on anyway |
-| `Unrecognized command or argument '…'` | An option is in the wrong place | Global options go before the command — see [Commands](/cv4pve-autosnap/commands/) |
+| `Unrecognized command or argument '…'` | An option is in the wrong place | Global options go before the command: see [Commands](/cv4pve-autosnap/commands/) |
 
 A guest that fails does not stop the run: the others still get their snapshots, and the exit code is
 `1` at the end.
 
 ## Snapshots that are not removed
 
-cv4pve-autosnap removes only the snapshots it recognises as its own — see
+cv4pve-autosnap removes only the snapshots it recognises as its own: see
 [How a snapshot is recognised](/cv4pve-autosnap/retention/#how-a-snapshot-is-recognised). A snapshot
 whose description was edited, or taken with another `--timestamp-format`, is left alone: remove it from
 the web UI.

@@ -1,6 +1,6 @@
 ---
 title: Permissions
-description: The Proxmox VE user, API token and the four privileges cv4pve-autosnap needs — and why VM.Snapshot is more than it seems.
+description: The Proxmox VE user, API token and the four privileges cv4pve-autosnap needs, and why VM.Snapshot is more than it seems.
 ---
 
 cv4pve-autosnap works through the API, so it can snapshot exactly the guests its account is allowed to
@@ -42,7 +42,7 @@ an administrator.
 
 Proxmox VE answers a request the caller is only partly entitled to by *filtering the response*, not
 by failing it. `/cluster/resources` drops the guests and storages you cannot audit, and the pool list
-drops the pools. Both return `200 OK`, so a filtered result looks exactly like an empty one — a guest
+drops the pools. Both return `200 OK`, so a filtered result looks exactly like an empty one: a guest
 missing `VM.Audit` simply is not selected.
 
 That is why cv4pve-autosnap cannot tell a wrong `--vmid` from a missing privilege: when nothing is found

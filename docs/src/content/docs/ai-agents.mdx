@@ -26,7 +26,7 @@ has taken, and to take snapshots or apply a retention when you ask. Unlike cv4pv
 The skill tells the assistant what to do; the token decides what it can do. The assistant can read the
 token and call the Proxmox VE API without cv4pve-autosnap, and the skill cannot prevent that.
 `VM.Snapshot` also allows rolling a guest back to any of its snapshots: grant it, with `VM.Audit`, only on
-the guests or the pool the assistant may snapshot, not on `/vms` — see
+the guests or the pool the assistant may snapshot, not on `/vms`: see
 [Permissions](/cv4pve-autosnap/permissions/#privileges). For questions only, `VM.Audit` is enough. Put the
 connection in an [options file](/cv4pve-autosnap/connection/#options-in-a-file), so the token stays out of
 the conversation.

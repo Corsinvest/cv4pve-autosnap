@@ -1,6 +1,6 @@
 ---
 title: cv4pve-autosnap
-description: Automatic snapshots of Proxmox VE virtual machines and containers, with retention per label — from outside the cluster, through the API only.
+description: Automatic snapshots of Proxmox VE virtual machines and containers, with retention per label, from outside the cluster, through the API only.
 template: splash
 hero:
   title: Snapshots of your <span class="accent-mark">Proxmox VE</span> guests, on a schedule
@@ -21,10 +21,10 @@ import CtaBand from '@corsinvest/cv4pve-docs-theme/components/CtaBand.astro';
 import proxmoxLogo from '../../assets/proxmox-logo.svg';
 
 export const features = [
-  { title: "Retention per label", text: "hourly, daily, weekly — or any name you choose. Each label keeps its own number of snapshots; the oldest are removed right after the new one is taken.", href: 'retention/' },
+  { title: "Retention per label", text: "hourly, daily, weekly, or any name you choose. Each label keeps its own number of snapshots; the oldest are removed right after the new one is taken.", href: 'retention/' },
   { title: "Choose the guests", text: "By ID, name, range, node, pool or tag, with exclusions. The selection is read at every run, so a migrated or newly tagged guest is picked up with no change.", href: 'guests/' },
   { title: "Storage guard", text: "Before a snapshot, the usage of the storages holding the disks is checked: above 95% (or your threshold) the guest is skipped.", href: 'commands/#snap' },
-  { title: "Hook scripts", text: "Your script runs at every phase — job start, before and after each snapshot and removal — with the guest, label and result in environment variables.", href: 'hooks/' },
+  { title: "Hook scripts", text: "Your script runs at every phase (job start, before and after each snapshot and removal) with the guest, label and result in environment variables.", href: 'hooks/' },
   { title: "Consistent snapshots", text: "Warns when a VM has the QEMU guest agent off. With the agent, Proxmox VE freezes the guest filesystems during a snapshot without RAM; --state saves the RAM too.", href: 'consistency/' },
   { title: "Try before you change", text: "--dry-run prints what would be created and removed, without touching the cluster.", href: 'getting-started/#try-it-first' },
 ];
@@ -62,13 +62,13 @@ Part of the real output on a test cluster: a job runs every two hours with the l
 
 A snapshot is the quickest way back when something goes wrong inside a guest: a package upgrade that
 breaks the boot, a bad configuration change, a script that deletes the wrong folder. Proxmox VE takes a
-snapshot in one click — but only when someone remembers to click, and it never removes the old ones.
+snapshot in one click, but only when someone remembers to click, and it never removes the old ones.
 Snapshots that nobody removes pile up and fill the storage.
 
 cv4pve-autosnap does both halves of the job: it takes the snapshot of every guest you select and removes
 the oldest ones of the same label, so a schedule of *every two hours, keep 10* stays at ten snapshots per
 guest, forever. Run it from cron or the Windows Task Scheduler at fixed times, or from your own scripts
-right before an upgrade — no hand-written loop over the API to maintain.
+right before an upgrade: no hand-written loop over the API to maintain.
 
 ## A snapshot is not a backup
 
@@ -85,14 +85,14 @@ Backup Server) to survive the loss of a disk, a storage or a node. cv4pve-autosn
 | **Survives the loss of that storage** | No | Yes |
 | **Going back** | Rollback in place, the guest returns to that moment | Restore, as the same or a new guest |
 | **Cost** | Each snapshot keeps the blocks changed since it was taken: keep a few, for a short time | Space on the backup storage |
-| **Needs** | A storage that supports snapshots — see the [storage table](https://pve.proxmox.com/wiki/Storage) | Any storage for the guest; a backup target |
+| **Needs** | A storage that supports snapshots: see the [storage table](https://pve.proxmox.com/wiki/Storage) | Any storage for the guest; a backup target |
 
 ## Where it fits
 
 The cv4pve suite follows the Unix philosophy: each tool does one thing and does it well.
 cv4pve-autosnap keeps recent restore points of the guests. Its companion in *continuous protection*,
 [cv4pve-node-protect](https://github.com/Corsinvest/cv4pve-node-protect), saves the configuration of
-the nodes — the part that guest backups do not cover.
+the nodes, the part that guest backups do not cover.
 
 Want the schedules, the history of the runs and HTTP webhooks from a web interface?
 [cv4pve-admin](https://github.com/Corsinvest/cv4pve-admin) runs the same engine as its
@@ -100,7 +100,7 @@ Want the schedules, the history of the runs and HTTP webhooks from a web interfa
 
 ## Outside the nodes, API only
 
-cv4pve-autosnap runs outside the cluster — on your workstation, a management VM or a scheduled job — and
+cv4pve-autosnap runs outside the cluster (on your workstation, a management VM or a scheduled job) and
 talks only to the Proxmox VE REST API. Nothing is installed on the nodes and no SSH or root shell is
 needed: an API token with the four privileges in [Permissions](/cv4pve-autosnap/permissions/) is enough.
 Give it more than one node and it connects to the first one that answers, so the snapshots still run
