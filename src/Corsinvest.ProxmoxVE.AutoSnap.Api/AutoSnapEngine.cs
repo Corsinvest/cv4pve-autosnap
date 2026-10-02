@@ -516,12 +516,13 @@ Timestamp format: {timestampFormat}");
         return ret;
     }
 
-    private async Task<bool> CheckResultAsync(Result result, TextWriter writer)
+    internal async Task<bool> CheckResultAsync(Result result, TextWriter writer)
     {
         //the request was refused: there is no task to check
-        if (result.InError())
+        if (result.InError() || !result.IsSuccessStatusCode)
         {
-            writer.WriteLine(result.GetError());
+            //refused parameters are listed one by one, any other refusal has its reason in the status line
+            writer.WriteLine(result.InError() ? result.GetError() : result.ReasonPhrase);
             return true;
         }
 
