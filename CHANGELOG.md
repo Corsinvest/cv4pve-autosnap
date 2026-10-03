@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2026-10-03
+
+### Fixed
+- A snapshot request refused by Proxmox VE (a missing privilege, a guest that no longer exists) printed an internal error (`The call is ambiguous between the following methods or properties: ...`) instead of the reason: it now prints what Proxmox VE answered, for example `Permission check failed (/vms/100, VM.Snapshot)`, or the parameter that was refused ([#140](https://github.com/Corsinvest/cv4pve-autosnap/pull/140))
+- A node of `--host` that does not answer is given up after 4 seconds instead of the TCP timeout of the system (21 seconds on Windows), through Corsinvest.ProxmoxVE.Api 9.2.5
+
+### Changed
+- Updated Corsinvest.ProxmoxVE.Api.Extension and Api.Console to 9.2.5 ([#140](https://github.com/Corsinvest/cv4pve-autosnap/pull/140))
+- Documentation: page titles that say what the page is about in search results ([#137](https://github.com/Corsinvest/cv4pve-autosnap/pull/137), [#139](https://github.com/Corsinvest/cv4pve-autosnap/pull/139)), theme 2.6.2 ([#138](https://github.com/Corsinvest/cv4pve-autosnap/pull/138))
+
 ## [2.2.0] - 2026-09-30
 
 ### Added
