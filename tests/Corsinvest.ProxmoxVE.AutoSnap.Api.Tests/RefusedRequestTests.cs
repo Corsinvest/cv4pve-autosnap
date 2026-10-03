@@ -6,6 +6,8 @@
 using System.Net;
 using System.Text;
 using Corsinvest.ProxmoxVE.Api;
+using Corsinvest.ProxmoxVE.Api.Extension.Utils;
+using Corsinvest.ProxmoxVE.Api.Shared.Models.Vm;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -85,5 +87,21 @@ public class RefusedRequestTests
 
         Assert.True(inError);
         Assert.Contains("snapshot name 'auto' already used", output);
+    }
+
+    [Fact]
+    public async Task Snapshot_refused_for_a_missing_privilege_reports_the_reason()
+    {
+        // the path of the engine: the snapshot helper of the library, then the check of its result
+        var client = new PveClient("pve01", 8006, new HttpClient(new Handler(_ => Json(HttpStatusCode.Forbidden,
+                                                                                         """{"data":null}""",
+                                                                                         "Permission check failed (/vms/100, VM.Snapshot)"))));
+        var engine = new AutoSnapEngine(client, NullLoggerFactory.Instance, TextWriter.Null, false);
+        var writer = new StringWriter();
+
+        var result = await SnapshotHelper.CreateSnapshotAsync(client, "pve01", VmType.Qemu, 100, "auto", "cv4pve-autosnap", false, 1000);
+
+        Assert.True(await engine.CheckResultAsync(result, writer));
+        Assert.Contains("Permission check failed (/vms/100, VM.Snapshot)", writer.ToString());
     }
 }
