@@ -68,7 +68,7 @@ exit code; guests on a full storage or an offline node do.
 A dry run prints one `----- VM … -----` line for each selected guest and changes nothing:
 
 ```bash
-cv4pve-autosnap --host=pve1 --api-token='…' --vmid='@pool-production,-@tag-test' --dry-run snap --label=test --keep=1
+cv4pve-autosnap --host=pve01 --api-token='…' --vmid='@pool-production,-@tag-test' --dry-run snap --label=test --keep=1
 ```
 
 `status` is not suited to this: it lists snapshots, so a selected guest without snapshots of the tool

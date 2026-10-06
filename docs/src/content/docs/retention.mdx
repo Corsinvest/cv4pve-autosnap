@@ -60,7 +60,7 @@ A shorter format leaves more characters for the label: `yyMMddHHmm` (10 characte
 26 characters.
 
 ```bash
-cv4pve-autosnap --host=pve1 --api-token='…' --vmid=1000 --timestamp-format=yyyyMMdd-HHmm snap --label=daily --keep=7
+cv4pve-autosnap --host=pve01 --api-token='…' --vmid=1000 --timestamp-format=yyyyMMdd-HHmm snap --label=daily --keep=7
 # Create snapshot: autodaily20260929-0200
 ```
 
@@ -112,7 +112,7 @@ first. It then moves to the next guest.
 
 ```bash
 # keep only the last 3 "hourly" snapshots of every guest
-cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all clean --label=hourly --keep=3
+cv4pve-autosnap --host=pve01 --api-token='…' --vmid=@all clean --label=hourly --keep=3
 ```
 
 Use it after lowering `--keep` of a schedule, or to clean up guests that left the selection.
@@ -122,7 +122,7 @@ Use it after lowering `--keep` of a schedule, or to clean up guests that left th
 `clean` accepts `--keep=0`, which removes every snapshot of that label from the selected guests:
 
 ```bash
-cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all clean --label=hourly --keep=0
+cv4pve-autosnap --host=pve01 --api-token='…' --vmid=@all clean --label=hourly --keep=0
 ```
 
 Run it with [`--dry-run`](/cv4pve-autosnap/getting-started/#try-it-first) first to see the list.
@@ -133,7 +133,7 @@ Run it with [`--dry-run`](/cv4pve-autosnap/getting-started/#try-it-first) first 
 it shows only that label; without it, every label.
 
 ```bash
-cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all status --label=daily
+cv4pve-autosnap --host=pve01 --api-token='…' --vmid=@all status --label=daily
 ```
 
 | Column | Content |

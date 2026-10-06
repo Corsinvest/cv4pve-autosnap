@@ -11,7 +11,7 @@ the script at each phase of `snap` and `clean` and tells it what is happening th
 variables.
 
 ```bash
-cv4pve-autosnap --host=pve1 --api-token='…' --vmid=@all snap --label=daily --keep=7 --script=/opt/cv4pve/hook.sh
+cv4pve-autosnap --host=pve01 --api-token='…' --vmid=@all snap --label=daily --keep=7 --script=/opt/cv4pve/hook.sh
 ```
 
 `--script` is an option of `snap` and `clean`, so it goes after the command. The file must exist, or the
