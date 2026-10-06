@@ -17,7 +17,7 @@ The token should not be visible in the crontab or in the list of processes. Writ
 in a file, one per line, readable only by the account that runs the job:
 
 ```bash title="/etc/cv4pve/autosnap.conf"
---host=pve1.local,pve2.local
+--host=pve01,pve02
 --api-token=autosnap@pve!snap=<uuid>
 --vmid=@tag-snapshot
 ```

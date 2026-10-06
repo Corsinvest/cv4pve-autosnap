@@ -26,20 +26,25 @@ hero:
 import FeatureGrid from '@corsinvest/cv4pve-docs-theme/components/FeatureGrid.astro';
 import TerminalTable from '@corsinvest/cv4pve-docs-theme/components/TerminalTable.astro';
 import CtaBand from '@corsinvest/cv4pve-docs-theme/components/CtaBand.astro';
+import Motto from '@corsinvest/cv4pve-docs-theme/components/Motto.astro';
+import CliInstall from '@corsinvest/cv4pve-docs-theme/components/CliInstall.astro';
 import proxmoxLogo from '../../assets/proxmox-logo.svg';
 
 export const features = [
-  { title: "Retention per label", text: "hourly, daily, weekly, or any name you choose. Each label keeps its own number of snapshots; the oldest are removed right after the new one is taken.", href: 'retention/' },
-  { title: "Choose the guests", text: "By ID, name, range, node, pool or tag, with exclusions. The selection is read at every run, so a migrated or newly tagged guest is picked up with no change.", href: 'guests/' },
-  { title: "Storage guard", text: "Before a snapshot, the usage of the storages holding the disks is checked: above 95% (or your threshold) the guest is skipped.", href: 'commands/#snap' },
-  { title: "Hook scripts", text: "Your script runs at every phase (job start, before and after each snapshot and removal) with the guest, label and result in environment variables.", href: 'hooks/' },
-  { title: "Consistent snapshots", text: "Warns when a VM has the QEMU guest agent off. With the agent, Proxmox VE freezes the guest filesystems during a snapshot without RAM; --state saves the RAM too.", href: 'consistency/' },
-  { title: "Try before you change", text: "--dry-run prints what would be created and removed, without touching the cluster.", href: 'getting-started/#try-it-first' },
+  { icon: 'mdi:label-multiple-outline', title: "Retention per label", text: "hourly, daily, weekly, or any name you choose. Each label keeps its own number of snapshots; the oldest are removed right after the new one is taken.", href: 'retention/' },
+  { icon: 'mdi:filter-outline', title: "Choose the guests", text: "By ID, name, range, node, pool or tag, with exclusions. The selection is read at every run, so a migrated or newly tagged guest is picked up with no change.", href: 'guests/' },
+  { icon: 'mdi:shield-check-outline', title: "Storage guard", text: "Before a snapshot, the usage of the storages holding the disks is checked: above 95% (or your threshold) the guest is skipped.", href: 'commands/#snap' },
+  { icon: 'mdi:hook', title: "Hook scripts", text: "Your script runs at every phase (job start, before and after each snapshot and removal) with the guest, label and result in environment variables.", href: 'hooks/' },
+  { icon: 'mdi:check-decagram-outline', title: "Consistent snapshots", text: "Warns when a VM has the QEMU guest agent off. With the agent, Proxmox VE freezes the guest filesystems during a snapshot without RAM; --state saves the RAM too.", href: 'consistency/' },
+  { icon: 'mdi:flask-outline', title: "Try before you change", text: "--dry-run prints what would be created and removed, without touching the cluster.", href: 'getting-started/#try-it-first' },
 ];
 
-```bash
-cv4pve-autosnap --host=pve01 --api-token='autosnap@pve!snap=…' --vmid=@all status
-```
+<Motto />
+
+<CliInstall
+  repo="cv4pve-autosnap"
+  run={['--host=pve01', "--api-token='autosnap@pve!snap=…'", '--vmid=@all', 'status']}
+/>
 
 Part of the real output on a test cluster: a job runs every two hours with the label `2hourly` and
 `--keep=10`, so each guest has its last ten snapshots.
